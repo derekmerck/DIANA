@@ -5,7 +5,7 @@ Winter 2018
 
 <https://www.github.com/derekmerck/DIANA>
 
-# Includes
+## Includes
 
 - DIANA-stack - Ansible service configuration
 - DIANA-connect - Connectivity scripts and monitors
@@ -13,7 +13,7 @@ Winter 2018
 - DixelKit - DICOM element ("dixel") interconnectivity library
 - GUIDMint - Clever anonymization rules for deidentification
 
-# Dependencies
+## Dependencies
 
 - Python 2.7
 - Many extensions
@@ -34,22 +34,14 @@ It is similar to [XNAT][] in providing DICOM services, image data indexing, REST
 ## Components
 
 
-### DIANA-services
+### DIANA-stack
 Ansible scripts for reproducible configurations
 
 * DICOM image archives and routing (Orthanc)
 * data index and forwarding (Splunk)
 
 
-### DIANA-apps
-Splunk apps and dashboards for informatics and data review
-
-* `status` (services introspection)
-* [`rad_rx`](/apps/rad_rx) (DICOM SRDR)
-* `workload` (hl7)
-
-
-### DIANA-connect
+## DIANA-connect
 Python gateway API's for scripting indexing or data transfer jobs.
 
 * `update_index`
@@ -57,6 +49,29 @@ Python gateway API's for scripting indexing or data transfer jobs.
 * `montage_crawler`
 * `find_studies` (identify image populations)
 * `get_studies` (build secondary image registries)
+
+
+## DIANA-frontend
+
+Provides a very simple front end html framework for listing available trial resources.
+
+Built dynamically from a `services.yml` document.
+
+
+### DIANA-splunk
+Splunk apps and dashboards for informatics and data review
+
+* DIANA-status (DIANA services introspection)
+* [rad_rx](/apps/rad_rx) (DICOM SRDR)
+* workload (hl7)
+
+
+### DixelKit
+
+Tools for working with arbitrary representations of DICOM objects (level, tags, file data)
+
+
+### GUIDMint
 
 
 ### muDIANA
@@ -69,49 +84,7 @@ Extensions supporting high-throughput microscopy data and image analytics and ar
 * get_samples Find sample cores in each well, extract ROI on pull
 
 
-
-### Quick Start
-
-Setup an image archive and a Splunk index.
-
-```
-$ ...
-```
-
-
-```
-
-
-# diana-utils
-
-## DIANA Connect and Monitor (d-mon)
-
-## DIANA Trial Front End (d-tfe)
-
-Provides a very simple front end html framework for listing available trial resources.
-
-Built dynamically from a `services.yml` document.
-
-## GUID-Mint (guid-mint)
-
 ## License
 
 MIT
-
----
-
-** GDCM has no rpm available for RedHat 6, but can be compiled 
-following <http://gdcm.sourceforge.net/wiki/index.php/Compilation> and
-<https://raw.githubusercontent.com/malaterre/GDCM/master/INSTALL.txt>
-
-```bash
-$ yum install cmake3 g++
-$ git clone https://github.com/malaterre/GDCM
-$ cd GDCM
-$ mkdir build
-$ cd build
-$ cmake3 -D GDCM_BUILD_APPLICATIONS=true ..
-$ make
-$ make install
-```
 

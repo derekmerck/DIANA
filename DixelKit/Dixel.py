@@ -1,5 +1,6 @@
 from aenum import Enum, auto
 import DixelTools
+import os
 
 class DicomLevel(Enum):
     """
@@ -28,6 +29,13 @@ class Dixel(object):
         self.meta  = meta or {}    # ParentID, file_uuid, path, ApproxDate, other info
         self.data  = data or {}    # Binary data, pixels, report text
         self.level = level
+
+    def save_archive(self, save_dir):
+        if self.data.get('archive'):
+            fn = self.meta['PatientID'] + '.zip'
+            fp = os.path.join(save_dir, fn)
+            with open(fp, 'wb') as f:
+                f.write(self.data['archive'])
 
     @property
     def id0(self):

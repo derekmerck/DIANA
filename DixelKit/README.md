@@ -1,5 +1,5 @@
 DixelKit
-
+====================
 
 DICOM image objects may be represented in _many_ different ways across
 [DIANA](https//www.github.com/derekmerck/DIANA)):  as `.dcm` files, as URLs 

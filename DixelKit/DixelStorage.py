@@ -15,19 +15,23 @@ class CachePolicy(IntEnum):
 
 
 class DixelStorage(object):
-    # A collection of Dixels on disk, in Orthanc, on a PACS, in Splunk...
-    #
-    # Should implement CRUD (create, read, update, delete) interface:
-    # -     put(dixel)     -- create/insert/add item to inventory
-    # - d = get(dixel)     -- read/return a specific item from inventory by (predixel) -- same as update?
-    # -     delete(dixel)  -- remove a specific item from inventory
-    # -     copy(dixel, dest) -- copy a specific item from inventory to a destination storage
-    # - d = update(dixel)  -- update a (predixel) with data or meta from inventory -- same as get?
-    #
-    # Includes optional disk caching (pickling) for expensive-to-compute inventories
-    #
-    # Because dixels are hashable and dixel worklists are sets, it is straightforward to implement
-    # lazy updates by differencing inventories.
+    """
+    An abstract API representing a collection of Dixels on disk, in Orthanc,
+    on a PACS, in Splunk, etc...
+
+    Should implement CRUD (create, read, update, delete) interface:
+    -     put(dixel)     -- create/insert/add item to inventory
+    - d = get(dixel)     -- read/return a specific item from inventory by (predixel)
+                            (same as update?) can populate meta.data['archive'] or ['file']
+    -     delete(dixel)  -- remove a specific item from inventory
+    -     copy(dixel, dest) -- copy a specific item from inventory to a destination storage
+    - d = update(dixel)  -- update a (predixel) with data or meta from inventory -- same as get?
+
+    Includes optional disk caching (pickling) for expensive-to-compute inventories
+
+    Because dixels are hashable and dixel worklists are sets, it is straightforward to implement
+    lazy updates by differencing inventories.
+    """
 
     def __init__(self,
                  cache_pik=None,
@@ -152,3 +156,46 @@ class DixelStorage(object):
             if u:
                 res.add(u)
         return res
+
+import requests
+
+
+class HTTPDixelStorage(DixelStorage):
+
+    def __init__(self, **kwargs):
+        self.session = requests.session()
+        self.url = None
+        super(HTTPDixelStorage, self).__init__(kwargs)
+
+    def do_get(self, url, headers=None, params=None):
+        r = requests.Response()
+        r.status_code = 499
+        try:
+            r = self.session.get(url, headers=headers, params=params)
+        except requests.exceptions.ConnectionError as e:
+            logging.error(e.message)
+            logging.error(e.request.headers)
+            logging.error(e.request.body)
+        return r
+
+    def do_post(self, url, data=None, json=None, headers=None):
+        r = requests.Response()
+        r.status_code = 499
+        try:
+            r = self.session.post(url, data=data, json=json, headers=headers)
+        except requests.exceptions.ConnectionError as e:
+            logging.error(e.message)
+            logging.error(e.request.headers)
+            logging.error(e.request.body)
+        return r
+
+    def do_delete(self, url, headers=None):
+        r = requests.Response()
+        r.status_code = 499
+        try:
+            r = self.session.delete(url, headers=headers)
+        except requests.exceptions.ConnectionError as e:
+            logging.error(e.message)
+            logging.error(e.request.headers)
+            logging.error(e.request.body)
+        return r

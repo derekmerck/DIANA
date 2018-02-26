@@ -9,7 +9,7 @@ from Splunk import Splunk
 import json
 
 
-class Orthanc(DixelStorage):
+class Orthanc(HTTPDixelStorage):
 
     def __init__(self,
                  host,
@@ -20,20 +20,50 @@ class Orthanc(DixelStorage):
                  prefer_compressed=False,
                  peer_name=None,
                  **kwargs):
-        self.session = requests.session()
+        # self.session = requests.session()
+        super(Orthanc, self).__init__()
+
+        # Setup session
         if user and password:
             self.session.auth = (user, password)
         self.url = "http://{host}:{port}".format(host=host, port=port)
+
+        # Local properties
         self.prefer_compressed = prefer_compressed
         self.peer_name = peer_name
-        cache_pik = "{0}.pik".format(
-                sha1("{0}:{1}@{2}".format(
-                user, password, self.url)).hexdigest()[0:8])
-        super(Orthanc, self).__init__(cache_pik=cache_pik, cache_policy=cache_policy)
+        # cache_pik = "{0}.pik".format(
+        #         sha1("{0}:{1}@{2}".format(
+        #         user, password, self.url)).hexdigest()[0:8])
+        # cache_pik = cache_pik, cache_policy = cache_policy
+
+    # def do_get(self, url, headers=None, params=None):
+    #     try:
+    #         r = self.session.get(url, headers=headers, params=params)
+    #     except requests.exceptions.ConnectionError as e:
+    #         logging.error(e.request.headers)
+    #         logging.error(e.request.body)
+    #
+    #     return r
+    #
+    # def do_post(self, url, data=None, json=None, headers=None):
+    #     try:
+    #         r = self.session.post(url, data=data, json=json, headers=headers)
+    #     except requests.exceptions.ConnectionError as e:
+    #         logging.error(e.request.headers)
+    #         logging.error(e.request.body)
+    #     return r
+    #
+    # def do_delete(self, url, headers=None):
+    #     try:
+    #         r = self.session.delete(url, headers=headers)
+    #     except requests.exceptions.ConnectionError as e:
+    #         logging.error(e.request.headers)
+    #         logging.error(e.request.body)
+    #     return r
 
     def statistics(self):
         url = "{0}/statistics".format(self.url)
-        r = self.session.get(url)
+        r = self.do_get(url)
         return r.json()
 
     def get(self, dixel, **kwargs):
@@ -43,9 +73,10 @@ class Orthanc(DixelStorage):
         else:
             url = '{0}/{1}/{2}/archive'.format(self.url, str(dixel.level), dixel.id)
 
-        r = self.session.get(url)
+        r = self.do_get(url)
+        # r = self.session.get(url)
         if r.status_code == 200:
-            dixel.data['archive'] = r
+            dixel.data['archive'] = r.content
         else:
             self.logger.warning('Could not get {0}!'.format(dixel))
 
@@ -55,7 +86,8 @@ class Orthanc(DixelStorage):
 
         headers = {'content-type': 'application/dicom'}
         url = "{0}/instances/".format(self.url)
-        r = self.session.post(url, data=dixel.data['file'], headers=headers)
+        r = self.do_post(url, data=dixel.data['file'], headers=headers)
+        # r = self.session.post(url, data=dixel.data['file'], headers=headers)
 
         if r.status_code == 200:
             self.logger.debug('Added {0} successfully!'.format(dixel))
@@ -66,14 +98,14 @@ class Orthanc(DixelStorage):
 
     def delete(self, dixel):
         url = "{}/{}/{}".format(self.url, str(dixel.level), dixel.id)
-        r = self.session.delete(url)
 
+        # r = self.session.delete(url)
+        r = self.do_delete(url)
         if r.status_code == 200:
             self.logger.debug('Removed {0} successfully!'.format(dixel))
         else:
             self.logger.warning('Could not delete {0}!'.format(dixel))
 
-        self.logger.debug(pformat(r.json()))
 
     def update(self, dixel, **kwargs):
 
@@ -84,7 +116,12 @@ class Orthanc(DixelStorage):
         else:
             url = "{}/{}/{}/shared-tags?simplify".format(self.url, str(dixel.level), dixel.id)
 	    
-        r = self.session.get(url)
+        # r = self.session.get(url)
+        r = self.do_get(url)
+
+        if r.status_code != 200:
+            return dixel
+
         tags = r.json()
         tags = DixelTools.simplify_tags(tags)
 
@@ -92,10 +129,11 @@ class Orthanc(DixelStorage):
 
         # Check anon status
         url = "{}/{}/{}/metadata".format(self.url, str(dixel.level), dixel.id)
-        try:
-            r = self.session.get(url)
-        except requests.exceptions.ConnectionError:
-            logging.warn(r.content)
+        r = self.do_get(url)
+        # try:
+        #     r = self.session.get(url)
+        # except requests.exceptions.ConnectionError:
+        #     logging.warn(r.content)
 
         items = r.json()
         if "AnonymizedFrom" in items:
@@ -103,11 +141,13 @@ class Orthanc(DixelStorage):
 
         if dixel.level == "instance":
             url = "{}/{}/{}/metadata/TransferSyntaxUID".format(self.url, str(dixel.level), dixel.id)
-            r = self.session.get(url)
+            # r = self.session.get(url)
+            r = self.do_get(url)
             meta['TransferSyntaxUID'] = r.json()
 
             url = "{}/{}/{}/metadata/SopClassUid".format(self.url, str(dixel.level), dixel.id)
-            r = self.session.get(url)
+            # r = self.session.get(url)
+            r = self.do_get(url)
             meta['SOPClassUID'] = DixelTools.DICOM_SOPS.get(r.json(), r.json())  # Text or return val
 
         return Dixel(dixel.id, meta=meta, level=dixel.level)
@@ -121,7 +161,8 @@ class Orthanc(DixelStorage):
             url = "{0}/peers/{1}/store".format(self.url, dest.peer_name)
             # self.session.post(url, data=dixel.id)
 
-            r = requests.post(url, auth=self.session.auth, data=dixel.id)
+            r = self.do_post(url, data=dixel.id)
+            # r = requests.post(url, auth=self.session.auth, data=dixel.id)
             self.logger.debug(r.content)
 
         elif type(dest) == Splunk:
@@ -137,8 +178,10 @@ class Orthanc(DixelStorage):
 
     def initialize_inventory(self):
         res = set()
-        r = self.session.get("{0}/instances".format(self.url)).json()
-        for item in r:
+        url = "{0}/instances".format(self.url)
+        r = self.do_get(url)
+        r = self.session.get(url)
+        for item in r.json():
             res.add(Dixel(id=item, level=DicomLevel.INSTANCES))
 
         # self.logger.debug(res)
@@ -151,17 +194,27 @@ class Orthanc(DixelStorage):
 
     def initialize_series(self):
         res = set()
-        r = self.session.get("{0}/series".format(self.url)).json()
+        r = self.do_get("{0}/series".format(self.url)).json()
         for item in r:
             res.add(Dixel(id=item, level=DicomLevel.SERIES))
+        return res
 
+    @property
+    def studies(self):
+        return self.check_cache('studies')
+
+    def initialize_studies(self):
+        res = set()
+        r = self.do_get("{0}/studies".format(self.url)).json()
+        for item in r:
+            res.add(Dixel(id=item, level=DicomLevel.SERIES))
         return res
 
     def exists(self, dixel):
         url = "{}/{}/{}".format(self.url,
                                 str(dixel.level),
                                 dixel.id)
-        r = requests.get(url, auth=self.session.auth)
+        r = self.do_get(url)
         # r = self.session.get(url)
         if r.status_code == 200:
             return True
@@ -178,7 +231,8 @@ class Orthanc(DixelStorage):
         logging.debug(replacement_json)
 
         headers = {'content-type': 'application/json'}
-        r = requests.post(url, auth=self.session.auth, data=replacement_json, headers=headers)
+        r = self.do_post(url, data=replacement_json, headers=headers)
+        # r = requests.post()
         self.logger.debug(r.content)
 
         if r.status_code == 200:
@@ -230,20 +284,24 @@ class OrthancProxy(Orthanc):
             headers = {"Accept-Encoding": "identity",
                        "Accept": "application/json"}
 
-            # Does not like session.post for some reason!
-            try:
-                # r = self.session.post(url, json=data, headers=headers)
-                r = requests.post(url, json=data, headers=headers, auth=self.session.auth)
-                self.logger.debug(r.headers)
-                self.logger.debug(r.content)
+            r = self.do_post(url, json=data, headers=headers)
+            if r.status_code == 200:
                 dixel.meta['QID'] = r.json()["ID"]
-            except ConnectionError as e:
-                self.logger.error(e)
-                self.logger.error(e.request.headers)
-                self.logger.error(e.request.body)
+
+            # # Does not like session.post for some reason!
+            # try:
+            #     # r = self.session.post(url, json=data, headers=headers)
+            #     r = requests.post(url, json=data, headers=headers, auth=self.session.auth)
+            #     self.logger.debug(r.headers)
+            #     self.logger.debug(r.content)
+            #     dixel.meta['QID'] = r.json()["ID"]
+            # except ConnectionError as e:
+            #     self.logger.error(e)
+            #     self.logger.error(e.request.headers)
+            #     self.logger.error(e.request.body)
 
             url = '{0}/queries/{1}/answers'.format(self.url, dixel.meta['QID'])
-            r = self.session.get(url)
+            r = self.do_get(url)
 
             answers = r.json()
 
@@ -253,7 +311,7 @@ class OrthancProxy(Orthanc):
             for aid in answers:
                 url = '{0}/queries/{1}/answers/{2}/content?simplify'.format(self.url, dixel.meta['QID'], aid)
                 # r = self.session.get(url)
-                r = requests.get(url, auth=self.session.auth)
+                r = self.do_get(url)
 
                 tags = r.json()
 

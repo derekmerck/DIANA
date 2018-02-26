@@ -3,18 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to DIANA's documentation!
-=================================
+.. include:: ../_README.rst
+
+Components
+-------------------
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: DixelKit.Dixel
+   DianaStack.rst
+   DianaFE.rst
+   DianaConnect.rst
+   DixelKit.rst
+   GUIDMint.rst
+   RadRx.rst
 
-.. autoclass:: DicomLevel
-.. autoclass:: Dixel
-    :members:
+* Examples
+  * Monitor dose reports
+  * Random subject names
+
+* Tests
 
 
 Indices and tables

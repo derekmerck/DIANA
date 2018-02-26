@@ -72,20 +72,20 @@ Example: <http://get-a-guid.herokuapp.com/guid?/guid?value=MERCK^DEREK^L">
 ### Pseudonyms
 
 It is often useful to replace the subject name with something more natural than a GUID.  
-Any string beginning with at least 3 (capitalized) alphabetic characters can be used to reproducibly generate a ["John Doe"](http://en.wikipedia.org/wiki/John_Doe) style placeholder name in [DICOM patient name format][pname_fmt].  This is very useful for alphabetizing subject name lists according to generic ID and for referencing anonymized data sets according to memorable names.
+Any string beginning with at least 3 (capitalized) alphabetic characters can be used to reproducibly generate a ["John Doe"](http://en.wikipedia.org/wiki/John_Doe) style placeholder name in DICOM patient name format (`last^first^middle).  This is very useful for alphabetizing subject name lists according to generic ID and for referencing anonymized data sets according to memorable names.
 
 Generation method:
 
 1. A `guid` parameter is requried and `gender` (M,F,U) is optional (defaults to U)
 2. Using the `guid` as a random seed, a gender-appropriate first name and gender-neutral family name is selected from a uniform distribution taken from the US census
-3. The result is returned in [DICOM patient name format][pname_fmt].
+3. The result is returned in DICOM patient name format.
 
 Example: <http://get-a-guid.herokuapp.com/guid?/guid?value=MERCK^DEREK^L">
   `{'guid': 'BEW6DDOU'}`
 
 [pname_fmt]:(http://support.dcmtk.org/docs/classDcmPersonName.html#f8ee9288b91b6842e4417185d548cda9)
 
-The default name map can be easily replaced to match your fancy (Shakespearean names, astronauts, children book authors).  And with slight modification, a DICOM patient name with up to 5 elements could be generated (last^first^middle^prefix^suffix).
+The default name map can be easily replaced to match your fancy (Shakespearean names, astronauts, children book authors).  And with slight modification, a DICOM patient name with up to 5 elements could be generated (`last^first^middle^prefix^suffix`).
 
 <http://get-a-guid.herokuapp.com/name?value=AUUNVBGA5JKUE>  
 `Andronicus^Ulysses^U^Nurse^of Verona`

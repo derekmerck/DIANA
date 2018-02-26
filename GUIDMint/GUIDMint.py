@@ -1,11 +1,8 @@
-"""
-GUIDMint
+"""Hashes an alphanumeric guid from a given string value
 
-Hashes an alphanumeric guid from a given string value
-Given a guid, gender (M/F/U), and name lists, returns a reproducible pseudonym
-Given a dob (%Y-%m-%d), returns a reproducible pseudodob within 6 months of the original dob
-
-If age is input, the dob is assumed to be (now - age*3655.25 days)
+* Given a guid, gender (M/F/U), and name lists, returns a reproducible pseudonym
+* Given a dob (%Y-%m-%d), returns a reproducible pseudodob within 6 months of the original dob
+* If age is input, the dob is assumed to be (now - age*3655.25 days)
 """
 
 import logging
@@ -24,8 +21,10 @@ DEFAULT_NAMEBANK = "US_CENSUS"
 DEFAULT_HASH_PREFIX_LENGTH = 16  # 8 = 64bits, -1 = entire value
 
 class NameBank (object):
-    # NameBanks should contain gender specific surnames
-    # and a single list of family names
+    """
+    NameBanks should contain gender specific surnames
+    and a single list of family names
+    """
 
     def __init__(self, source=DEFAULT_NAMEBANK):
         super(NameBank, self).__init__()
@@ -60,6 +59,9 @@ class NameBank (object):
 
 
 class GUIDMint(object):
+    """
+    Default hashing and base class for alternative mints.
+    """
 
     def __init__(self,
                  max_date_offset = DEFAULT_MAX_DATE_OFFSET,
@@ -123,6 +125,10 @@ class MD5Mint(GUIDMint):
 
 
 class PseudoMint(GUIDMint):
+    """
+    Mint that returns a complete identity, including a pseudonym based on the
+    subject GUID and the US Census NameBank
+    """
 
     def __init__(self,
                  name_source=DEFAULT_NAMEBANK,
@@ -191,8 +197,8 @@ class PseudoMint(GUIDMint):
         return GUIDMint.pseudo_identity(self, value, gender=gender, dob=dob)
 
 
-if __name__=="__main__":
-    logging.basicConfig(level=logging.DEBUG)
+def test_mints():
+
 
     md5_mint = MD5Mint()
     pseudo_mint = PseudoMint()
@@ -216,3 +222,10 @@ if __name__=="__main__":
 
     md5_mint.pseudo_identity(name, age=age)
     pseudo_mint.pseudo_identity(name, age=age)
+
+
+if __name__=="__main__":
+
+    logging.basicConfig(level=logging.DEBUG)
+    test_mints()
+

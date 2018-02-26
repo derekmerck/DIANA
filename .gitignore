@@ -5,7 +5,9 @@
 notes*
 ignore*
 *retry
-\_[^\_]*.py
+\_[^\_]*rst
+\_[^\_]*py
+
 
 # Sphinx output
 _build
