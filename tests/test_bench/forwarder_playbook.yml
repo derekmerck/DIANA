@@ -1,0 +1,43 @@
+# Simple Test Bench
+
+
+# > ansible-playbook -i secret_inventory.yml test_bench/forwarder.yml
+
+---
+- name: Anonymizer Test Bench
+
+  hosts: trusty64
+
+  # Required credentials
+  vars:
+    pg_admin_pw:       passw0rd
+    orthanc_db_pw:     passw0rd
+    splunk_admin_pw:   passw0rd
+    orthanc_admin_pw:  passw0rd
+
+  roles:
+
+  - role:      ../roles/orthanc
+    title:     "Archive 1"
+    name:      archive1
+    api_port:  8042
+    dicom_port: 4242
+    admin_pw:  "{{ orthanc_admin_pw }}"
+
+  - role:      ../roles/orthanc
+    title:     "Archive 1 Queue"
+    name:      archive1-in
+    api_port:  8142
+    dicom_port: 4142
+    admin_pw:  "{{ orthanc_admin_pw }}"
+    peers:
+      archive1:
+        Url:  "http://archive1:8042"
+        Username: "orthanc"
+        Password: "{{ orthanc_admin_pw }}"
+
+    # Add links to archive1 + peer name
+
+  - role:        ../roles/monitor
+    dmon_config: dmon_forwarder.yml
+

@@ -1,0 +1,28 @@
+---
+name: "orthanc"
+
+settings:
+  orthanc:
+    title: '{{ name }}'
+    aet: ORTHANC
+    db_name: '{{ name }}'
+    paths:
+      data:  '/var/lib/orthanc/{{ name }}'
+      logs:  '/var/log/orthanc/{{ name }}'
+    ports:
+      dicom: 4242
+      http:  4280
+
+credentials:
+  orthanc:
+    db_user: "orthanc"
+    db_pword: "passw0rd"
+
+    users:
+      orthanc: "passw0rd"
+
+#  dicom_modalities:
+#    sample-modality: ['SAMPLE_AE', 'sample', 104]
+#
+#  orthanc_peers:
+#    sample-peer: ['sample:4280', 'orthanc', 'passw0rd']

@@ -1,0 +1,3 @@
+---
+- name: "wait_for_postgres"
+  wait_for: port={{settings.postgres.ports.sql}} delay=3

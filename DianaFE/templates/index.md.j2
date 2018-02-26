@@ -1,0 +1,29 @@
+## {{ title }}
+
+{{ preamble }}
+
+{%- for network, value in studies.iteritems() %}
+
+---
+### {{ network }}
+  {%- for trial, value in value.iteritems() %}
+  
+#### {{ value.full_name }}{% if value.short_name %} ({{ value.short_name }}){% endif %}
+
+   {{ value.desc }}
+  
+   {% if value.pi %}* PI: {{ value.pi }}{% endif %}
+   {% if value.citation -%}
+   * [Primary citation]({{ value.citation }})
+   {% endif -%}
+   * [Image submission stats](stats/{{ value.study_id }})
+   {% if value.ports.queue_api -%}
+   * [Upload a study](upload/{{ value.study_id }})
+   {% endif -%}
+   * [Imaging review]({{ value.study_id }})
+    
+  {%- endfor %}
+{% endfor %}
+---
+
+{{ postamble }}

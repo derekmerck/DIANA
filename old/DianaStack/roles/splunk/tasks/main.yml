@@ -1,0 +1,24 @@
+---
+- name: "Launch Splunk container"
+  docker:
+    name: splunk
+    image: ae2a9f004cce
+#    image: outcoldman/splunk
+#    volumes_from:
+#    # TODO: Need to check if these exist ...
+#      - THIA-Cold
+##      - xnat
+    volumes:
+      - "/var/log/orthanc:/var/log/orthanc"
+
+    ports:
+      - "{{settings.splunk.ports.http}}:8000"
+      - "{{settings.splunk.ports.syslog}}:1514"
+      - "{{settings.splunk.ports.api}}:8088"
+    env:
+      SPLUNK_START_ARGS: "--accept-license"
+      SPLUNK_CMD:   "edit user admin -password {{credentials.splunk.admin_pword}} -role admin -auth admin:changeme"
+
+      # TODO: Need to set type=Auto, check if these exist...
+      SPLUNK_ADD:   "monitor /var/log/orthanc"
+      # SPLUNK_ADD_1: "monitor /usr/local/tomcat/webapps/xnat/logs/"

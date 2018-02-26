@@ -1,0 +1,50 @@
+# Creates Docker containers with an Orthanc Source (8042), Orthanc Destination (8043),
+# and Splunk Index (8000/8089) for testing.
+#
+# Currently have to add Splunk indices and a HEC token by hand.
+
+---
+- hosts: localhost
+  tasks:
+
+  - name: Create Orthanc Source Container
+    tags: source
+    docker_container:
+      name: orthanc0_testing
+      image: jodogne/orthanc
+      state: started
+      ports:
+       - "8042:8042"
+
+  - name: Grab the Orthanc ImportDICOM Script
+    tags: source
+    get_url:
+      url: https://raw.githubusercontent.com/jodogne/OrthancMirror/master/Resources/Samples/ImportDicomFiles/ImportDicomFiles.py
+      dest: /Users/derek/bin/ImportDicomFiles.py
+      mode: 0777
+
+  - name: Copy Sample Data to Orthanc Source
+    tags: source
+    command: ImportDicomFiles.py 127.0.0.1 8042 '/Users/derek/Dropbox (Personal)/Projects/AirwayPhantom' orthanc orthanc
+
+  - name: Create Orthanc Destination Container
+    tags: destination
+    docker_container:
+      name: orthanc1_testing
+      image: jodogne/orthanc
+      state: started
+      ports:
+       - "8043:8042"
+
+  - name: Create Splunk Index Container
+    tags: index
+    docker_container:
+      name: splunk_testing
+      image: splunk/splunk
+      state: started
+      ports:
+       - "8000:8000"
+       - "8088:8088"
+       - "8089:8089"
+      env:
+        SPLUNK_START_ARGS: --accept-license

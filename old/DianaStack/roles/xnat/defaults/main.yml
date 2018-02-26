@@ -1,0 +1,20 @@
+---
+settings:
+  xnat:
+    title: "XNAT"
+    db_name: xnat
+    aet: XNAT
+    paths:
+      data: /var/lib/xnat
+      logs: /var/log/xnat
+    ports:
+      http:  5080
+      dicom: 5104
+
+credentials:
+  xnat:
+    db_user: xnat
+    db_pword: passw0rd
+
+    admin_user: xnat
+    admin_pword: passw0rd

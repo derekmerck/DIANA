@@ -1,0 +1,10 @@
+bodypart,age,thresh,aapm,acr_median,acr_25th,color_lut
+chest,adult,20,25,11,8,"[11,20,25,30]"
+chest,old_pediatric,10,15,5,5,"[2,3,7,14]"
+chest,young_pediatric,5,15,3,3,"[2,3,4,5]"
+abdomen,adult,20,25,13,10,"[13,20,25,30]"
+abdomen,old_pediatric,10,15,3,5,"[2,3,7,14]"
+abdomen,young_pediatric,5,15,3,2,"[2,3,4,5]"
+head,adult,50,75,50,42,"[25,40,55,60]"
+head,old_pediatric,45,60,40,31,"[5,15,30,50]"
+head,young_pediatric,30,60,25,25,"[5,10,25,35]"

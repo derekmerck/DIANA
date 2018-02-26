@@ -1,0 +1,85 @@
+---
+#- debug: var=settings
+
+# Add this node to the peers list, may want to use external address instead..
+- set_fact:
+    credentials:
+      orthanc_peers: "{{
+        credentials.orthanc_peers |
+        default({}) |
+        combine( {
+          name: [
+            '{0}:{1}'.format(ansible_default_ipv4.address, settings.orthanc.ports.http),
+            'orthanc',
+            '{0}'.format(credentials.orthanc.users.orthanc)
+          ]
+        })
+      }}"
+
+#- debug: var=credentials.orthanc_peers
+
+- name: "Setup orthanc db in postgres"
+  postgresql_db: "name={{settings.orthanc.db_name}}
+                 state=present
+                 login_host=localhost
+                 port={{settings.postgres.ports.sql}}
+                 login_user={{credentials.postgres.db_user}}
+                 login_password={{credentials.postgres.db_pword}}"
+
+- name: "Setup orthanc user for db in postgres"
+  postgresql_user: "db={{settings.orthanc.db_name}}
+                   name={{credentials.orthanc.db_user}}
+                   password={{credentials.orthanc.db_pword}}
+                   state=present
+                   login_host=localhost
+                   port={{settings.postgres.ports.sql}}
+                   login_user={{credentials.postgres.db_user}}
+                   login_password={{credentials.postgres.db_pword}}"
+
+- name: "Add host mapped directories"
+  sudo: True
+  file: path={{ item }} state=directory owner={{ansible_user_id}}
+  with_items:
+    - "{{ settings.orthanc.paths.logs }}"
+    - "{{ settings.orthanc.paths.data }}"
+    - "{{ settings.orthanc.paths.data }}/scripts"
+
+- name: "Create orthanc config"
+  sudo: True
+  template: >
+    src=templates/orthanc.json.j2
+    dest={{ settings.orthanc.paths.data }}/orthanc.json
+  notify: restart_orthanc
+
+- name: "Setup routing lua"
+  tags: "router"
+  sudo: True
+  template: >
+      src=templates/autorouter.lua.j2
+      dest={{ settings.orthanc.paths.data }}/scripts/autorouter.lua
+#  local_action: >
+#      template
+#      src=templates/autorouter.lua.j2
+#      dest='./tmp_{{name}}_autorouter.lua'
+  when: settings.orthanc.destinations is defined
+  notify: restart_orthanc
+
+- meta: flush_handlers
+
+- name: "Launch orthanc container"
+  docker_container:
+    name: "{{name}}"
+    image: jodogne/orthanc-plugins
+    # On RHEL, this _may_ need to be ["--logdir...", "config.json"]
+    command: "--verbose --logdir=/var/log/orthanc /etc/orthanc/orthanc.json"
+    volumes:
+      - "{{settings.orthanc.paths.data}}/orthanc.json:/etc/orthanc/orthanc.json:ro"
+      - "{{settings.orthanc.paths.data}}/db:/var/lib/orthanc/db"
+      - "{{settings.orthanc.paths.data}}/scripts:/var/lib/orthanc/scripts"
+      - "{{settings.orthanc.paths.logs}}:/var/log/orthanc"
+    links:
+      - db:postgres
+      # TODO: Need any other defined links (like to routing peers)
+    ports:
+      - "{{settings.orthanc.ports.http}}:8042"
+      - "{{settings.orthanc.ports.dicom}}:4242"

@@ -1,0 +1,18 @@
+# TODO: splunk - Setup cifs folder monitors automatically?
+
+---
+- name:     Install packages
+  package:
+    name:   cifs-utils
+    state:  present
+  become:   yes
+  when:     FRESH is defined
+
+- name:     Mount shared network drive for hl7
+  mount:
+    name:   "{{ mount_pt }}"
+    src:    "{{ source_path }}"
+    fstype: cifs
+    opts:   "user={{ smb_user }},pass={{ smb_pw }}"
+    state:  present
+  become:   yes

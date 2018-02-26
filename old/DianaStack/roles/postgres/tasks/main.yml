@@ -1,0 +1,13 @@
+---
+#- debug: var=settings
+
+- name: "Launch postgres container"
+  docker:
+    name: db
+    image: postgres
+    env:
+      POSTGRES_USER: "{{credentials.postgres.db_user}}"
+      POSTGRES_PASSWORD: "{{credentials.postgres.db_pword}}"
+    ports:
+      - "{{settings.postgres.ports.sql}}:5432"
+  notify: wait_for_postgres

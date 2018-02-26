@@ -1,0 +1,20 @@
+language: python
+python: '2.7'
+install:
+- pip install -r connect/requirements.txt
+- curl -L -o test/data/CT000000.dcm https://dl.dropboxusercontent.com/u/30766339/dicom/CT000000.dcm
+- curl -L -o test/data/CT000001.dcm https://dl.dropboxusercontent.com/u/30766339/dicom/CT000001.dcm
+- mkdir build
+- tar -czf build/rad_rx.tar.gz apps/rad_rx
+script:
+- nosetests -w connect MeasureScout.py
+
+deploy:
+  skip_cleaup: true
+  provider: releases
+  api_key:
+    secure: QqtienSeSsqTdn4MEH/E8m44HxegSND4lyj+YRDHTvSpCg+GWICbesM8U/zRFBZzRmYvnH3cN9INRJe6dP7hbrQF3TfgLfeDUvhNo9Z6H2Jv/G8p2BBVlJpytizZ0Mv80zBpUjrwDCBNZ45hGl98P0MnUnVFLx5FhI/u+XUpHEOoeLA+sJahX/YDUQcc5tiFk2IyE1B01fpZHzY73SOEW4ZIR0QxaRI/2eg1vxyOeOqdUVsOLe+RJ8eW957QW4NVFDpkzJ+5XB9vFY62Cv3ZDj5rSTkk51UVgK14zwqtC3SbG41wDbpF6Yh34Pb5zc8jWWF40xVjTp6i70F0nww60tSgEckUuH41DYSWg8zYY0ATLQuGz+Wc6Gu4TlCeBJHcVSvmxPb2feCt8YRThV72VXI9qVPT1h/7ozKMVagwYnO0GekOqvESWrK7UJL9Qr452+iJZi5x0K9wDczb32HK99T+cGuYVwDM6cwFgnYGr+EaVn1wT68hIt9HTe2uUqZRz8ne/pBIFSuKxfnayE81tAvqoBY5hSHCGjdX3nX0E5vQfl0MbRaglIkbUfLyLB528IoXgbkU7sdcqRJ18MNaRJCdzUNf5lbtHfZrEeuBy/0YgVbC+AT17sPuoRQbL9Ascnlnl4Pkz5/6cPEpFbfTxhtTLYd0JpTL8vbWE1BkP9g=
+  file: build/rad_rx.tar.gz
+  on:
+    tags: true
+    repo: derekmerck/DIANA

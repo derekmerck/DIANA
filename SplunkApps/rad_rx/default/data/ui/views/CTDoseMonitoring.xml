@@ -1,0 +1,544 @@
+<form>
+  <label>CT Dose Monitoring</label>
+  <init>
+    <set token="DOSE_INDEX">dose_reports</set>
+    <set token="DEVICE_LUT">device_map.csv</set>
+    <set token="RPD_LUT">rpd_map.csv</set>
+    <set token="AGE_LABEL">Adult</set>
+    <set token="BODYPART_LABEL">Head</set>
+  </init>
+  <search id="base">
+    <query>index=$DOSE_INDEX$ | 
+      dedup AccessionNumber |
+      spath RequestedProcedureDescription |
+      spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+      spath StationName |
+      spath "X-ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" |
+      spath "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" |
+      spath "X-ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total" |
+      spath "X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total" |
+      spath "X-ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" |  
+      spath "X-Ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" |  
+      lookup $DEVICE_LUT$ StationName OUTPUT InstitutionName Modality Location Manufacturer RPDField | 
+      where match(InstitutionName, "$MY_INST$") AND match(StationName, "$MY_STATION$") | 
+      search PatientAge&gt;=$AGE_BOTTOM|s$ AND PatientAge&lt;$AGE_TOP|s$ | 
+      eval name=InstitutionName." ".Location." (".Manufacturer.")" |
+      eval RPD=if(RPDField=="StudyDescription", 
+          StudyDescription, 
+          coalesce(RequestedProcedureDescription, 'ProcedureCodeSequence{}.CodeMeaning', 'RequestAttributesSequence{0}.RequestedProcedureDescription')) |
+      lookup $RPD_LUT$ RPD OUTPUT BodyPart Impact</query>
+    <earliest>$MY_TIME.earliest$</earliest>
+    <latest>$MY_TIME.latest$</latest>
+  </search>
+  <search id="all_abd" base="base">
+    <query>| where BodyPart=="$MY_BODYPART$" |
+      eval RPD=substr(RPD,1,33) |
+      rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" AS acq_type, 
+        "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+      eval x=mvzip(acq_type, mean_CTDIvol, ",") | 
+      mvexpand x | eval x=split(x,",") |
+      eval acq_t=mvindex(x,0) | eval mean_CTDIvol=mvindex(x,1) |
+      search acq_t="Spiral Acquisition" |
+      eval sig_mean_CTDIvol=mean_CTDIvol</query>
+  </search>
+  <search id="essential_abd" base="base">
+    <query>| where BodyPart=="$MY_BODYPART$" AND Impact=="essential" |
+      eval RPD=substr(RPD,1,33) |
+      rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" AS acq_type, 
+        "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+      eval x=mvzip(acq_type, mean_CTDIvol, ",") | 
+      mvexpand x | eval x=split(x,",") |
+      eval acq_t=mvindex(x,0) | eval mean_CTDIvol=mvindex(x,1) |
+      search acq_t="Spiral Acquisition" |
+      eval sig_mean_CTDIvol=mean_CTDIvol</query>
+  </search>
+  <search id="all_abd_spirals" base="all_abd">
+    <query/>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="MY_TIME">
+      <label>Time Range</label>
+      <default>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="MY_AGE" searchWhenChanged="true">
+      <label>Patient Age</label>
+      <choice value="adult">Adult</choice>
+      <choice value="old_pediatric">Pediatric Adolescent</choice>
+      <choice value="young_pediatric">Pediatric Child</choice>
+      <default>adult</default>
+      <change>
+        <condition value="young_pediatric">
+          <set token="AGE_BOTTOM">000Y</set>
+          <set token="AGE_TOP">008Y</set>
+          <set token="AGE_LABEL">$label$</set>
+          <set token="fields.MY_BODYPART">$MY_BODYPART$</set>
+        </condition>
+        <condition value="old_pediatric">
+          <set token="AGE_BOTTOM">007Y</set>
+          <set token="AGE_TOP">018Y</set>
+          <set token="AGE_LABEL">$label$</set>
+          <set token="fields.MY_BODYPART">$MY_BODYPART$</set>
+        </condition>
+        <condition value="adult">
+          <set token="AGE_BOTTOM">018Y</set>
+          <set token="AGE_TOP">199Y</set>
+          <set token="AGE_LABEL">$label$</set>
+          <set token="fields.MY_BODYPART">$MY_BODYPART$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="dropdown" token="MY_BODYPART" searchWhenChanged="true">
+      <label>Body Region</label>
+      <choice value="abdomen">Abdomen Pelvis</choice>
+      <choice value="head">Head</choice>
+      <choice value="chest">Chest</choice>
+      <default>head</default>
+      <change>
+        <condition match="$MY_AGE$==&quot;adult&quot; AND $MY_BODYPART$==&quot;abdomen&quot;">
+          <set token="OUTLIER_THRESH">20</set>
+          <set token="AAPM">25</set>
+          <set token="ACR_MEDIAN">13</set>
+          <set token="ACR_25TH">10</set>
+          <set token="OUTLIER_COLORLUT">[13,20,25,30]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;adult&quot; AND $MY_BODYPART$==&quot;head&quot;">
+          <set token="OUTLIER_THRESH">50</set>
+          <set token="AAPM">75</set>
+          <set token="ACR_MEDIAN">50</set>
+          <set token="ACR_25TH">42</set>
+          <set token="OUTLIER_COLORLUT">[25,40,55,60]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;adult&quot; AND $MY_BODYPART$==&quot;chest&quot;">
+          <set token="OUTLIER_THRESH">20</set>
+          <set token="AAPM">25</set>
+          <set token="ACR_MEDIAN">11</set>
+          <set token="ACR_25TH">8</set>
+          <set token="OUTLIER_COLORLUT">[11,20,25,30]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;old_pediatric&quot; AND $MY_BODYPART$==&quot;abdomen&quot;">
+          <set token="OUTLIER_THRESH">10</set>
+          <set token="AAPM">15</set>
+          <set token="ACR_MEDIAN">5</set>
+          <set token="ACR_25TH">5</set>
+          <set token="OUTLIER_COLORLUT">[2,3,7,14]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;old_pediatric&quot; AND $MY_BODYPART$==&quot;head&quot;">
+          <set token="OUTLIER_THRESH">45</set>
+          <set token="AAPM">60</set>
+          <set token="ACR_MEDIAN">40</set>
+          <set token="ACR_25TH">31</set>
+          <set token="OUTLIER_COLORLUT">[5,15,30,50]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;old_pediatric&quot; AND $MY_BODYPART$==&quot;chest&quot;">
+          <set token="OUTLIER_THRESH">10</set>
+          <set token="AAPM">15</set>
+          <set token="ACR_MEDIAN">5</set>
+          <set token="ACR_25TH">5</set>
+          <set token="OUTLIER_COLORLUT">[2,3,7,14]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;young_pediatric&quot; AND $MY_BODYPART$==&quot;abdomen&quot;">
+          <set token="OUTLIER_THRESH">5</set>
+          <set token="AAPM">15</set>
+          <set token="ACR_MEDIAN">3</set>
+          <set token="ACR_25TH">2</set>
+          <set token="OUTLIER_COLORLUT">[2,3,4,5]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;young_pediatric&quot; AND $MY_BODYPART$==&quot;head&quot;">
+          <set token="OUTLIER_THRESH">30</set>
+          <set token="AAPM">60</set>
+          <set token="ACR_MEDIAN">25</set>
+          <set token="ACR_25TH">20</set>
+          <set token="OUTLIER_COLORLUT">[5,10,25,35]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+        <condition match="$MY_AGE$==&quot;young_pediatric&quot; AND $MY_BODYPART$==&quot;chest&quot;">
+          <set token="OUTLIER_THRESH">5</set>
+          <set token="AAPM">15</set>
+          <set token="ACR_MEDIAN">3</set>
+          <set token="ACR_25TH">2</set>
+          <set token="OUTLIER_COLORLUT">[2,3,4,5]</set>
+          <set token="BODYPART_LABEL">$label$</set>
+        </condition>
+      </change>
+    </input>
+    <input type="dropdown" token="MY_INST">
+      <label>Institution</label>
+      <choice value=".*">all</choice>
+      <change>
+        <condition>
+          <set token="form.MY_STATION">.*</set>
+        </condition>
+      </change>
+      <default>.*</default>
+      <fieldForLabel>InstitutionName</fieldForLabel>
+      <fieldForValue>InstitutionName</fieldForValue>
+      <search>
+        <query>| inputlookup $DEVICE_LUT$ | search Modality="CT" | stats count by InstitutionName</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+    </input>
+    <input type="multiselect" token="MY_STATION">
+      <label>Station</label>
+      <choice value=".*">all</choice>
+      <fieldForLabel>name</fieldForLabel>
+      <fieldForValue>StationName</fieldForValue>
+      <search>
+        <query>| inputlookup $DEVICE_LUT$ | search Modality="CT" | where match(InstitutionName, "$MY_INST$") | eval name=InstitutionName." ".Location." (".Manufacturer.")" | sort name</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <delimiter>|</delimiter>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>All $AGE_LABEL$ $BODYPART_LABEL$ CT Count Piechart</title>
+      <chart>
+        <title>Graph of amount of ct scans of any adult protocols by scanner</title>
+        <search base="all_abd" id="all_abd_by_name">
+          <query>| stats dc(AccessionNumber) AS count BY name</query>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="height">279</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All $AGE_LABEL$ $BODYPART_LABEL$ CT Count</title>
+      <table>
+        <title>Amount of ct scans of any adult protocols by scanner</title>
+        <search base="all_abd_by_name">
+          <query/>
+        </search>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Root $AGE_LABEL$ $BODYPART_LABEL$ CTDI by Scanner</title>
+      <chart>
+        <title>Comparison of CTDI of essential adult abdominal protocols by scanner</title>
+        <search base="essential_abd">
+          <query>| chart eval(round(avg(sig_mean_CTDIvol),1)) over name by RPD</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">260</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Root $AGE_LABEL$ $BODYPART_LABEL$ Count by Scanner</title>
+      <chart>
+        <title>Count of CTDI of essential scans by scanner</title>
+        <search base="essential_abd">
+          <query>| chart dc(AccessionNumber) AS count over name by RPD</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">700</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"count: CT CHEST ONLY W IV CO","count: CT CHEST ONLY WO IV C","count: CT PULMONARY EMBOLISM","count: CTA CHEST W WO IV CON"</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">1</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">246</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All $AGE_LABEL$ $BODYPART_LABEL$ CT by CTDI</title>
+      <chart>
+        <title>All ct scans in ctdi ascending order to view ranking of dose per slice by protocol</title>
+        <search id="all_abd_by_ctdi" base="all_abd">
+          <query>| stats count 
+              min(sig_mean_CTDIvol) as "min CTDIvol"
+              max(sig_mean_CTDIvol) as "max CTDIvol"
+              avg(sig_mean_CTDIvol) as "avg CTDIvol"
+              avg(X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total) as "avg DLP"
+              by RPD | 
+            sort "avg CTDIvol"</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">3000</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"avg DLP",count</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">586</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All $AGE_LABEL$ $BODYPART_LABEL$ CT by CTDI</title>
+      <table>
+        <title>All ct scans in ctdi ascending order to view ranking of dose per slice by protocol</title>
+        <search base="all_abd_by_ctdi">
+          <query/>
+        </search>
+        <option name="count">40</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="avg CTDIvol"></format>
+        <format type="number" field="avg DLP"></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All $AGE_LABEL$ $BODYPART_LABEL$ CT by DLP</title>
+      <chart>
+        <title>All ct spiral scans in dlp ascending order to view dose to patient by protocol</title>
+        <search id="all_abd_by_dlp" base="all_abd">
+          <query>| stats count 
+              min(sig_mean_CTDIvol) as "min CTDIvol"
+              max(sig_mean_CTDIvol) as "max CTDIvol"
+              avg(sig_mean_CTDIvol) as "avg CTDIvol"
+              avg(X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total) as "avg DLP"
+              by RPD | 
+            sort "avg DLP"</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">3000</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"avg DLP",count</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">559</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All $AGE_LABEL$ $BODYPART_LABEL$ CT by DLP</title>
+      <table>
+        <title>All ct spiral scans in dlp ascending order to view dose to patient by protocol</title>
+        <search base="all_abd_by_dlp">
+          <query/>
+        </search>
+        <option name="count">40</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="avg CTDIvol"></format>
+        <format type="number" field="avg DLP"></format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>$AGE_LABEL$ $BODYPART_LABEL$ CT by CTDI with external bechmarks</title>
+      <chart>
+        <title>Max and average ctdi of spiral protocols compared to AAPM and ACR benchmarks</title>
+        <search id="spirals" base="all_abd">
+          <query>| stats count as "spiral count"
+              max(sig_mean_CTDIvol) as "max CTDIvol"
+              avg(sig_mean_CTDIvol) as "avg CTDIvol"
+              by RPD | 
+            sort "avg CTDIvol" |
+            eval AAPM=$AAPM$ |  eval ACRmedian=$ACR_MEDIAN$ | eval ACR25th=$ACR_25TH$</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">500</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.maximumNumber">2000</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">AAPM,ACR25th,ACRmedian,"spiral count"</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">550</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Adult $BODYPART_LABEL$ CT by CTDI with external bechmarks</title>
+      <table>
+        <title>Max and average ctdi of adult abdominal spiral protocols compared to AAPM and ACR benchmarks</title>
+        <search base="spirals">
+          <query/>
+        </search>
+        <option name="count">30</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="avg CTDIvol"></format>
+        <format type="color" field="avg CTDIvol">
+          <colorPalette type="list">[#65A637,#6DB7C6,#F7BC38,#F58F39,#D93F3C]</colorPalette>
+          <scale type="threshold">$OUTLIER_COLORLUT$</scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All Adult $BODYPART_LABEL$ CT Outliers by CTDI with external bechmarks</title>
+      <chart>
+        <title>Potential internal outliers due to spiral ctdi over $OUTLIER_THRESH$ compared to AAPM and ACR benchmarks</title>
+        <search base="spiral_outliers">
+          <query>|  fields - accession scanner</query>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">55</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.maximumNumber">2000</option>
+        <option name="charting.axisY2.scale">linear</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">AAPM,ACR25th,ACRmedian,Accession</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">431</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All Adult $BODYPART_LABEL$ CT Outliers by CTDI with external bechmarks</title>
+      <table>
+        <title>Potential internal outliers due to spiral ctdi over $OUTLIER_THRESH$ compared to AAPM and ACR benchmarks</title>
+        <search base="all_abd" id="spiral_outliers">
+          <query>| eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;$OUTLIER_THRESH$ ) | 
+            where isnotnull(sig_mean_CTDIvol)  |
+            stats count as "spiral count"
+              max(sig_mean_CTDIvol) as "max CTDIvol"
+              avg(sig_mean_CTDIvol) as "avg CTDIvol"
+              values(AccessionNumber) as "accession"
+              values(name) as "scanner"
+              by RPD | 
+            sort - "max CTDIvol" |
+            eval AAPM=$AAPM$ |  eval ACRmedian=$ACR_MEDIAN$ | eval ACR25th=$ACR_25TH$
+          </query>
+        </search>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="number" field="avg CTDIvol"></format>
+        <format type="color" field="max CTDIvol">
+          <colorPalette type="list">[#65A637,#6DB7C6,#F7BC38,#F58F39,#D93F3C]</colorPalette>
+          <scale type="threshold">$OUTLIER_COLORLUT$</scale>
+        </format>
+        <format type="color" field="avg CTDIvol">
+          <colorPalette type="list">[#65A637,#6DB7C6,#F7BC38,#F58F39,#D93F3C]</colorPalette>
+          <scale type="threshold">$OUTLIER_COLORLUT$</scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

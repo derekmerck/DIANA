@@ -1,0 +1,84 @@
+---
+- name: Simple Orthanc Reverse Proxy REST Head, DCM Bridge, and QR Setup
+
+  hosts: localhost
+
+  tasks:
+
+  - name: Setup db container
+    docker_container:
+      name: postgres
+      image: postgres
+      volumes:
+        - "/tmp/pg_data:/var/lib/postgresql/data"
+      ports:
+        - "5432:5432"
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: pgpassword
+
+  - name: "Setup orthanc db in postgres"
+    postgresql_db: "name=archive
+                   state=present
+                   login_host=localhost
+                   port=5432
+                   login_user={{ PG_USER }}
+                   login_password={{ PG_PWORD }}"
+
+  - name: "Setup orthanc user for db in postgres"
+    postgresql_user: "db={{settings.orthanc.db_name}}
+                     name={{credentials.orthanc.db_user}}
+                     password={{credentials.orthanc.db_pword}}
+                     state=present
+                     login_host=localhost
+                     port={{settings.postgres.ports.sql}}
+                     login_user={{credentials.postgres.db_user}}
+                     login_password={{credentials.postgres.db_pword}}"
+
+  - name: Setup orthanc worker {{ item }}
+    docker_container:
+      name: orthanc{{ item }}
+      image: jodogne/orthanc-plugins
+      links: postgres
+      volumes:
+        - "/Users/derek/dev/miip/testing/worker.json:/etc/orthanc/orthanc.json:ro"
+    with_sequence: [0,1,2]
+
+  - name: Setup REST head
+    docker_container:
+      name: rest-head
+      image: nginx
+      links:
+        - orthanc0
+        - orthanc1
+        - orthanc2
+      ports:
+        - "4280:8042"
+      volumes:
+        - "/Users/derek/dev/miip/testing/rest-head.conf:/etc/nginx/nginx.conf:ro"
+
+  - name: Setup DICOM bridge
+    docker_container:
+      name: dcm_bridge
+      image: jodogne/orthanc-plugins
+      links:
+        - postgres
+        - rest_head
+      ports:
+        - "4282:8042"
+        - "4242:4242"
+      volumes:
+        - "/Users/derek/dev/miip/testing/dcm_bridge.json:/etc/orthanc/orthanc.json:ro"
+        - "/Users/derek/dev/miip/testing/dcm_bridge.lua:/var/lib/orthanc/scripts/bridge.lua:ro"
+
+  - name: Setup QR bridge # Intended to be RO for browsing data
+    docker_container:
+      name: qr_bridge
+      image: jodogne/orthanc-plugins
+      links:
+        - postgres
+      ports:
+        - "4281:8042"
+        - "4241:4242"
+      volumes:
+        - "/Users/derek/dev/miip/testing/qr_bridge.json:/etc/orthanc/orthanc.json:ro"

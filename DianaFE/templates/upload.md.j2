@@ -1,0 +1,14 @@
+## {{ short_name or full_name }} Self-Service Imaging Submission Portal
+
+There are two methods for submitting a trial subject's imaging studies:
+
+1. Create a new DICOM node on your local PACS server and push the studies directly.
+    * Address: `dcm.{{ domain }}`
+    * Port: `{{ ports.queue_dicom }}`
+    * AE Title: `{{ study_id | upper }}`
+    <br><br>
+2. Export the study from your local PACS server to a folder, as if you were going to write it to a CD.  Then, log into the **[anonymization queue][anonq]** and upload the files by drag-and-dropping each folders' contents into the interface. 
+
+[anonq]: http://www.{{ domain }}:{{ ports.queue_api }}/app/explorer.html#upload
+
+In both cases, the study will be anonymized and uploaded to central imaging for review.  The enrolling site research admin, central reader, and PI will be notified by email with the assigned GUID and pseudo-identity.

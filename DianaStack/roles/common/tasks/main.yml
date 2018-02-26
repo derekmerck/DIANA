@@ -1,0 +1,60 @@
+---
+- name: install rhel-extra for cent/rhel
+  become: yes
+  command: rpm -iUvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  ignore_errors: yes  # Maybe already installed
+  when: FRESH is defined and (ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat')
+
+#- name: install universe repo for ubuntu
+#  sudo: True
+#  apt_repository: repo='deb http://archive.ubuntu.com/ubuntu/ trusty universe' state=present
+#  when: FRESH is defined #AND ansible_distribution == 'Ubuntu'
+
+# Need to install docker if image doesn't have it
+# https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce-1
+
+# For RHEL this is actually a pain in the rear to get Docker CE installed
+# See https://www.ibm.com/support/knowledgecenter/en/SSBS6K_2.1.0/installing/dockerce_rhel.html
+# And follow instructions _specifically_ for 17.03 (will not work with more recent)
+
+# And add $USER as a user
+# https://docs.docker.com/engine/installation/linux/linux-postinstall/
+# (and may need to log out...)
+
+- name: Install packages
+  package: name={{ item }}
+  become: yes
+  with_items:
+    - git
+    - python-pip
+    - python-psycopg2
+    - python-setuptools
+  when: FRESH is defined
+
+- name: Install pip packages
+  pip: name={{ item }}
+  become: yes
+  with_items:
+    - docker-py
+  when: FRESH is defined
+
+- name: Get dockerhost
+  shell: /sbin/ip route | awk '/docker0/ { print $NF }'
+  register: dockerhost_response
+
+- set_fact:
+    dockerhost_ip:    "{{ dockerhost_response.stdout }}"
+
+- debug:
+    msg: "Setting dockerhost bridge addr: {{ dockerhost_ip }}"
+
+- name: Setup persistent data
+  docker_container:
+    name: data
+    image: busybox
+    state: present
+    volumes:
+      - /var/lib/postgresql/data
+      # - /var/lib/orthanc/db
+      - /opt/splunk/etc
+      - /opt/splunk/var

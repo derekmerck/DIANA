@@ -1,0 +1,65 @@
+---
+# Ansible playbook for standing up a DICOM router
+
+- name: Setup DICOM router
+
+  hosts: cirr2
+
+  vars:
+    # Send a notification to a Slack channel
+    # NOTIFY: True
+
+    credentials:
+      dicom_modalities:
+        sample-modality: ['SAMPLE_AE', 'sample', 104]
+      orthanc_peers:
+        sample-peer: ['sample:4280', 'orthanc', 'passw0rd']
+
+  roles:
+    - role: orthanc
+      tags: router
+      name: peer-router
+      settings:
+        orthanc:
+          ports:
+            dicom: 4105
+            http:  4085
+          destinations:   # Peer destinations are looked up in the orthanc_peer list
+            - type: peer
+              dest: sample-peer
+
+    - role: orthanc
+      tags: router
+      name: dicom-router
+      settings:
+        orthanc:
+          ports:
+            dicom: 4106
+            http:  4086
+          destinations:   # DICOM destinations are looked up in the dicom_peer list
+           - type: dicom
+             dest: sample-modality
+
+    - role: orthanc
+      tags: router
+      name: multiplexer
+      settings:
+        orthanc:
+          ports:
+            dicom: 4107
+            http:  4087
+          destinations:
+            - type: peer
+              dest: peer-router
+            - type: peer
+              dest: dicom-router
+
+#    - role: remote_logging
+
+  post_tasks:
+    - name: Notify Slack that the servers have been updated
+      local_action: >
+        slack
+        token={{ credentials.slack.token }}
+        msg="MIIP DICOM router `{{ inventory_hostname }}` configured"
+      when: NOTIFY is defined and NOTIFY and credentials.slack.token is defined

@@ -1,0 +1,65 @@
+{
+  "Name" : "{{ title }}",
+
+  // Whether or not the password protection is enabled
+  "AuthenticationEnabled" : true,
+
+  // Enable the transparent compression of the DICOM instances
+  "StorageCompression" : {{ _compress_dicom | default(false) | to_json }},
+
+  // The list of the registered users. Because Orthanc uses HTTP
+  // Basic Authentication, the passwords are stored as plain text.
+  "RegisteredUsers" : {
+    "orthanc" : "{{ admin_pw }}"
+  },
+
+  // No underscores allowed!  Use a look ahead to find just the keys
+  "OrthancPeers" :
+     {{ _peers | default({}) | to_nice_json | safe | regex_replace('\_(?=.*": {)', '-')}},
+
+  // If modalities is empty, it seems to break
+  // If port is quoted, it complains about not being an int, so use regex to remove "'s
+  {%  if _modalities | length > 0 %}
+  "DicomModalities":
+     {{ _modalities | to_nice_json | safe | regex_replace('"([0-9]+)"','\\1') }} ,
+  {% endif %}
+
+  {%  if destinations is defined%}
+ "LuaScripts" : [
+      "/etc/orthanc/scripts/autorouter.lua"
+  ],
+  {% endif %}
+
+  "Plugins": [
+    // Uncomment one of the following lines according to your platform.
+    // Update the path to the DLL on your system.  The path is relative to the working folder
+    // Orthanc will start from.  If you are unsure what the working folder is,
+    // use an absolute path
+
+    // [DM] I am using 'disabled' here b/c I can't figure out how to reliably move the
+    // active plugins into the correct directory!
+
+    "/usr/share/orthanc/plugins-disabled/libOsimisWebViewer.so",
+    "/usr/share/orthanc/plugins-disabled/libOrthancPostgreSQLIndex.so"
+  ],
+
+  "WebViewer" : {
+    "StudyDownloadEnabled": true,
+    "VideoDisplayEnabled": true,
+    // Store image annotations made by users as Orthanc Attachment 9999 and
+    // retrieve them automatically each time the viewer is opened.
+    "AnnotationStorageEnabled": true
+  },
+
+  "PostgreSQL": {
+    "EnableIndex": true,
+    "EnableStorage": false,
+    "Host": "postgres",
+    "Port":  5432,
+    "Database": "{{ _db_name }}",
+    "Username": "orthanc",
+    "Password": "{{ orthanc_db_pw }}",
+    "Lock": false
+  }
+
+}

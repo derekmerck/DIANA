@@ -1,0 +1,15 @@
+# `d-mon` config for a single 2-node anonymizer
+# Test against forwarder.yml
+
+tasks:
+  - source:      http://{{ ansible_eth1.ipv4.address }}:8142
+    user:        orthanc
+    password:    {{ orthanc_admin_pw }}
+    dest:        archive1
+    anonymize:   true
+    anon_prefix: "Test 2: "
+    delete_anon: true
+    delete_phi:  true
+
+delay: 2
+

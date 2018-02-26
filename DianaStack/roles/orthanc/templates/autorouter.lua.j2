@@ -1,0 +1,16 @@
+function OnStoredInstance(instanceId, tags, metadata)
+
+    {%- for d in destinations %}
+        {%- if d.type == "dicom" %}
+
+    SendToModality( instanceId, '{{ d.dest }}' )
+
+        {%- elif d.type == "peer" %}
+
+    SendToPeer( instanceId, '{{ d.dest }}' )
+
+        {%- endif %}
+    {%- endfor %}
+
+    Delete(instanceId)
+end

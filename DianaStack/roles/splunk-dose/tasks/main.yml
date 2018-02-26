@@ -1,0 +1,9 @@
+---
+- name: Copy the dose app into the data container
+  command: docker cp /usr/src/DIANA/apps/rad_rx data:/opt/splunk/etc/apps/
+
+# Could do this less aggressively with a reload
+- name: restart splunk
+  command: docker restart splunk
+
+# TODO: Setup d-mon for this and register it with supervisord

@@ -1,0 +1,115 @@
+# Setup Central Imaging DIANA Stack
+# Merck, Fall 2017
+
+# > ansible-playbook -i secrets/my_inventory.yml --vault-password secrets/vault_pw.txt central2_playbook.yml
+
+---
+- name: Setup Central Imaging DIANA Indexer
+
+  tags: indexer
+  hosts: indexer
+
+  vars_files:
+  - secrets/vault.yml
+  - globals.yml
+
+  roles:
+  - role: splunk
+  # !!NEED TO ADD HEC TOKEN BY HAND TO SECRETS!!
+
+- name: Setup Central Imaging Archive
+
+  tags: archive
+  hosts: archive
+
+  vars_files:
+  - secrets/vault.yml
+  - globals.yml
+
+  # Additional required credentials for the archive services
+  vars:
+    orthanc_ci_pw:    "{{ vault_orthanc_ci_pw }}"
+    orthanc_hb_pw:    "{{ vault_orthanc_hb_pw }}"
+    orthanc_p3_pw:    "{{ vault_orthanc_p3_pw }}"
+
+  # ---------------------------
+  # BROWN STUDIES
+  # ---------------------------
+
+  - role:      orthanc
+    title:     Christianson Imaging
+    name:      orthanc_ci
+    api_port:  8045
+    admin_pw:  "{{ orthanc_ci_pw }}"
+
+  - role:      roles/orthanc
+    title:     Christianson Queue
+    name:      orthanc_ci_in
+    api_port:  8145
+    dicom_port: 4145
+    admin_pw:  "{{ orthanc_ci_pw }}"
+    link_peers: yes
+    peers:
+      orthanc_ci:
+        Url:  "http://orthanc_ci:8042"
+        Username: "orthanc"
+        Password: "{{ orthanc_ci_pw }}"
+
+  # ---------------------------
+  # NIH/NETT/SIREN STUDIES
+  # ---------------------------
+
+  - role:      orthanc
+    title:     HOBIT Imaging
+    name:      orthanc_hb
+    api_port:  8046
+    admin_pw:  "{{ orthanc_hb_pw }}"
+
+  - role:      orthanc
+    title:     HOBIT Queue
+    name:      orthanc_hb_in
+    api_port:  8146
+    dicom_port: 4146
+    admin_pw:  "{{ orthanc_hb_pw }}"
+    link_peers: yes
+    peers:
+      orthanc_hb:
+        Url:  "http://orthanc_hb:8042"
+        Username: "orthanc"
+        Password: "{{ orthanc_hb_pw }}"
+
+  - role:      orthanc
+    title:     ProTECT III Imaging
+    name:      orthanc_p3
+    api_port:  8047
+    admin_pw:  "{{ orthanc_p3_pw }}"
+
+  # ---------------------------
+  # SUPPORT SERVICES
+  # ---------------------------
+
+  - role: nginx
+    conf_type: tfe
+    r_proxies:
+      orthanc_ci:
+        path: /christianson/
+        port: 8042
+      orthanc_hb:
+        path: /hobit/
+        port: 8042
+      orthanc_p3:
+        path: /protect3/
+        port: 8042
+
+  - role:        diana-tfe
+    tfe_config:  central2_tfe_cfg.yml
+
+  - role:        diana-monitor
+    dmon_config: central2_dmon_cfg.yml
+
+
+
+
+
+
+

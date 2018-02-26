@@ -1,0 +1,130 @@
+<form>
+  <label>Dose Outliers</label>
+  <description>Review of CT studies with relatively high helical CTDI</description>
+  <init>
+    <set token="DOSE_INDEX">dose_reports</set>
+    <set token="DEVICE_LUT">device_map.csv</set>
+    <set token="RPD_LUT">rpd_map.csv</set>
+    <set token="INCIDENT_INDEX">dose_incidents</set>
+  </init>
+  <search id="update_ticket">
+    <query>| makeresults | eval AccessionNumber="$NEW_ACCESSION_NUMBER$" | $NEW_COMMENT$ eval status="$NEW_STATUS$" | eval reason="$NEW_REASON$" | eval user="$env:user$" | collect index="$INCIDENT_INDEX$"</query>
+    <earliest>0</earliest>
+    <latest></latest>
+  </search>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="text" token="NEW_ACCESSION_NUMBER">
+      <label>Accession Number</label>
+      <initialValue></initialValue>
+    </input>
+    <input type="dropdown" token="NEW_REASON">
+      <label>Reason</label>
+      <choice value="body habitus">body habitus</choice>
+      <choice value="retrospective gating">retrospective gating</choice>
+      <choice value="scanner protocol">scanner protocol</choice>
+      <choice value="technologist education">technologist education</choice>
+      <choice value="combo study">combo study</choice>
+      <choice value="other">other</choice>
+    </input>
+    <input type="text" token="NEW_COMMENT">
+      <label>Comment</label>
+      <default></default>
+      <prefix>eval comment="</prefix>
+      <suffix>" |</suffix>
+    </input>
+    <input type="dropdown" token="NEW_STATUS">
+      <label>Status</label>
+      <choice value="open">open</choice>
+      <choice value="closed">closed</choice>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+      <p>Pressing "submit" updates an incident and audit trail immediately.  You may need to refresh the incident log manually (rollover button at the bottom) to see status updates and new comments.  The same rollover provides a manual download link to create a csv file from the listed events.</p>
+    </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Incident Log</title>
+      <input type="time" token="LOG_TIME" searchWhenChanged="true">
+        <label>Time Range</label>
+        <default>
+          <earliest>-7d@h</earliest>
+          <latest>now</latest>
+        </default>
+      </input>
+      <input type="dropdown" token="LOG_INST" searchWhenChanged="true">
+        <label>Institution</label>
+        <choice value="*">all</choice>
+        <choice value="RIH">RIH</choice>
+        <choice value="TMH">TMH</choice>
+        <choice value="NH">NH</choice>
+        <default>*</default>
+      </input>
+      <input type="dropdown" token="LOG_REASON" searchWhenChanged="true">
+        <label>Reason</label>
+        <choice value="*">all</choice>
+        <choice value="body habitus">body habitus</choice>
+        <choice value="retrospective gating">retrospective gating</choice>
+        <choice value="scanner protocol">scanner protocol</choice>
+        <choice value="technologist education">technologist education</choice>
+        <choice value="combo study">combo study</choice>
+        <default>*</default>
+      </input>
+      <input type="dropdown" token="LOG_STATUS" searchWhenChanged="true">
+        <label>Status</label>
+        <choice value="*">all</choice>
+        <choice value="open">open</choice>
+        <choice value="closed">closed</choice>
+        <default>*</default>
+        <prefix>| search status="</prefix>
+        <suffix>"</suffix>
+      </input>
+      <table>
+        <search id="incident_log">
+          <query>index=$INCIDENT_INDEX$ | 
+stats latest(status) as status values(comment) as comments values(user) as users values(reason) as reason by AccessionNumber
+$LOG_STATUS$ |
+join AccessionNumber [
+    search index=$DOSE_INDEX$ | 
+    dedup AccessionNumber |
+    spath RequestedProcedureDescription |
+    spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+    spath StationName |
+    spath "X-ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" |
+    spath "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" |
+    spath "X-ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total" |
+    spath "X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total" |
+    spath "X-ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" |  
+    spath "X-Ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" |  
+
+    rename _time as study_time |
+
+    eval mean_CTDIvol = coalesce( 'X-ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol', 'X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol')  | 
+    rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Acquisition Type" AS acq_type, "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+    eval "Max CTDI"=max(mean_CTDIvol) |
+
+    rename "X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total" as DLP |
+
+    lookup $DEVICE_LUT$ StationName OUTPUT InstitutionName Modality Location Manufacturer RPDField | 
+    eval RPD=if(RPDField=="StudyDescription", 
+        StudyDescription, 
+        coalesce(RequestedProcedureDescription, 'ProcedureCodeSequence{}.CodeMeaning', 'RequestAttributesSequence{0}.RequestedProcedureDescription')) |
+    lookup $RPD_LUT$ RPD OUTPUT BodyPart Impact |
+    
+    eval Device=Location." (".Manufacturer.")"|
+    table study_time AccessionNumber Device RPD InstitutionName OperatorsName DLP PatientID "Max CTDI"] |
+    rename study_time as _time |
+    sort limit=0 -_time | 
+table _time AccessionNumber PatientID RPD "Max CTDI" DLP InstitutionName Device OperatorsName users reason comments status |
+search InstitutionName="$LOG_INST$" AND reason="$LOG_REASON$" OR comments="$LOG_REASON$"</query>
+          <earliest>$LOG_TIME.earliest$</earliest>
+          <latest>$LOG_TIME.latest$</latest>
+        </search>
+        <option name="count">50</option>
+      </table>
+    </panel>
+  </row>
+</form>

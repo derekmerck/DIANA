@@ -1,0 +1,30 @@
+---
+# Ansible playbook for standing up a single machine clinical and research archive
+
+- name: Setup Clinical and Research Archives
+
+  hosts:
+    - vagrant
+
+  vars:
+    # Wipes DB, useful if rebuilding from scratch after a failed build
+    # ALLOW_CLEAN: True
+
+    # Send a notification to a Slack channel
+    # NOTIFY: True
+
+  vars_files:
+    - secrets.yml  # Credentials
+
+  roles:
+    - { role: orthanc, tags: "orthanc" }
+    - { role: xnat,    tags: "xnat" }
+    - { role: splunk,  tags: "splunk" }
+
+  post_tasks:
+    - name: Notify Slack that the servers have been updated
+      local_action: >
+        slack
+        token={{ credentials.slack.token }}
+        msg="MIIP server `{{ inventory_hostname }}` configured"
+      when: NOTIFY is defined and NOTIFY and credentials.slack.token is defined

@@ -1,0 +1,110 @@
+---
+# Ignore errors here b/c we have modified the configs and added xnat src
+- name: git clone chaselgrove/xnat
+  git: repo=https://github.com/chaselgrove/xnat-docker.git dest=xnat-docker force=no
+  ignore_errors: yes
+
+# Need to do some stuff by hand in xnat-installer, so I forked it and fixed it.
+# See <https://groups.google.com/d/msg/xnat_discussion/BwJ0xNMirF0/eRi1mFmMBwAJ>
+# $ sed -i "/maven.repo.remote=/c\maven.repo.remote=https://nrgxnat.artifactoryonline.com/nrgxnat/xnat-maven1" project.properties
+- name: "Point to forked xnat-installer"
+  replace: >
+    dest=xnat-docker/builder/Dockerfile
+    regexp='RUN git clone .*$'
+    replace='RUN git clone -b derekmerck-patch-1 --single-branch https://github.com/derekmerck/xnat-installer.git'
+
+- name: Create xnat directory
+  file: path=xnat-docker/repo2/xnat  state=directory
+
+- name: Determine if xnat source exists locally
+  local_action: stat path=pkg/xnat-1.6.5.tar.gz
+  register: st
+
+- name: copy xnat src from local
+  copy: >
+    src=pkg/xnat-1.6.5.tar.gz
+    dest=xnat-docker/repo2/xnat/xnat-1.6.5.tar.gz
+  when: st.stat.exists
+
+- name: curl xnat src from nrg
+  get_url: >
+    url=ftp://ftp.nrg.wustl.edu/pub/xnat/xnat-1.6.5.tar.gz
+    dest=xnat-docker/repo2/xnat/xnat-1.6.5.tar.gz
+  when: not st.stat.exists
+
+- name: build xnat-repo
+  docker_image:
+    name: xnat-repo
+    path: xnat-docker/repo2
+    state: present
+
+- name: make xnat-repo available to the builder
+  docker:
+    image: xnat-repo
+    name: xnat-repo
+
+- name: create the xnat-builder template
+  docker_image:
+    name: xnat-builder
+    path: xnat-docker/builder
+    state: present
+
+- name: "Create xnat config"
+  template: src="templates/config.j2" dest="xnat-docker/example/config"
+  register: xnat_config
+
+# May need to build this by hand for some reason (_after_ creating the config file)
+- name: create the image for our instance of xnat
+  command: docker build -t xnat165 xnat-docker/example
+  # when: xnat_config.changed
+#  docker_image:
+#    name: xnat165
+#    path: xnat-docker/example
+#    state: present
+
+- name: "Setup xnat user in postgres"
+  postgresql_user: "name={{credentials.xnat.db_user}}
+                   password={{credentials.xnat.db_pword}}
+                   role_attr_flags=LOGIN,CREATEDB
+                   state=present
+                   login_host=localhost
+                   port={{settings.postgres.ports.sql}}
+                   login_user={{credentials.postgres.db_user}}
+                   login_password={{credentials.postgres.db_pword}}"
+
+- name: "Add host mapped directories"
+  sudo: True
+  file: path={{ item }} state=directory owner={{ansible_user_id}}
+  with_items:
+    - "{{ settings.xnat.paths.logs }}"
+    - "{{ settings.xnat.paths.data }}"
+  ignore_errors: yes  # May already exist
+
+# <ALLOW_CLEAN>
+- name: "Remove xnat db in postgres"
+  postgresql_db: "name={{settings.xnat.db_name}}
+                 state=absent
+                 login_host=localhost
+                 port={{settings.postgres.ports.sql}}
+                 login_user={{credentials.postgres.db_user}}
+                 login_password={{credentials.postgres.db_pword}}"
+  when: xnat_config.changed and clean_xnat is defined and clean_xnat
+
+- name: "Remove xnat home directory"
+  file: path="{{ settings.xnat.paths.data }}/xnat" state=absent
+  when: xnat_config.changed and ALLOW_CLEAN is defined and ALLOW_CLEAN
+# </ALLOW_CLEAN>
+
+- name: run our instance of xnat
+  docker:
+    image: xnat165
+    name: xnat
+    links:
+      - "db:postgres"
+      - "xnat-repo:repo"
+    volumes:
+      - "{{settings.xnat.paths.logs}}:/usr/local/tomcat/webapps/xnat/logs"
+      - "{{settings.xnat.paths.data}}:/data"
+    ports:
+      - "{{settings.xnat.ports.http}}:8080"
+      - "{{settings.xnat.ports.dicom}}:8104"

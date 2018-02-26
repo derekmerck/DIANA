@@ -1,0 +1,7 @@
+pyyaml
+requests
+beautifulsoup4
+pydicom
+numpy
+scipy
+scikit-learn

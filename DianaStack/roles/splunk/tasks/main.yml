@@ -1,0 +1,46 @@
+# IMPORTANT!  If using Splunk, you need at _least_ 1GB of ram
+# Vagrant has only 500MB out of the box
+
+---
+- name: Make sure /var/log/supervisor exists
+  file:
+    path: /var/log/supervisor
+    state: directory
+  become: yes
+
+- name: Make sure {{ mount_pt }} exists
+  file:
+    path: "{{ mount_pt }}"
+    state: directory
+  become:  yes
+  when:    mount_pt is defined
+
+- name: Setup splunk index container
+  docker_container:
+
+    name:  splunk
+    image: splunk/splunk
+    state: started
+
+    ports: ["8000:8000", "8088:8088", "8089:8089", "9997:9997", "514:1514"]
+    volumes: "{{ ['/var/log/supervisor/:/var/log/supervisor/:ro'] if mount_pt is not defined
+                 else ['/var/log/supervisor/:/var/log/supervisor/:ro',
+                       mount_pt + ':' + mount_pt ] }}"
+
+    volumes_from: data
+
+    env:
+      # Answer yes accepts presumptive upgrade
+      SPLUNK_START_ARGS:  "--accept-license --answer-yes"
+
+      # This all works _only_ on a totally fresh install (no upgrade)
+      SPLUNK_CMD:   "edit user admin -password {{ splunk_admin_pw }} -role admin -auth admin:changeme"
+      SPLUNK_CMD_1: "add tcp 1514"
+      SPLUNK_CMD_2: "add index dicom"
+      SPLUNK_CMD_3: "add index diana_svc"
+      SPLUNK_CMD_4: "add index hl7"
+      SPLUNK_CMD_5: "add monitor /var/log/supervisor -index diana_svc"
+      # '{{ "SPLUNK_CMD_6: add monitor -index hl7" if mount_pt is defined }}'
+
+# In order to watch supervisor logs, you need to make them readable by hand
+# chmod +r /var/log/supervisor/*

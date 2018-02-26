@@ -1,0 +1,10 @@
+---
+settings:
+  postgres:
+    ports:
+      sql: 1433
+
+credentials:
+  postgres:
+    db_user: postgres
+    db_pword: passw0rd

@@ -1,0 +1,101 @@
+# Playbook to configure a DICOM Analytics and Archive System (DIANA) on a single host
+# (with a satelite neuro-imaging AIR)
+#
+# See associated diagram.
+#
+# Requires host definitions for "diana-staging", "legacy-archive", "workstation", "bu-pacs", and "neuro-rsch"
+
+----
+- name: dcm-archive
+  hosts: diana-staging
+  vars_files:
+    - secrets.yml
+
+  roles:
+  - role: orthanc
+    name: diana
+    ports: [4240, 4280]
+
+- name: dcm-index
+  hosts: diana-staging
+  vars_files:
+    - secrets.yml
+
+  roles:
+  - role: splunk
+    name: index
+    ports: [8080, 8088, 8089, 8156]
+
+- name: dcm-router
+  hosts: diana-staging
+  vars_files:
+    - secrets.yml
+
+  roles:
+  - role: orthanc
+    tag: forwarder
+    name: diana-q
+    ports: [4241, 4281]
+    destinations: peer:diana
+
+  - role: orthanc
+    tag: forwarder
+    name: workstation-q
+    ports: [4242, 4282]
+    destinations: dcm:workstation
+
+  - role: orthanc
+    tag: forwarder
+    name: bu-pacs-q
+    ports: [4243, 4283]
+    destinations: dcm:bu-pacs
+
+  - role: orthanc
+    tag: forwarder
+    name: multiplexer
+    ports: [4244, 4284]
+    destinations: [peer:diana-q, peer:workstation-q, peer:bu-pacs-q]
+
+- name: dcm-air
+  hosts: neuro-rsch
+  # This is on a separate host: can reuse ports, but need a log forwarder
+  vars_files:
+    - secrets.yml
+
+  roles:
+  - role: orthanc
+    name: neuroimaging
+    ports: [4240, 4280]
+
+  - role: splunk
+    name: neuroimaging-logger
+    tag: forwarder
+    ports: [8080, 8088, 8089, 8156]
+    destination: index
+
+- name: dcm-monitor
+  hosts: diana-staging
+  vars_files:
+    - secrets.yml
+
+  roles:
+  - role: monitor
+    name: copy-tags
+    params:
+      src: diana
+      tag_dest: index
+
+  - role: monitor
+    name: deidentify-neuroimaging
+    script:
+      src: diana
+      im_dest: neuroimaging
+      index: index
+      tag_filter: "age > 30d AND study_type in [IMG001, IMG002, IMG003]"
+      deidentify: true
+
+  - role: monitor
+    name: mirror-legacy
+    script:
+      src: legacy-archive
+      dest: diana

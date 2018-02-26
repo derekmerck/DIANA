@@ -1,0 +1,12 @@
+---
+settings:
+  splunk:
+    ports:
+      http:   9080
+      api:    9083
+      syslog: 9514
+
+credentials:
+  splunk:
+    admin_user: splunk
+    admin_pword: passw0rd

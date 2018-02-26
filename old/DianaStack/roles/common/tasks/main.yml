@@ -1,0 +1,26 @@
+---
+- name: install rhel-extra for cent/rhel
+  sudo: True
+  command: rpm -iUvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
+  ignore_errors: yes  # Maybe already installed
+
+- name: install universe repo for ubuntu
+  sudo: True
+  apt_repository: repo='deb http://archive.ubuntu.com/ubuntu/ trusty universe' state=present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install packages
+  package: name={{ item }}
+  sudo: True
+  with_items:
+    - git
+    - python-pip
+    - python-psycopg2
+    - python-setuptools
+
+- name: install pip packages
+  pip: name={{ item }}
+  sudo: True
+  with_items:
+    - docker-py

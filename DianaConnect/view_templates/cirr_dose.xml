@@ -1,0 +1,617 @@
+<dashboard>
+  <label>Adult Head CT Any Date</label>
+  <row>
+    <panel>
+      <title>All Adult Head CT Count Piechart</title>
+      <chart>
+        <title>Graph of head ct scans by scanner</title>
+        <search>
+          <query>index=dose_reports | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+ search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+  
+  eval RPD=substr(RPD,1,21) |
+
+dedup AccessionNumber  |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+  chart count by StationName</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">700</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"count: CT CHEST ONLY W IV CO","count: CT CHEST ONLY WO IV C","count: CT PULMONARY EMBOLISM","count: CTA CHEST W WO IV CON"</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">1</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All Adult Head CT Count</title>
+      <table>
+        <title>Count statistics of head ct scans by scanner</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+ search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+  
+  eval RPD=substr(RPD,1,21) |
+
+dedup AccessionNumber  |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+  chart count by StationName</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Root Adult Head CTDI by Scanner</title>
+      <chart>
+        <title>CTDI of essential adult head protocols by scanner</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR RPD="CTA BRAIN W WO IV CONTRAST" OR RPD="CTA ELVO HEAD AND NECK" OR RPD="CT BRAIN C-SPINE WO IV CONTRAST" |
+  
+  eval RPD=substr(RPD,1,22) |
+
+dedup AccessionNumber  |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+  chart eval(round(avg(sig_mean_CTDIvol),1)) over StationName by RPD</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">700</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"count: CT CHEST ONLY W IV CO","count: CT CHEST ONLY WO IV C","count: CT PULMONARY EMBOLISM","count: CTA CHEST W WO IV CON"</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">1</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">604</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Root Adult Head Count by Scanner</title>
+      <chart>
+        <title>Count of essential adult head protocols by scanner</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR RPD="CTA BRAIN W WO IV CONTRAST" OR RPD="CTA ELVO HEAD AND NECK" OR RPD="CT BRAIN C-SPINE WO IV CONTRAST" |
+  
+  eval RPD=substr(RPD,1,22) |
+
+dedup AccessionNumber  |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+  chart count over StationName by RPD</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">700</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"count: CT CHEST ONLY W IV CO","count: CT CHEST ONLY WO IV C","count: CT PULMONARY EMBOLISM","count: CTA CHEST W WO IV CON"</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">1</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">604</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All Adult Head CT by CTDI</title>
+      <chart>
+        <title>Head ct scans in ctdi ascending order</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+dedup AccessionNumber  |
+
+  stats count 
+        stdev(sig_mean_CTDIvol) as "stdev CTDIvol"
+        min(sig_mean_CTDIvol) as "min CTDIvol"
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        avg(X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total) as "avg DLP",
+        values(StationName) as "scanner"
+        by RPD | sort "avg CTDIvol"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">130</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">2000</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"avg DLP",count</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">1000</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All Adult Head CT by CTDI</title>
+      <table>
+        <title>Statistics of head ct scans in ctdi ascending order</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+dedup AccessionNumber  |
+
+  stats count 
+        stdev(sig_mean_CTDIvol) as "stdev CTDIvol"
+        min(sig_mean_CTDIvol) as "min CTDIvol"
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        avg(X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total) as "avg DLP",
+        values(StationName) as "scanner"
+        by RPD | sort "avg CTDIvol"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All Adult Head CT by DLP</title>
+      <chart>
+        <title>Head ct scans in dlp ascending order</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+dedup AccessionNumber  |
+
+  stats count 
+        stdev(sig_mean_CTDIvol) as "stdev CTDIvol"
+        min(sig_mean_CTDIvol) as "min CTDIvol"
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        avg(X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total) as "avg DLP",
+        values(StationName) as "scanner"
+        by RPD | sort "avg DLP"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">130</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.axisY2.maximumNumber">2000</option>
+        <option name="charting.axisY2.scale">log</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">"avg DLP",count</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">1000</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All Adult Head CT by DLP</title>
+      <table>
+        <title>Statistics of head ct scans in dlp ascending order</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+dedup AccessionNumber  |
+
+  stats count 
+        stdev(sig_mean_CTDIvol) as "stdev CTDIvol"
+        min(sig_mean_CTDIvol) as "min CTDIvol"
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        avg(X-Ray Radiation Dose Report.CT Accumulated Dose Data.CT Dose Length Product Total) as "avg DLP",
+        values(StationName) as "scanner"
+        by RPD | sort "avg DLP"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All Adult Head CT by CTDI with external bechmarks</title>
+      <chart>
+        <title>Max and average head ctdi compared to AAPM and ACR benchmarks</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+eval RPD=substr(RPD,1,22) |
+
+dedup AccessionNumber  |
+
+  stats count 
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        values(StationName) as "scanner"
+        by RPD | sort "avg CTDIvol"
+        
+        | eval AAPM=75 |  eval ACRmedian=50 | eval ACR25th=42 |</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.maximumNumber">2000</option>
+        <option name="charting.axisY2.scale">linear</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">AAPM,ACR25th,ACRmedian,count</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">793</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All Adult Head CT by CTDI with external bechmarks</title>
+      <table>
+        <title>Max and average head ctdi compared to AAPM and ACR benchmarks</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81.0) | 
+
+eval RPD=substr(RPD,1,22) |
+
+dedup AccessionNumber  |
+
+  stats count 
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        values(StationName) as "scanner"
+        by RPD | sort "avg CTDIvol"
+        
+        | eval AAPM=75 |  eval ACRmedian=50 | eval ACR25th=42 |</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>All Adult Head CT Outliers by CTDI with external bechmarks</title>
+      <chart>
+        <title>Head ctdi over 50 compared to AAPM and ACR benchmarks</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+  
+  eval RPD=substr(RPD,1,22) |
+
+dedup AccessionNumber  |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81) | 
+  
+  where sig_mean_CTDIvol &gt; 50 |
+  stats count 
+
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        values(AccessionNumber) as "Accession"
+        by RPD | sort "avg CTDIvol"
+        
+        | eval AAPM=75 |  eval ACRmedian=50 | eval ACR25th=42 |</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-90</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.maximumNumber">110</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.maximumNumber">2000</option>
+        <option name="charting.axisY2.scale">linear</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.overlayFields">AAPM,ACR25th,ACRmedian,Accession</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">top</option>
+        <option name="height">530</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>All Adult Head CT Outliers by CTDI with external bechmarks</title>
+      <table>
+        <title>Head ctdi over 50 compared to AAPM and ACR benchmarks</title>
+        <search>
+          <query>index=dose_reports  | 
+  spath RequestedProcedureDescription |
+  spath RequestAttributesSequence{0}.RequestedProcedureDescription |
+  search  PatientAge&gt;"017Y" AND PatientAge&lt;"111Y" | 
+  eval RPD=if(StationName=="rih2" OR StationName=="rzrih3", StudyDescription, coalesce(RequestedProcedureDescription, 'RequestAttributesSequence{0}.RequestedProcedureDescription'))  |
+  
+  search RPD="CT BRAIN ACUTE STROKE" OR "CT BRAIN C-SPINE WO IV CONTRAST" OR "CT BRAIN CISTERNOGRAM W IV CONTRAST" OR "CT BRAIN FACE C-SPINE WO IV CONTRAST" OR "CT BRAIN FACE WO IV CONTRAST" OR "CT BRAIN GAMMA KNIFE" OR "CT BRAIN W IV CONTRAST" OR "CT BRAIN W WO IV CONTRAST" OR "CT BRAIN WO IV CONTRAS" OR "CT BRAIN WO IV CONTRAST" OR "CT FACE W IV CONTRAST" OR "CT FACE WO IV CONTRAST" OR "CT ORBITS W IV CONTRAST" OR "CT ORBITS WO IV CONTRAST" OR "CT SINUS W IV CONTRAST" OR "CT SINUS WO IV CONTRAST" OR "CT SURGICAL 3D HEAD AND FACE WO IV CONT" OR "CT TEMPORAL BONE W IV CONTRAST" OR "CT TEMPORAL BONE WO IV CONTRAST" OR "CTA BRAIN AND NECK W WO IV CONTRAST" OR "CTA BRAIN W WO IV CONTRAST" OR "CTA ELVO HEAD AND NECK" OR "Head NC_BRAIN (Adult)" |
+  
+  eval RPD=substr(RPD,1,22) |
+
+dedup AccessionNumber  |
+
+  rename "X-Ray Radiation Dose Report.CT Acquisition{}.CT Dose.Mean CTDIvol" AS mean_CTDIvol | 
+  `comment("Filter out low dose scouts, so stats are over only significant values")` 
+  eval sig_mean_CTDIvol=mvfilter(mean_CTDIvol&gt;"1.5" AND mean_CTDIvol&lt;81) | 
+  
+  where sig_mean_CTDIvol &gt; 50 |
+  stats count 
+ values(StationName) as "Scanner"
+        max(sig_mean_CTDIvol)  as "max CTDIvol"
+        avg(sig_mean_CTDIvol) as "avg CTDIvol"
+        values(AccessionNumber) as "Accession"
+        by RPD | sort "avg CTDIvol"
+        
+        | eval AAPM=75 |  eval ACRmedian=50 | eval ACR25th=42 |</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>
