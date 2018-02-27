@@ -1,10 +1,12 @@
 # ![logo](static/appIconAlt_2x.png) Rad Rx
 
-Derek Merck <derek_merck@brown.edu>, Brown University and Rhode Island Hospital  
-Scott Collins, Rhode Island Hospital  
-Karen Laurie, The Miriam Hospital  
+Derek Merck <derek_merck@brown.edu>  
+Scott Collins  
+Karen Laurie  
+Brown University, Rhode Island Hospital, and the Miraiam Hospital  
+Winter 2018
 
-<https://github.com/derekmerck/DIANA/tree/master/apps/rad_rx>
+<https://github.com/derekmerck/DIANA/tree/master/SplunkApps/rad_rx>
 
 
 ## Overview

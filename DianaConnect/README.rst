@@ -1,9 +1,13 @@
-DIANA-connect/Tithonus/CopyDICOM
-================================
+DIANA-connect
+=============
 
-`Derek Merck <email:derek_merck@brown.edu>`__
+| Derek Merck derek_merck@brown.edu
+| Brown University and Rhode Island Hospital
+| Winter 2018
 
-https://github.com/derekmerck/CopyDICOM
+https://github.com/derekmerck/DIANA/tree/master/DianaConnect
+
+Also sometimes named Tithonus or CopyDICOM
 
 Overview
 --------

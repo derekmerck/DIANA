@@ -1,17 +1,19 @@
 # DICOM Analytics and Archive (DIANA)
 
 Derek Merck <derek_merck@brown.edu>  
+Brown University and Rhode Island Hospital  
 Winter 2018
 
 <https://www.github.com/derekmerck/DIANA>
 
 ## Includes
 
-- DIANA-stack - Ansible service configuration
-- DIANA-connect - Connectivity scripts and monitors
-- DIANA-frontend - DIANA front end interface for trial data management
-- DixelKit - DICOM element ("dixel") interconnectivity library
-- GUIDMint - Clever anonymization rules for deidentification
+- DIANA-stack - Flexible Ansible service configuration
+- DIANA-connect - Connectivity and monitoring scripts
+- DIANA-frontend - Simple DIANA front end interface for trial data management
+- DixelKit - DICOM element ("dixel") service interface library (Orthanc, Montage, Splunk)
+- GUIDMint - Clever anonymization and hashing rules for subject deidentification
+- RadRX - Splunk app for CT dose monitoring
 
 ## Dependencies
 

@@ -1,7 +1,4 @@
-.. DIANA documentation master file, created by
-   sphinx-quickstart on Sun Feb 25 20:01:41 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. important:: Documentation is in an inconsistent state and is being caught up.
 
 .. include:: ../README.rst
 

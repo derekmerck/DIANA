@@ -2,6 +2,9 @@
 
 Derek Merck <derek_merck@brown.edu>  
 Brown University and Rhode Island Hospital  
+Winter 2018
+
+<https://www.github.com/derekmerck/DIANA/tree/master/DianaStack> 
 
 
 ## Dependencies

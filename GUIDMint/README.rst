@@ -1,9 +1,11 @@
 GUIDMint
 ========
 
-`Derek Merck <email:derek_merck@brown.edu>`__
+| Derek Merck derek_merck@brown.edu
+| Brown University and Rhode Island Hospital
+| Winter 2018
 
-https://github.com/derekmerck/diana/apps/guid-mint
+https://github.com/derekmerck/diana/tree/master/SplunkApps/GUIDMint
 
 Overview
 --------

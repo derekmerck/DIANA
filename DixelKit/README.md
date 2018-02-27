@@ -1,5 +1,10 @@
-DixelKit
-====================
+# DixelKit
+
+Derek Merck <derek_merck@brown.edu> 
+Brown University and Rhode Island Hospital 
+Winter 2018
+
+<https://www.github.com/derekmerck/DIANA/tree/master/DixelKit>
 
 DICOM image objects may be represented in _many_ different ways across
 [DIANA](https//www.github.com/derekmerck/DIANA)):  as `.dcm` files, as URLs 
