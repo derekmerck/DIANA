@@ -34,8 +34,8 @@ def readme2rst():
         subprocess.call(['/usr/local/bin/pandoc',
                          '--from=markdown',
                          '--to=rst',
-                         '--output=./{}/_README.rst'.format(r),
-                         './{}/README.MD'.format(r)])
+                         '--output=../{}/_README.rst'.format(r),
+                         '../{}/README.MD'.format(r)])
 
 if __name__ == "__main__":
 
