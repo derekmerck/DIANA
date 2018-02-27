@@ -1,0 +1,15 @@
+pyyaml
+markdown
+splunk-sdk
+aenum
+numpy
+bokeh
+flask
+scipy
+scikit-learn
+pydicom
+requests
+beautifulsoup4
+jinja2
+python-magic
+python-dateutil

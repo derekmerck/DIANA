@@ -303,6 +303,9 @@ class OrthancProxy(Orthanc):
             url = '{0}/queries/{1}/answers'.format(self.url, dixel.meta['QID'])
             r = self.do_get(url)
 
+            if r.status_code != 200:
+                return dixel
+
             answers = r.json()
 
             if len(answers)>1:

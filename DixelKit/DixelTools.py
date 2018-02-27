@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from dateutil import parser as dateutil_parser
 from bs4 import BeautifulSoup   # For report anonymization
 import pickle
-from Dixel import *
+from Dixel import Dixel, DicomLevel
 from pprint import pformat
 
 from StructuredTags import simplify_tags
