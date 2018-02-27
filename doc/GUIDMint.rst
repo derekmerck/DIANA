@@ -1,5 +1,5 @@
 
-.. include:: ../GUIDMint/_README.rst
+.. include:: ../GUIDMint/README.rst
 
 API
 -------------

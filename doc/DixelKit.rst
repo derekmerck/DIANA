@@ -1,5 +1,5 @@
 
-.. include:: ../DixelKit/_README.rst
+.. include:: ../DixelKit/README.rst
 
 API
 -------------

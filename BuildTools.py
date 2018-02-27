@@ -7,6 +7,7 @@ module_paths = [
     'DianaConnect',
     'DianaFE',
     'DixelKit',
+    'DianaStack',
     'GUIDMint',
     'SplunkApps/rad_rx'
 ]
@@ -30,12 +31,14 @@ def consolidate_reqs():
 
 def readme2rst():
     for r in module_paths:
-        logging.debug('/usr/local/bin/pandoc')
-        subprocess.call(['/usr/local/bin/pandoc',
+
+        cmd = ['/usr/local/bin/pandoc',
                          '--from=markdown',
                          '--to=rst',
-                         '--output=../{}/_README.rst'.format(r),
-                         '../{}/README.MD'.format(r)])
+                         '--output=./{}/README.rst'.format(r),
+                         './{}/README.md'.format(r)]
+        logging.debug(" ".join(cmd))
+        subprocess.call(cmd)
 
 if __name__ == "__main__":
 

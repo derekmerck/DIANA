@@ -1,5 +1,5 @@
 
-.. include:: ../DianaConnect/_README.rst
+.. include:: ../DianaConnect/README.rst
 
 Scripts
 -------------

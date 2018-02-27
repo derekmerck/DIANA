@@ -1,2 +1,2 @@
 
-.. include:: ../SplunkApps/rad_rx/_README.rst
+.. include:: ../SplunkApps/rad_rx/README.rst

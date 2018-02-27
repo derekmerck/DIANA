@@ -1,2 +1,2 @@
 
-.. include:: ../DianaStack/_README.rst
+.. include:: ../DianaStack/README.rst

@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. include:: ../_README.rst
+.. include:: ../README.rst
 
 Components
 -------------------
@@ -20,6 +20,7 @@ Components
    RadRx.rst
 
 * Examples
+
   * Monitor dose reports
   * Random subject names
 
