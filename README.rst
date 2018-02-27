@@ -53,7 +53,7 @@ Ansible scripts for reproducible configurations
 -  data index and forwarding (Splunk)
 
 DIANA-connect
--------------
+~~~~~~~~~~~~~
 
 Python gateway API's for scripting indexing or data transfer jobs.
 
@@ -64,7 +64,7 @@ Python gateway API's for scripting indexing or data transfer jobs.
 -  ``get_studies`` (build secondary image registries)
 
 DIANA-frontend
---------------
+~~~~~~~~~~~~~~
 
 Provides a very simple front end html framework for listing available
 trial resources.
