@@ -30,6 +30,9 @@ def consolidate_reqs():
 
 
 def readme2rst():
+    """
+    External package requirement `pandoc`
+    """
     for r in module_paths:
 
         cmd = ['/usr/local/bin/pandoc',

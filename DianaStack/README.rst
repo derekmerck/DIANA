@@ -10,10 +10,18 @@ https://www.github.com/derekmerck/DIANA/tree/master/DianaStack
 Dependencies
 ------------
 
+Python Package Requirements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 -  `Python <http://www.python.org>`__ 2.7.11+ for scripting
+-  `Ansible <http://www.ansible.com>`__ for service orchestration
+-  `pyyaml <http://pyyaml.org>`__
+-  `jinja2 <http://jinja.pocoo.org>`__
+
+External Requirements
+~~~~~~~~~~~~~~~~~~~~~
+
 -  `Docker <http://www.docker.com>`__ for service virtualization
--  `Ansible <http://www.ansible.com>`__, `pyyaml <http://pyyaml.org>`__,
-   `jinja2 <http://jinja.pocoo.org>`__ for service orchestration
 -  `Orthanc <http://www.orthanc-server.com>`__ for DICOM storage and
    bridging DICOM to REST
 -  `Postgresql <http://www.postgresql.org>`__ 9.5+ for scalable Orthanc

@@ -26,15 +26,7 @@ A DixelStorage is an inventory of dixels that supports CRUD access (put,
 read/get/copy, update, delete).  Implemented DixelStorages include: `.dcm` files,
 Orthanc (open source PACS), Splunk (meta data index), and Montage (report text)
 
-
-## Instalation
-
-`$ pip install http://github.com/derekmerck/DixelKit`
-
-or 
-
-`$ git clone http://github.com/derekmerck/DixelKit`
-
+## Dependencies
 
 ### Python package requirements
 
@@ -57,6 +49,18 @@ or
   `$ brew install libmagic` on OSX  (typically pre-installed on Linux)
 
 [Grassroots DICOM]: http://gdcm.sourceforge.net/wiki/index.php/Main_Page
+
+
+## Instalation
+
+`$ pip install http://github.com/derekmerck/DixelKit`
+
+or 
+
+`$ git clone http://github.com/derekmerck/DixelKit`
+
+
+
 
 ## Usage
 

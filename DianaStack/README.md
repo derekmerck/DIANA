@@ -9,9 +9,16 @@ Winter 2018
 
 ## Dependencies
 
+### Python Package Requirements
+
 - [Python][] 2.7.11+ for scripting
+- [Ansible][] for service orchestration
+- [pyyaml][]
+- [jinja2][]
+
+### External Requirements
+
 - [Docker][] for service virtualization
-- [Ansible][], [pyyaml][], [jinja2][] for service orchestration
 - [Orthanc][] for DICOM storage and bridging DICOM to REST
 - [Postgresql][] 9.5+ for scalable Orthanc backend
 - [Splunk][] 6.6+ for data indexing
@@ -27,9 +34,7 @@ Winter 2018
 [ansible]:http://www.ansible.com
 
 
-
 ## Use Cases
-
 
 ### DIANA for Mass DICOM Archive
 

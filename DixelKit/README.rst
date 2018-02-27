@@ -25,14 +25,8 @@ read/get/copy, update, delete). Implemented DixelStorages include:
 ``.dcm`` files, Orthanc (open source PACS), Splunk (meta data index),
 and Montage (report text)
 
-Instalation
------------
-
-``$ pip install http://github.com/derekmerck/DixelKit``
-
-or
-
-``$ git clone http://github.com/derekmerck/DixelKit``
+Dependencies
+------------
 
 Python package requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,6 +50,15 @@ External requirements
    ``$ apt-get install libgcdm-tools`` on Debian \*\*
 -  File magic (``libmagic``) for file typing
    ``$ brew install libmagic`` on OSX (typically pre-installed on Linux)
+
+Instalation
+-----------
+
+``$ pip install http://github.com/derekmerck/DixelKit``
+
+or
+
+``$ git clone http://github.com/derekmerck/DixelKit``
 
 Usage
 -----

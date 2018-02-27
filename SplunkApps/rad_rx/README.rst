@@ -4,7 +4,7 @@
 | Derek Merck derek_merck@brown.edu
 | Scott Collins
 | Karen Laurie
-| Brown University, Rhode Island Hospital, and the Miraiam Hospital
+| Brown University, Rhode Island Hospital, and the Miriam Hospital
 | Winter 2018
 
 https://github.com/derekmerck/DIANA/tree/master/SplunkApps/rad_rx

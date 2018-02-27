@@ -4,21 +4,8 @@ Derek Merck <derek_merck@brown.edu>
 Brown University and Rhode Island Hospital  
 Winter 2018
 
-<https://www.github.com/derekmerck/DIANA>
-
-## Includes
-
-- DIANA-stack - Flexible Ansible service configuration
-- DIANA-connect - Connectivity and monitoring scripts
-- DIANA-frontend - Simple DIANA front end interface for trial data management
-- DixelKit - DICOM element ("dixel") service interface library (Orthanc, Montage, Splunk)
-- GUIDMint - Clever anonymization and hashing rules for subject deidentification
-- RadRX - Splunk app for CT dose monitoring
-
-## Dependencies
-
-- Python 2.7
-- Many extensions
+Source: <https://www.github.com/derekmerck/DIANA>  
+Documentation: <https://diana.readthedocs.io>
 
 
 ## Overview
@@ -33,57 +20,63 @@ It is similar to [XNAT][] in providing DICOM services, image data indexing, REST
 [XNAT]:  http://www.xnat.org
 
 
+## Dependencies
+
+- Python 2.7
+- Many extensions, see individual packages
+
+
 ## Components
 
-
 ### DIANA-stack
-Ansible scripts for reproducible configurations
+Ansible scripts for flexible, reproducible DICOM service configurations.
 
 * DICOM image archives and routing (Orthanc)
-* data index and forwarding (Splunk)
+* Data indexing and forwarding (Splunk)
 
 
 ### DIANA-connect
-Python gateway API's for scripting indexing or data transfer jobs.
+Python scripts for data monitoring and transfer jobs.
 
-* `update_index`
-* `pacs_crawler`
-* `montage_crawler`
-* `find_studies` (identify image populations)
-* `get_studies` (build secondary image registries)
+* Update data indices with DICOM tag information
+* Monitor available studies in PACS
+* Build secondary image registries
+* Identify image populations
+* Automatic deidentification
 
 
 ### DIANA-frontend
+A simple, dynanmically configured DIANA front-end html interface for accessing available imaging trial resources.
 
-Provides a very simple front end html framework for listing available trial resources.
-
-Built dynamically from a `services.yml` document.
+Reference implementation at <http://www.central-imaging.com/>
 
 
 ### DIANA-splunk
 Splunk apps and dashboards for informatics and data review
 
-* DIANA-status (DIANA services introspection)
-* [rad_rx](/apps/rad_rx) (DICOM SRDR)
-* workload (hl7)
+* DIANA-status: DIANA services introspection
+* RadRx: DICOM structured dose record monitoring
+* RadFlow: hl7 feed analysis and radiologist workload balancing
+* RadClf: Radiology report NLP classification
 
 
 ### DixelKit
+DICOM element ("dixel") wrapper classes for for [Orthanc][], [Montage][], [Splunk][], and files on disk.
 
-Tools for working with arbitrary representations of DICOM objects (level, tags, file data)
+[Orthanc]: https://orthanc.chu.ulg.ac.be
+[Splunk]: https://www.splunk.com
+[Montage]: https://www.nuance.com/healthcare/medical-imaging/mpower-clinical-analytics.html
 
 
 ### GUIDMint
+Flexible, reproducible anonymization and hashing schemes and canonical ID server.
 
 
 ### muDIANA
-Extensions supporting high-throughput microscopy data and image analytics and archive
+(Planned)  Extensions supporting high-throughput microscopy data and image analytics and archive
 
-* Monitoring for Phenix Opera logs
-* Read spreadsheets of data properties
+* Monitoring for microscopy use logs
 * Post-processing including ROI cropping and 3D CLAHE
-* Use disk compressed storage b/c of all the zeros
-* get_samples Find sample cores in each well, extract ROI on pull
 
 
 ## License

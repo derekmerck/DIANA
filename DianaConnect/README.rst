@@ -12,17 +12,17 @@ Also sometimes named Tithonus or CopyDICOM
 Overview
 --------
 
-``CopyDICOM`` is a python script that monitors an installation of
-Jodogne's `Orthanc <https://orthanc.chu.ulg.ac.be>`__ and copies DICOM
-imaging to another instance of Orthanc or DICOM tags to a
+``DIANA-connect`` is a set of python scripts that can monitor an
+installation of Jodogne's `Orthanc <https://orthanc.chu.ulg.ac.be>`__
+and copy DICOM imaging to another instance of Orthanc or DICOM tags to a
 `Splunk <https://www.splunk.com>`__ index. It can also reduce DICOM
 structured report tags into a format following Orthanc's
 'simplified-tags' presentation. This can be useful for parsing data from
 dose reports in a tag index.
 
-``CopyDICOM`` is intended to be used as an adjunct with an automatic
+``DIANA-connect`` is intended to be used as an adjunct with an automatic
 DICOM data analytics framework, specifically
-`DIANA <https://github.com/derekmerck/miip>`__, but it works well as a
+`DIANA <https://github.com/derekmerck/DIANA>`__, but it works well as a
 stand alone tool, with somewhat more intelligent copying than Orthanc's
 standard ``Replicate.py`` script. In particular, it does not attempt to
 replicate data that is already extant at the destination, and working
@@ -68,8 +68,8 @@ To use it as a Python library in a script:
 
 .. code:: python
 
-    >>> import CopyDICOM
-    >>> CopyDICOM.replicate(src='http://orthanc:orthanc@localhost:8042', dest='http://orthanc:orthanc@localhost:8043')
+    >>> import DianaConnect
+    >>> DianaConnect.replicate(src='http://orthanc:orthanc@localhost:8042', dest='http://orthanc:orthanc@localhost:8043')
 
 Functionality
 -------------

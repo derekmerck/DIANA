@@ -10,14 +10,14 @@ Also sometimes named Tithonus or CopyDICOM
 
 ## Overview
 
-`CopyDICOM` is a python script that monitors an installation of Jodogne's [Orthanc][] and copies DICOM imaging to another instance of Orthanc or DICOM tags to a [Splunk][] index.  It can also reduce DICOM structured report tags into a format following Orthanc's 'simplified-tags' presentation.  This can be useful for parsing data from dose reports in a tag index.
+`DIANA-connect` is a set of python scripts that can monitor an installation of Jodogne's [Orthanc][] and copy DICOM imaging to another instance of Orthanc or DICOM tags to a [Splunk][] index.  It can also reduce DICOM structured report tags into a format following Orthanc's 'simplified-tags' presentation.  This can be useful for parsing data from dose reports in a tag index.
 
-`CopyDICOM` is intended to be used as an adjunct with an automatic DICOM data analytics framework, specifically [DIANA][], but it works well as a stand alone tool, with somewhat more intelligent copying than Orthanc's standard `Replicate.py` script.  In particular, it does not attempt to replicate data that is already extant at the destination, and working with a tag index, it can selectively copy subsets of image data based on complex queries.
+`DIANA-connect` is intended to be used as an adjunct with an automatic DICOM data analytics framework, specifically [DIANA][], but it works well as a stand alone tool, with somewhat more intelligent copying than Orthanc's standard `Replicate.py` script.  In particular, it does not attempt to replicate data that is already extant at the destination, and working with a tag index, it can selectively copy subsets of image data based on complex queries.
  
- [Orthanc]: https://orthanc.chu.ulg.ac.be
- [DICOM]: http://dicom.nema.org
- [Splunk]: https://www.splunk.com
- [DIANA]: https://github.com/derekmerck/miip
+[DICOM]: http://dicom.nema.org
+[Orthanc]: https://orthanc.chu.ulg.ac.be
+[Splunk]: https://www.splunk.com
+[DIANA]: https://github.com/derekmerck/DIANA
 
 
 ## Dependencies
@@ -57,8 +57,8 @@ $ python CopyDICOM.py conditional_replicate \
 To use it as a Python library in a script:
 
 ```python
->>> import CopyDICOM
->>> CopyDICOM.replicate(src='http://orthanc:orthanc@localhost:8042', dest='http://orthanc:orthanc@localhost:8043')
+>>> import DianaConnect
+>>> DianaConnect.replicate(src='http://orthanc:orthanc@localhost:8042', dest='http://orthanc:orthanc@localhost:8043')
 ````
 
 
