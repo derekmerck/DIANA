@@ -14,7 +14,7 @@ Also sometimes named Tithonus or CopyDICOM
 
 `DIANA-connect` is intended to be used as an adjunct with an automatic DICOM data analytics framework, specifically [DIANA][], but it works well as a stand alone tool, with somewhat more intelligent copying than Orthanc's standard `Replicate.py` script.  In particular, it does not attempt to replicate data that is already extant at the destination, and working with a tag index, it can selectively copy subsets of image data based on complex queries.
  
-[DICOM]: http://dicom.nema.org
+[DICOM]: http://www.dicomstandard.org/
 [Orthanc]: https://orthanc.chu.ulg.ac.be
 [Splunk]: https://www.splunk.com
 [DIANA]: https://github.com/derekmerck/DIANA

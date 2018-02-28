@@ -16,9 +16,9 @@ suited for "big data" analysis. It is difficult to identify and extract
 datasets in bulk, and moreover, high resolution data is often not even
 stored in the clinical systems.
 
-**DIANA** is a `DICOM <http://dicom.nema.org>`__ imaging informatics
-platform that can be attached to the clinical systems with a very small
-footprint, and then tuned to support a range of tasks from
+**DIANA** is a `DICOM <http://www.dicomstandard.org/>`__ imaging
+informatics platform that can be attached to the clinical systems with a
+very small footprint, and then tuned to support a range of tasks from
 high-resolution image archival to cohort discovery to radiation dose
 monitoring.
 
@@ -62,7 +62,7 @@ DIANA-frontend
 A simple, dynanmically configured DIANA front-end html interface for
 accessing available imaging trial resources.
 
-Reference implementation at http://www.centralimaging.com/
+Reference implementation at http://www.central-imaging.com/
 
 DIANA-splunk
 ~~~~~~~~~~~~

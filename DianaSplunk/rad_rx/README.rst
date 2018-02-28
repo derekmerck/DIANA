@@ -17,11 +17,11 @@ dashboards for radiation dose monitoring from DICOM structured reports
 and a simple incident ticketing system.
 
 It is intended to be used with
-`DIANA-connect <https://github.com/derekmerck/DIANA/tree/master/connect>`__,
+`DIANA-connect <https://github.com/derekmerck/DIANA/tree/master/DianaConnect>`__,
 a set of python scripts that can monitor an installation of Jodogne's
 `Orthanc <https://orthanc.chu.ulg.ac.be>`__ and copy
-`DICOM <http://dicom.nema.org>`__ structured report tags to a Splunk
-index.
+`DICOM <http://www.dicomstandard.org/>`__ structured report tags to a
+Splunk index.
 
 Dependencies
 ------------

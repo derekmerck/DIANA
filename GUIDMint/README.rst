@@ -36,10 +36,10 @@ To use it as a Python library:
 
 .. code:: python
 
-    >>> from GUIDMint import GUIDMint
-    >>> mint = GUIDMint()
+    >>> import GUIDMint
+    >>> mint = GUIDMint.PseudoMint()
     >>> mint.mint_guid( "MERCK^DEREK^L" )
-    BEW6DDOU
+    u'BEW6DDOUE2IV237F'
 
 To create a local server instance:
 
@@ -95,10 +95,9 @@ Pseudonyms
 | Any string beginning with at least 3 (capitalized) alphabetic
   characters can be used to reproducibly generate a `"John
   Doe" <http://en.wikipedia.org/wiki/John_Doe>`__ style placeholder name
-  in DICOM patient name format (\`last:sup:`first`\ middle). This is
-  very useful for alphabetizing subject name lists according to generic
-  ID and for referencing anonymized data sets according to memorable
-  names.
+  in DICOM patient name format (``last^first^middle``). This is very
+  useful for alphabetizing subject name lists according to generic ID
+  and for referencing anonymized data sets according to memorable names.
 
 Generation method:
 

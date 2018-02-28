@@ -5,6 +5,7 @@ import dateutil.parser
 import csv
 
 from flask import Flask, render_template, Markup, abort
+from flask_httpauth import HTTPBasicAuth
 import markdown
 from jinja2 import FileSystemLoader, Environment
 import yaml
@@ -12,13 +13,11 @@ from bokeh.plotting import figure, output_file, show
 from bokeh.embed import components
 from splunklib import client
 
-from flask_httpauth import HTTPBasicAuth
-
 # In case DIANA is being run from folders
-sys.path.append('../../../DIANA')
-from utilities.GUIDMint import Get_a_GUID
+sys.path.append('../')
+from GUIDMint import Get_a_GUID
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 app = Flask(__name__)
 app.register_blueprint(Get_a_GUID.api_bp, url_prefix='/guid')
@@ -137,20 +136,23 @@ def prerender(config_file):
 
     return config, pages
 
-config_file = os.environ['tfe_config']
+config_file = os.environ['dfe_config']
 config, pages = prerender(config_file)
 
-splunk_host = os.environ['splunk_host']
-splunk_password = os.environ['splunk_password']
+if os.environ.get('splunk_host'):
+    splunk_host = os.environ['splunk_host']
+    splunk_password = os.environ['splunk_password']
 
-# Create a splunk service instance and log in
-splunk = client.connect(host=splunk_host,
-                        port=8089,
-                        username="admin",
-                        password=splunk_password)
+    # Create a splunk service instance and log in
+    splunk = client.connect(host=splunk_host,
+                            port=8089,
+                            username="admin",
+                            password=splunk_password)
+else:
+    splunk = None
 
 if __name__ == '__main__':
-    logger.debug('Starting up TFE app')
+    logger.debug('Starting up DianaFE server app')
     app.run(host="0.0.0.0")
 
 

@@ -1,39 +1,8 @@
-import logging
-import os
-from pprint import pformat
-import glob
-from itertools import chain
-import argparse
-import csv
-import sys
-from random import shuffle
-import pickle
+"""RADCAT Corpus Builder and Classifier
+Merck, Winter 2018
 
-# TODO: Fix "signing doctor" in PHI
+Teaches Splunk to automatically classify RADCAT on observed reportsl
 
-"""
-if bool(re.search("signing doctor", line.lower())):
-    continue 
-if bool(re.search("has reviewed", line.lower())): 
-    continue 
-if bool(re.search("findings discussed", line.lower())):
-    continue
-"""
-
-# Link to standard libraries from Splunk's python for NLTK
-# sys.path=sys.path + ['/usr/lib/python2.7', '/usr/lib/python2.7/plat-x86_64-linux-gnu', '/usr/lib/python2.7/lib-tk', '/usr/lib/python2.7/lib-old', '/usr/lib/python2.7/lib-dynload', '/usr/local/lib/python2.7/dist-packages', '/usr/lib/python2.7/dist-packages', '/usr/lib/pymodules/python2.7']
-
-import nltk
-from nltk.corpus import stopwords
-from nltk.probability import FreqDist
-from nltk.classify import NaiveBayesClassifier as nbc
-from nltk import word_tokenize
-
-
-__version__ = "1.0.0"
-__description__ = "RADCAT corpus builder and classifier"
-
-"""
 ## Fixes for adding dependencies to Splunk's python
 
 Similar approach to <https://answers.splunk.com/answers/474207/python-for-scientific-computing-and-the-sdk.html>
@@ -66,6 +35,40 @@ $ docker cp usr_bin_python splunk:/opt/splunk/etc/system/bin
 `$ my/dumb/python usr_bin_python.py RADclf.py -w retrobulbar pizza -pd /opt/splunk/etc/system/bin`
 """
 
+import logging
+import os
+from pprint import pformat
+import glob
+from itertools import chain
+import argparse
+import csv
+import sys
+from random import shuffle
+import pickle
+
+# TODO: Fix "signing doctor" in PHI
+
+"""
+if bool(re.search("signing doctor", line.lower())):
+    continue 
+if bool(re.search("has reviewed", line.lower())): 
+    continue 
+if bool(re.search("findings discussed", line.lower())):
+    continue
+"""
+
+# Link to standard libraries from Splunk's python for NLTK
+# sys.path=sys.path + ['/usr/lib/python2.7', '/usr/lib/python2.7/plat-x86_64-linux-gnu', '/usr/lib/python2.7/lib-tk', '/usr/lib/python2.7/lib-old', '/usr/lib/python2.7/lib-dynload', '/usr/local/lib/python2.7/dist-packages', '/usr/lib/python2.7/dist-packages', '/usr/lib/pymodules/python2.7']
+
+import nltk
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+from nltk.classify import NaiveBayesClassifier as nbc
+from nltk import word_tokenize
+
+__version__ = "1.0.0"
+__description__ = "RADCAT corpus builder and classifier"
+
 class Caching(object):
 
     @classmethod
@@ -81,7 +84,7 @@ class Caching(object):
             o = pickle.load(f)
             return o
 
-    PICKLE_DIR = '.'
+    PICKLE_DIR = '/tmp/pkl'
 
     def __init__(self, pkl, init_func=None, *init_args):
         self._init_func = init_func
@@ -107,11 +110,11 @@ def create_corpus_from_query(montage):
     # Need to do this every 2 weeks or so, or you run into the
     # 25k study limit!
 
-    # qdict = { "q":          "RADCAT",
-    #           "start_date": "2017-11-01",
-    #           "end_date":   "2018-01-29"}
-    #
-    # worklist = Montage.make_worklist(qdict)
+    qdict = { "q":          "RADCAT",
+              "start_date": "2017-11-01",
+              "end_date":   "2018-01-29"}
+
+    worklist = montage.make_worklist(qdict)
 
 def create_corpus_from_csv(source_dir, output_dir):
 
@@ -335,7 +338,7 @@ def make_arg_parser():
 def test_arg_parser(parser, _which=None):
     raw_dir    = '/Users/derek/Desktop/radcat_source'
     corpus_dir = '/Users/derek/Desktop/radcat_corpus'
-    pickle_dir = 'pkl'
+    pickle_dir = '/tmp/pkl'
     test_file  = '00/00a0cfda-40f2bddb-be5740be-b37ce4cb-a1ec2843+1.txt'
 
     def get_cmd(which):
@@ -369,7 +372,7 @@ def test_arg_parser(parser, _which=None):
 
 def test_streaming():
     import StringIO
-    Caching.PICKLE_DIR = "pkl"
+    Caching.PICKLE_DIR = "/tmp/pkl"
     wfs = Caching('wfs')
     ident = Caching('ident')
     infile = StringIO.StringIO("report,radcat\nCocaine causes contractility,\nHe ate a yellow pizza with putamen.,")
@@ -383,7 +386,7 @@ def test_streaming():
 
 
 def test_scoring():
-    Caching.PICKLE_DIR = 'pkl'
+    Caching.PICKLE_DIR = '/tmp/pkl'
     wfs = Caching('wfs')
     ident = Caching('ident')
     phrases = [

@@ -9,7 +9,7 @@ module_paths = [
     'DixelKit',
     'DianaStack',
     'GUIDMint',
-    'SplunkApps/rad_rx'
+    'DianaSplunk/rad_rx'
 ]
 
 def consolidate_reqs():

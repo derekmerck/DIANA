@@ -1,2 +1,2 @@
 
-.. include:: ../SplunkApps/rad_rx/README.rst
+.. include:: ../DianaSplunk/rad_rx/README.rst

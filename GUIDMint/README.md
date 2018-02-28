@@ -28,10 +28,10 @@ It is intended to be used as an adjunct with an automatic anonymization framewor
 To use it as a Python library:
 
 ````python
->>> from GUIDMint import GUIDMint
->>> mint = GUIDMint()
+>>> import GUIDMint
+>>> mint = GUIDMint.PseudoMint()
 >>> mint.mint_guid( "MERCK^DEREK^L" )
-BEW6DDOU
+u'BEW6DDOUE2IV237F'
 ````
 
 To create a local server instance:
@@ -74,7 +74,7 @@ Example: <http://get-a-guid.herokuapp.com/guid?/guid?value=MERCK^DEREK^L">
 ### Pseudonyms
 
 It is often useful to replace the subject name with something more natural than a GUID.  
-Any string beginning with at least 3 (capitalized) alphabetic characters can be used to reproducibly generate a ["John Doe"](http://en.wikipedia.org/wiki/John_Doe) style placeholder name in DICOM patient name format (`last^first^middle).  This is very useful for alphabetizing subject name lists according to generic ID and for referencing anonymized data sets according to memorable names.
+Any string beginning with at least 3 (capitalized) alphabetic characters can be used to reproducibly generate a ["John Doe"](http://en.wikipedia.org/wiki/John_Doe) style placeholder name in DICOM patient name format (`last^first^middle`).  This is very useful for alphabetizing subject name lists according to generic ID and for referencing anonymized data sets according to memorable names.
 
 Generation method:
 

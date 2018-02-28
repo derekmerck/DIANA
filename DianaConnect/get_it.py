@@ -1,6 +1,11 @@
-"""
-Command-line tool for proxy download:
-> python get_it.py -AccessionNumber XYZ -PatientID 123 -p deathstar
+"""get_it.py
+Merck
+Winter 2018
+
+Command-line tool for Orthanc proxy download:
+> python get_it.py -AccessionNumber XYZ -PatientID 123 -p proxy -s secrets.yml
+
+secrets.yml must have a section like services[proxy] suitable for creating an Orthanc
 """
 
 from DixelKit.Dixel import *

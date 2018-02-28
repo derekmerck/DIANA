@@ -9,7 +9,6 @@ splunk = client.connect(host="trusty64",
                username="admin",
                password="5plunK!")
 
-
 # Run a one-shot search and display the results using the results reader
 
 # Set the parameters for the search:

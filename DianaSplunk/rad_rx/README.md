@@ -17,9 +17,9 @@ structured reports and a simple incident ticketing system.
 It is intended to be used with [DIANA-connect][], a set of python scripts that can monitor an installation of Jodogne's [Orthanc][] and copy [DICOM][] structured report tags to a Splunk index.
 
 [Orthanc]: https://orthanc.chu.ulg.ac.be
-[DICOM]: http://dicom.nema.org
+[DICOM]: http://www.dicomstandard.org/
 [Splunk]: https://www.splunk.com
-[DIANA-connect]: https://github.com/derekmerck/DIANA/tree/master/connect
+[DIANA-connect]: https://github.com/derekmerck/DIANA/tree/master/DianaConnect
 
 
 ## Dependencies

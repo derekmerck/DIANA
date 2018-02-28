@@ -37,7 +37,7 @@ class NameBank (object):
 
     def set_from_census(self):
 
-        # Should weight these as well to match census distribution...
+        # Someday: Should weight these as well to match census distribution...
 
         with open("{0}/names/dist.male.first.txt".format(os.path.dirname(__file__))) as f:
             lines = f.readlines()
@@ -60,7 +60,7 @@ class NameBank (object):
 
 class GUIDMint(object):
     """
-    Default hashing and base class for alternative mints.
+    Abstract= base class for guid mints.
     """
 
     def __init__(self,
@@ -111,6 +111,9 @@ class GUIDMint(object):
         return g, n, d
 
 class MD5Mint(GUIDMint):
+    """
+    Simple mint that assigns ID as md5 hash
+    """
 
     def __init__(self, prefix="", **kwargs):
         self.prefix = prefix
@@ -199,7 +202,6 @@ class PseudoMint(GUIDMint):
 
 def test_mints():
 
-
     md5_mint = MD5Mint()
     pseudo_mint = PseudoMint()
 
@@ -207,21 +209,27 @@ def test_mints():
     gender = "M"
     dob = "1971-06-06"
 
-    md5_mint.pseudo_identity(name, gender=gender, dob=dob)
-    pseudo_mint.pseudo_identity(name, gender=gender, dob=dob)
+    id = md5_mint.pseudo_identity(name, gender=gender, dob=dob)
+    assert(id==('392ec5209964bfad', '392ec5209964bfad', '1971-08-23'))
+    id = pseudo_mint.pseudo_identity(name, gender=gender, dob=dob)
+    assert(id==(u'BIN4K4VMOBPAWTW5', u'BERTOZZI^ISIDRO^N', '1971-06-22'))
 
     name = "MERCK^LISA^H"
     gender = "F"
     dob = "1973-01-01"
 
-    md5_mint.pseudo_identity(name, gender=gender, dob=dob)
-    pseudo_mint.pseudo_identity(name, gender=gender, dob=dob)
+    id = md5_mint.pseudo_identity(name, gender=gender, dob=dob)
+    assert(id==('2951550cc186aae1', '2951550cc186aae1', '1972-09-03'))
+    id = pseudo_mint.pseudo_identity(name, gender=gender, dob=dob)
+    assert(id==(u'LSEOMWPHUXQTPSN3', u'LIZARDO^SUMMER^E', '1972-10-22'))
 
     name = "PROTECT3-SU001"
     age = 65
 
-    md5_mint.pseudo_identity(name, age=age)
-    pseudo_mint.pseudo_identity(name, age=age)
+    id = md5_mint.pseudo_identity(name, age=age)
+    assert(id==('c3352e0d6de56475', 'c3352e0d6de56475', '1966-09-20'))
+    id = pseudo_mint.pseudo_identity(name, age=age)
+    assert(id==(u'FNAODOTYPIQGEQJS', u'FEICHTNER^NICKI^A', '1953-08-16'))
 
 
 if __name__=="__main__":

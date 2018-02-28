@@ -1,5 +1,6 @@
 """
 Script used to generate large amounts of consistent sample enrollment data
+Requires Python3 for random.choices
 """
 
 from hashlib import md5
@@ -8,7 +9,7 @@ import logging
 from pprint import pformat
 import random
 import csv
-from GUIDMint import GUIDMint
+import GUIDMint
 
 def gen_patient(seed, mint):
 
@@ -95,7 +96,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
 
-    mint = GUIDMint()
+    mint = GUIDMint.PseudoMint()
 
     pp = []
     for seed in range(1,10):
