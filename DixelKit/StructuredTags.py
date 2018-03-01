@@ -1,5 +1,9 @@
+"""
+Parses nested DICOM tag structures into simplified formats,
+similar to Orthanc's representation
+"""
+
 import logging
-# import requests
 import json
 from datetime import datetime
 from pprint import pprint, pformat

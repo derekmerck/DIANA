@@ -32,7 +32,15 @@ Dependencies
 ------------
 
 -  Python 2.7
--  Many extensions, see individual packages
+-  Many Python packages
+
+Installation
+------------
+
+.. code:: bash
+
+    $ git clone https://www.github.com/derekmerck/DIANA
+    $ pip install -r DIANA/requirements.txt
 
 Components
 ----------

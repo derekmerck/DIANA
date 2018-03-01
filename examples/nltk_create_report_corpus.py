@@ -1,6 +1,7 @@
 """
 Reads Montage csv output from a source folder, anonymizes and saves
-reports into NLTK text corpus format.
+reports into NLTK plaintext corpus format.  Add categories to filenames
+to generate a categorized plaintext corpus.
 """
 
 from glob import glob

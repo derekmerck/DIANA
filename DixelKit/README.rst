@@ -46,10 +46,14 @@ External requirements
 -  `Grassroots
    DICOM <http://gdcm.sourceforge.net/wiki/index.php/Main_Page>`__
    (``gdcm``) for DICOM file pixel compression
-   ``$ brew install gdcm`` on OSX
-   ``$ apt-get install libgcdm-tools`` on Debian \*\*
+
+   -  ``$ brew install gdcm`` on OSX
+   -  ``$ apt-get install libgcdm-tools`` on Debian^^
+
 -  File magic (``libmagic``) for file typing
-   ``$ brew install libmagic`` on OSX (typically pre-installed on Linux)
+
+   -  ``$ brew install libmagic`` on OSX
+   -  Typically pre-installed on Linux
 
 Instalation
 -----------
@@ -127,6 +131,30 @@ Lookup Studies and Create a Research Archive
 Storage Instantiation with Secrets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-\`\`\`python secret\_yaml=""" host: localhost port: 8042 user: username
-password: passw0rd """ >>> credentials = yaml.load(secret\_yaml) >>>
-orthanc = Orthanc(credentials)
+.. code:: python
+
+    >>> secret_yaml="""
+    host: localhost
+    port: 8042
+    user: username
+    password: passw0rd
+    """
+    >>> credentials = yaml.load(secret_yaml)
+    >>> orthanc = Orthanc(credentials)
+
+--------------
+
+^^ GDCM has no rpm available for RedHat 6, but can be compiled following
+http://gdcm.sourceforge.net/wiki/index.php/Compilation and
+https://raw.githubusercontent.com/malaterre/GDCM/master/INSTALL.txt
+
+.. code:: bash
+
+    $ yum install cmake3 g++
+    $ git clone https://github.com/malaterre/GDCM
+    $ cd GDCM
+    $ mkdir build
+    $ cd build
+    $ cmake3 -D GDCM_BUILD_APPLICATIONS=true ..
+    $ make
+    $ make install

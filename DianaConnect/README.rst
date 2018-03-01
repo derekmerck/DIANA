@@ -131,20 +131,3 @@ Dose Data
 
 For any GE accession, series 997 is the dose S/R series. For Siemens,
 504 is the dose S/R series.
-
---------------
-
-\*\* GDCM has no rpm available for RedHat 6, but can be compiled
-following http://gdcm.sourceforge.net/wiki/index.php/Compilation and
-https://raw.githubusercontent.com/malaterre/GDCM/master/INSTALL.txt
-
-.. code:: bash
-
-    $ yum install cmake3 g++
-    $ git clone https://github.com/malaterre/GDCM
-    $ cd GDCM
-    $ mkdir build
-    $ cd build
-    $ cmake3 -D GDCM_BUILD_APPLICATIONS=true ..
-    $ make
-    $ make install

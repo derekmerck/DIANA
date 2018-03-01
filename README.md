@@ -23,7 +23,15 @@ It is similar to [XNAT][] in providing DICOM services, image data indexing, REST
 ## Dependencies
 
 - Python 2.7
-- Many extensions, see individual packages
+- Many Python packages
+
+
+## Installation
+
+```bash
+$ git clone https://www.github.com/derekmerck/DIANA
+$ pip install -r DIANA/requirements.txt
+```
 
 
 ## Components

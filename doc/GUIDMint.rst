@@ -6,10 +6,10 @@ API
 
 .. automodule:: GUIDMint
 
-.. autoclass:: NameBank
+.. autoclass:: GUIDMint
    :members:
    :undoc-members:
 
-.. autoclass:: GUIDMint
+.. autoclass:: MD5Mint
    :members:
    :undoc-members:

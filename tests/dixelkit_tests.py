@@ -75,7 +75,6 @@ def test_mirror():
     s = orthanc.statistics()
     logging.debug(pformat(s))
 
-
     # At this point, the original attachment is MOOT, I believe
 
 

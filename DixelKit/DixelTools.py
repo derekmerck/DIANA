@@ -78,9 +78,13 @@ def save_csv(csv_file, worklist, _fieldnames=None):
 
         for item in worklist:
             # Unicode!
-            meta = {k: u"{}".format(v).encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
 
-            # meta = {k: unicode(v, errors='ignore').encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
+            # This seems to work for everything else
+            #meta = {k: u"{}".format(v).encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
+
+            # This works for lung screening data
+            meta = {k: unicode(v, errors='ignore').encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
+
             writer.writerow(meta)
 
 
@@ -110,63 +114,6 @@ def report_extractions(dixel):
         find_it(k, v)
 
     return dixel
-
-
-# Output all report data
-def save_text_corpus(out_dir, worklist, num_subdirs=0):
-
-    for item in worklist:
-
-        if not item.meta.get('categories'):
-            logging.warn('Skipping {} bc no categories'.format(item))
-            continue
-
-        # Clean up the report and anonymize
-
-        # Sometimes montage uses html syntax
-        # soup = BeautifulSoup(item.meta['Report Text'], "html.parser")
-        # raw_text = soup.get_text()
-
-        # Make it unicode explicitly
-        raw_text = item.meta['Report Text'].decode('utf-8', 'ignore')
-
-        # Anonymize and blind to RADCAT
-        # 'Oliver' is unfortunately all over and not always flagged correctly as NP
-        anon_text = re.sub(u"(^.* MD.*$|^.*MRN.*$|^.*DOS.*$|^.*RADCAT.*$|^.* Dr.*$|^.* NP.*$|^.* RN.*$|^.* RA.*$|^.*Oliver.*$|^Report created.*$)",
-                    u"", raw_text, 0, re.M)
-
-        try:
-            anon_text = anon_text.encode("utf-8", errors='ignore')
-        except UnicodeDecodeError:
-            logging.error(anon_text)
-            raise Exception('Cannot encode this report')
-
-        # Each dixel report gets a file name with annotations for modality,
-        # body part, and finding
-        # out_dir/<study_oid>_study_region_finding.txt
-
-        study_oid = orthanc_id(
-            item.meta['PatientID'],
-            item.meta['AccessionNumber'])
-        suffix = "_".join(str(x) for x in item.meta['categories'])
-        fn = study_oid + "+" + suffix + ".txt"
-
-        if num_subdirs==0:
-            path = out_dir
-        elif num_subdirs==1:
-            path = os.path.join(out_dir,
-                                study_oid[0:2])
-        elif num_subdirs==2:
-            path = os.path.join(out_dir,
-                                study_oid[0:2],
-                                study_oid[2:4])
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-        full_path = os.path.join(path, fn)
-
-        with open(full_path, 'w') as f:
-            f.write(anon_text)
 
 
 """

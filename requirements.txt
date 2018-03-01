@@ -4,7 +4,6 @@ splunk-sdk
 aenum
 numpy
 bokeh
-python-magic
 flask
 scipy
 flask_restplus
@@ -12,7 +11,8 @@ scikit-learn
 pydicom
 requests
 flask-restplus
-beautifulsoup4
 jinja2
+beautifulsoup4
+python-magic
 Flask-HTTPAuth
 python-dateutil

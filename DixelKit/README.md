@@ -1,10 +1,12 @@
 # DixelKit
 
-Derek Merck <derek_merck@brown.edu> 
-Brown University and Rhode Island Hospital 
-Winter 2018
+Derek Merck <derek_merck@brown.edu>  
+Brown University and Rhode Island Hospital  
+Winter 2018  
 
 <https://www.github.com/derekmerck/DIANA/tree/master/DixelKit>
+
+## Overview 
 
 DICOM image objects may be represented in _many_ different ways across
 [DIANA](https//www.github.com/derekmerck/DIANA)):  as `.dcm` files, as URLs 
@@ -43,22 +45,19 @@ Orthanc (open source PACS), Splunk (meta data index), and Montage (report text)
 ### External requirements
 
 - [Grassroots DICOM][] (`gdcm`) for DICOM file pixel compression  
-  `$ brew install gdcm` on OSX  
-  `$ apt-get install libgcdm-tools` on Debian **
+    * `$ brew install gdcm` on OSX  
+    * `$ apt-get install libgcdm-tools` on Debian^^
+  
 - File magic (`libmagic`) for file typing  
-  `$ brew install libmagic` on OSX  (typically pre-installed on Linux)
+    * `$ brew install libmagic` on OSX
+    * Typically pre-installed on Linux
 
 [Grassroots DICOM]: http://gdcm.sourceforge.net/wiki/index.php/Main_Page
 
 
 ## Instalation
 
-`$ pip install http://github.com/derekmerck/DixelKit`
-
-or 
-
-`$ git clone http://github.com/derekmerck/DixelKit`
-
+`$ git clone http://github.com/derekmerck/DIANA`
 
 
 
@@ -124,7 +123,7 @@ ABC,       01012000,      CT Angiogram"""
 ### Storage Instantiation with Secrets
 
 ```python
-secret_yaml="""
+>>> secret_yaml="""
 host: localhost
 port: 8042
 user: username
@@ -132,3 +131,21 @@ password: passw0rd
 """
 >>> credentials = yaml.load(secret_yaml)
 >>> orthanc = Orthanc(credentials)
+```
+
+---
+
+^^ GDCM has no rpm available for RedHat 6, but can be compiled 
+following <http://gdcm.sourceforge.net/wiki/index.php/Compilation> and
+<https://raw.githubusercontent.com/malaterre/GDCM/master/INSTALL.txt>
+
+```bash
+$ yum install cmake3 g++
+$ git clone https://github.com/malaterre/GDCM
+$ cd GDCM
+$ mkdir build
+$ cd build
+$ cmake3 -D GDCM_BUILD_APPLICATIONS=true ..
+$ make
+$ make install
+```
