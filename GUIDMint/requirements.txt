@@ -3,3 +3,4 @@ flask
 flask-restplus
 markdown
 jinja2
+gunicorn
