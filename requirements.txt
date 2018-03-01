@@ -11,8 +11,8 @@ scikit-learn
 pydicom
 requests
 flask-restplus
-jinja2
-beautifulsoup4
-python-magic
 Flask-HTTPAuth
+beautifulsoup4
+jinja2
+python-magic
 python-dateutil

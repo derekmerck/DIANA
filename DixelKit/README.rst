@@ -1,10 +1,14 @@
 DixelKit
 ========
 
-Derek Merck derek_merck@brown.edu Brown University and Rhode Island
-Hospital Winter 2018
+| Derek Merck derek_merck@brown.edu
+| Brown University and Rhode Island Hospital
+| Winter 2018
 
 https://www.github.com/derekmerck/DIANA/tree/master/DixelKit
+
+Overview
+--------
 
 DICOM image objects may be represented in *many* different ways across
 `DIANA <https//www.github.com/derekmerck/DIANA>`__): as ``.dcm`` files,
@@ -58,11 +62,7 @@ External requirements
 Instalation
 -----------
 
-``$ pip install http://github.com/derekmerck/DixelKit``
-
-or
-
-``$ git clone http://github.com/derekmerck/DixelKit``
+``$ git clone http://github.com/derekmerck/DIANA``
 
 Usage
 -----

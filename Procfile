@@ -1,1 +1,1 @@
-web: gunicorn GUIDMINT.Get_a_GUID:app
+web: gunicorn GUIDMINT/Get_a_GUID:app
