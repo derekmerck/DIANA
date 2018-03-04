@@ -28,7 +28,7 @@ DICOM_TRANSFERSYNTAX_UID = {
 }
 
 
-def load_csv(csv_file, secondary_id=None):
+def load_csv(csv_file, secondary_id=None, dicom_level=DicomLevel.STUDIES):
     with open(csv_file, 'rU') as f:
         items = csv.DictReader(f)
         s = set()
@@ -57,7 +57,7 @@ def load_csv(csv_file, secondary_id=None):
 
             # logging.debug(pformat(item))
 
-            d = Dixel(id, level=DicomLevel.STUDIES, meta=item)
+            d = Dixel(id, level=dicom_level, meta=item)
             s.add(d)
         return s, items.fieldnames
 
@@ -83,37 +83,10 @@ def save_csv(csv_file, worklist, _fieldnames=None):
             #meta = {k: u"{}".format(v).encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
 
             # This works for lung screening data
-            meta = {k: unicode(v, errors='ignore').encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
+            meta = {k: unicode("{}".format(v), errors='ignore').encode("utf-8", errors='ignore') for k, v in item.meta.iteritems()}
 
             writer.writerow(meta)
 
-
-def report_extractions(dixel):
-
-    raw_text = dixel.meta['Report Text']
-
-    def find_it(k, expr):
-        match = re.findall(expr, raw_text)
-        if match:
-            # logging.debug('{}: {}'.format(k, max(match)))
-            dixel.meta[k] = max(match)
-
-    extractions = {
-        'lungrads':   'Lung-RADS .*[Cc]ategory (\d)',
-        'radcat':     'RADCAT ?(\d)',
-        'ctdi':       'CTDIvol = (\d*\.*\d*).*mGy',
-        'dlp':        'DLP = (\d*\.*\d*).*mGy-cm',
-        'lungrads_s': 'Lung-RADS .*[Cc]ategory \d-?([Ss])',
-        'lungrads_c': 'Lung-RADS .*[Cc]ategory \d-?([Cc])',
-        'current_smoker': '([Cc]urrent smoker)',
-        'pack_years': '(\d+)[ -]pack[ -]year',
-        'years_quit': 'quit(.*\d+) year[s?]'
-    }
-
-    for k, v in extractions.iteritems():
-        find_it(k, v)
-
-    return dixel
 
 
 """
@@ -205,6 +178,27 @@ class Caching(object):
                 self._data = self._init_func(*self._init_args)
                 self.pkl(self._data, self._pkl)
         return self._data
+
+
+def lookup_seruids(proxy, series_qs, worklist=None,
+                   data_root=None, csv_fn=None, save_file=False):
+    """Lookup series UUIDs from PACS, accepts worklist or fn"""
+
+    if data_root and csv_fn:
+        csv_in = os.path.join(data_root, csv_fn)
+        worklist, fieldnames = load_csv(csv_in)
+    else:
+        fieldnames = []
+
+    for item in series_qs:
+        qdict = item['qdict']
+        worklist = proxy.update_worklist(worklist, qdict=qdict, suffix=item['suffix'])
+
+    if save_file:
+        csv_out = os.path.splitext(csv_fn)[0]+"+seruids.csv"
+        save_csv(os.path.join(data_root, csv_out), worklist, fieldnames)
+
+    return worklist
 
 
 def test_hashing():

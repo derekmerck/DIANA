@@ -1,7 +1,7 @@
 """
 Example of reading a report corpus and generating a concordance and bi-grams
 
-Create a NLTK plaintext corpus using `create_report_corpus.py`
+Create a NLTK plaintext corpus using `examples/create_report_corpus.py`
 """
 
 from pprint import pprint

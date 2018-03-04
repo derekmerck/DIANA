@@ -1,6 +1,7 @@
 from aenum import Enum, auto
 import DixelTools
 import os
+import logging
 
 class DicomLevel(Enum):
     """
@@ -14,6 +15,32 @@ class DicomLevel(Enum):
     def __str__(self):
         return '{0}'.format(self.name.lower())
 
+    @classmethod
+    def abrv(cls, s):
+        if type(s) is not DicomLevel:
+            s = cls.of(s)
+        if s == DicomLevel.INSTANCES:
+            return 'i'
+        elif s == DicomLevel.SERIES:
+            return 'r'
+        elif s == DicomLevel.STUDIES:
+            return 's'
+        elif s == DicomLevel.PATIENTS:
+            return 'p'
+        logging.warn("Invalid DicomLevel provided {}".format(s))
+
+    @classmethod
+    def of(cls, s):
+        if s.lower() == "i" or s.lower() == "instances":
+            return DicomLevel.INSTANCES
+        elif s.lower() == "r" or s.lower() == "series":
+            return DicomLevel.SERIES
+        elif s.lower() == "s" or s.lower() == "studies":
+            return DicomLevel.STUDIES
+        elif s.lower() == "p" or s.lower() == "patients":
+            return DicomLevel.PATIENTS
+        else:
+            logging.warn("No defined DicomLevel for {}".format(s))
 
 class Dixel(object):
     """

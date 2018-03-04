@@ -227,9 +227,9 @@ def test_mints():
     age = 65
 
     id = md5_mint.pseudo_identity(name, age=age)
-    assert(id==('c3352e0d6de56475', 'c3352e0d6de56475', '1966-09-20'))
+    assert(id==('c3352e0d6de56475', 'c3352e0d6de56475', '1966-09-24'))
     id = pseudo_mint.pseudo_identity(name, age=age)
-    assert(id==(u'FNAODOTYPIQGEQJS', u'FEICHTNER^NICKI^A', '1953-08-16'))
+    assert(id==(u'KGHZ7YTCPDDAXG2N', u'KUNZMAN^GENIE^H', '1952-11-11'))
 
 
 if __name__=="__main__":

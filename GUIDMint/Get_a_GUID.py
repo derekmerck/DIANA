@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, Markup, Blueprint
-# from flask.views import View
+#from flask.views import View
 from flask_restplus import Resource, Api, reqparse, fields, abort
 import markdown
 import logging
@@ -18,7 +18,9 @@ def read(*paths):
 app = Flask(__name__)
 api_bp = Blueprint('guid_api', __name__,
                      template_folder='templates')
-guid_api = Api(api_bp, version=__version__, title='GUIDMint API',
+
+# TODO: Need to revise to support blueprinting better
+guid_api = Api(app, version=__version__, title='GUIDMint API',
           description='GUIDMint API', doc='/doc')
 
 logging.basicConfig(level=logging.DEBUG)
@@ -100,7 +102,7 @@ class PseudoID(Resource):
 
 mints = {
     "pseudonym": PseudoMint(),
-    "md5":    MD5Mint()
+    "md5":       MD5Mint()
 }
 
 if __name__ == '__main__':

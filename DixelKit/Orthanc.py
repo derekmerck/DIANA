@@ -68,6 +68,7 @@ class Orthanc(HTTPDixelStorage):
 
     def get(self, dixel, **kwargs):
 
+        dixel.id = dixel.id.rstrip()
         if dixel.level is DicomLevel.INSTANCES:
             url = '{0}/{1}/{2}/file'.format(self.url, str(dixel.level), dixel.id)
         else:
@@ -110,6 +111,8 @@ class Orthanc(HTTPDixelStorage):
     def update(self, dixel, **kwargs):
 
         meta = dixel.meta.copy()
+
+        dixel.id = dixel.id.rstrip()
 
         if dixel.level != DicomLevel.SERIES:
             url = "{}/{}/{}/tags?simplify".format(self.url, str(dixel.level), dixel.id)
@@ -250,6 +253,52 @@ class OrthancProxy(Orthanc):
         self.remote_aet = kwargs.get('remote_aet', None)
         super(OrthancProxy, self).__init__(*args, **kwargs)
 
+    def query(self, q=None, level=DicomLevel.SERIES, remote_aet=None):
+
+        if not remote_aet:
+            remote_aet = self.remote_aet
+
+        qdict = {'PatientID': '',
+                 'StudyInstanceUID': '',
+                 'StudyDate': '',
+                 'StudyTime': '',
+                 'AccessionNumber': ''}
+
+        if DicomLevel==DicomLevel.STUDIES and q.get('Modality'):
+            qdict['ModalitiesInStudy'] == q.get('Modality')
+            del(qdict['Modality'])
+
+        if DicomLevel==DicomLevel.SERIES or DicomLevel==DicomLevel.INSTANCES:
+            qds = {'SeriesInstanceUID': '',
+                    'SeriesDescription': '',
+                    'SeriesNumber': ''}
+            qdict.update( qds )
+
+        if DicomLevel==DicomLevel.INSTANCES:
+            qds = {'SOPInstanceUID': ''}
+            qdict.update( qds )
+
+        if q:
+            qdict.update(q)
+
+        data = {'Level': level,
+                'Query': qdict}
+
+        self.logger.debug(pformat(data))
+
+        url = '{0}/modalities/{1}/query'.format(self.url, remote_aet)
+        self.logger.debug(url)
+
+        headers = {"Accept-Encoding": "identity",
+                   "Accept": "application/json"}
+        r = self.do_post(url, json=data, headers=headers)
+        if r.status_code == 200:
+            return r.json()
+        else:
+            self.logger.error("Proxy did not return 200")
+            return r
+
+
     def get(self, dixel, **kwargs):
 
         def find_series(dixel):
@@ -369,6 +418,10 @@ class OrthancProxy(Orthanc):
 
         # if not dixel.meta.get('QID') or not dixel.meta.get('AID'):
         dixel = find_series(dixel)
+
+        if not dixel.meta['AID']:
+            logging.warn("Could not find {}".format(dixel))
+            return dixel
 
         if kwargs.get('retrieve'):
             dixel = retrieve_series(dixel)

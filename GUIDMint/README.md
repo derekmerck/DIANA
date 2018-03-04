@@ -4,14 +4,13 @@ Derek Merck <derek_merck@brown.edu>
 Brown University and Rhode Island Hospital  
 Winter 2018
 
-<https://github.com/derekmerck/diana/tree/master/SplunkApps/GUIDMint>
-
+<https://github.com/derekmerck/DIANA/tree/master/GUIDMint>
 
 ## Overview
 
 Python library and Flask app to generate 1-way hashes for globally consistent identifiers in study anonymization.
 
-A reference web implementation of the most recent master branch is available at <http://get-a-guid.herokuapp.com>.
+A reference web implementation of the most recent master branch is available at <http://get-a-guid.xn--zm-mka.biz.biz/info>.
 
 It is intended to be used as an adjunct with an automatic anonymization framework like [XNAT's](http://www.xnat.org) [DicomEdit](http://nrg.wustl.edu/software/dicomedit/).  A reference anonymization script using `get-a-guid` is available here: <https://gist.github.com/derekmerck/5d4f40a7b952525a09c4>.
 
@@ -49,11 +48,23 @@ To create a public [Heroku](http://www.heroku.com) server instance:
 $ heroku create
 $ git push heroku master
 $ heroku ps:scale web=1
-$ curl "http://get-a-guid.herokuapp.com/guid?value=MERCK^DEREK^L"
-BEW6DDOU 
+$ curl "http://get-a-guid.herokuapp.com/pseudonym/pseudo_id?name=MERCK^DEREK^L"
+{"dob": "1968-07-25", "gender": "U", "guid": "AYJOAUVBBT54F6TP", "name": "ANDRONIS^YEVETTE^J"} 
 ```
 
 Single dyno Heroku instances are free to run, but can take a minute to startup after they fall asleep.
+
+
+To create a [Dokku](http://dokku.viewdocs.io/dokku/) server instance:
+
+```bash
+$ git clone https://github.com/derekmerck/DIANA
+$ cd DIANA
+$ git add remote dokku dokku@xn--zm-mka.biz:get-a-guid
+$ git subtree push --prefix GUIDMint dokku master
+$ curl "http://get-a-guid.xn--zm-mka.biz/pseudonym/pseudo_id?name=MERCK^DEREK^L"
+{"dob": "1968-07-25", "gender": "U", "guid": "AYJOAUVBBT54F6TP", "name": "ANDRONIS^YEVETTE^J"} 
+```
 
 
 ### Global Unique Identifier (GUID)
@@ -127,7 +138,7 @@ Generation method:
 ## Acknowledgements
 
 - Inspired in part by the [NDAR](https://ndar.nih.gov/ndarpublicweb/tools.html) and [FITBIR](https://fitbir.nih.gov) GUID schema.
-- Thanks for the [Heroku](http://www.heroku.com) Flask tutorials at <http://virantha.com/2013/11/14/starting-a-simple-flask-app-with-heroku/> and <http://stackoverflow.com/questions/17260338/deploying-flask-with-heroku>
+- Thanks for the [Heroku](http://www.heroku.com) Flask tutorials at <http://virantha.com/2013/11/14/starting-a-simple-flask-app-with-heroku/> and <http://stackoverflow.com/questions/17260338/deploying-flask-with-heroku> and <http://www.moreiscode.com/dokku-error/>
 - GitHub markdown css from <https://github.com/sindresorhus/github-markdown-css>
 - Placeholder names inspired by the [Docker names generator](https://github.com/docker/docker/blob/master/pkg/namesgenerator/names-generator.go)
 

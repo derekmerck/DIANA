@@ -48,7 +48,7 @@ if __name__=="__main__":
     for d in worklist:
         r = Report(dixel=d)
         anon_id = orthanc_id(d.meta['PatientID'], d.meta['AccessionNumber'])
-        # r.write(out_dir, "{}.txt".format(anon_id), anonymize=True, nesting=1)
+        r.write(out_dir, "{}.txt".format(anon_id), anonymize=True, nesting=1)
 
         age = float( d.meta['Patient Age'] )
         if age <= 18:
@@ -86,6 +86,8 @@ if __name__=="__main__":
             modality = 'CT'
         elif desc.startswith('OUTSIDE STUDY') and desc.find('CR') > 0:
             modality = 'CR'
+        elif desc.startswith('OUTSIDE STUDY') and desc.find('US') > 0:
+            modality = 'US'
         else:
             modality = 'UNK'
             logging.warn('Found unknown modality: {}'.format(desc))

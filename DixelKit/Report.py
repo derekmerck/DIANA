@@ -18,8 +18,8 @@ class Report(object):
                 dixel.meta[k]=v
 
     # Based on Lifespan/RIMI report template
-    PHI_RE = re.compile(r'^.* MD.*$|^.*MRN.*$|^.*DOS.*$|^.* Dr.*$|^.* NP.*$|^.* RN.*$|^.* RA.*$|^Report created.*$|^.*Signing Doctor.*$|^.*has reviewed.*$',re.M)
-    FINDINGS_RE = re.compile(r'^.*Findings discussed.*$|^.*discussed the findings.*$', re.M | re.I)
+    PHI_RE = re.compile(r'^.* MD.*$|^.*MRN.*$|^.*DOS.*$|^(?:.* )Dr.*$|^.* NP.*$|^.* RN.*$|^.* RA.*$|^.* PA.*$|^Report created.*$|^.*Signing Doctor.*$|^.*has reviewed.*$',re.M)
+    FINDINGS_RE = re.compile(r'^.*discussed.*$|^.*nurse practitioner.*$|^.*physician assistant.*$', re.M | re.I)
     RADCAT_RE = re.compile(r'^.*RADCAT.*$', re.M)
     # https://stackoverflow.com/questions/16699007/regular-expression-to-match-standard-10-digit-phone-number
     PHONE_RE = re.compile(r'\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*', re.M)
@@ -33,10 +33,10 @@ class Report(object):
         anon_text = Report.PHI_RE.sub(u"", anon_text, 0)
         anon_text = Report.FINDINGS_RE.sub(u"", anon_text, 0)
         anon_text = Report.RADCAT_RE.sub(u"", anon_text, 0)
-        anon_text = Report.PHONE_RE.sub(u"(555) 555-5555", anon_text, 0)
+        anon_text = Report.PHONE_RE.sub(u"(555) 555-5555 ", anon_text, 0)
 
-        if anon_text.lower().find('findings discussed')>0:
-            logging.debug(anon_text)
+        # if anon_text.lower().find('discussed')>0:
+        #     logging.debug(anon_text)
         if anon_text.lower().find('oliver')>0:
             logging.debug(anon_text)
 

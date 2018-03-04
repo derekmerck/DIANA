@@ -1,6 +1,7 @@
 import pickle
 import os
 import logging
+import requests
 from aenum import IntEnum
 
 
@@ -14,6 +15,7 @@ class CachePolicy(IntEnum):
     CLEAR_AND_USE_CACHE = 2
 
 
+# TODO: Could just make this a subclass of DixelTools.Caching
 class DixelStorage(object):
     """
     An abstract API representing a collection of Dixels on disk, in Orthanc,
@@ -156,8 +158,6 @@ class DixelStorage(object):
             if u:
                 res.add(u)
         return res
-
-import requests
 
 
 class HTTPDixelStorage(DixelStorage):

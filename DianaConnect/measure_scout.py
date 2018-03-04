@@ -8,6 +8,7 @@ from pprint import pformat
 from sklearn.mixture import GMM
 import json
 import glob
+import os
 
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -80,11 +81,11 @@ def test_measurement():
 
     results = {}
 
-    fp = "../test/data/CT000000.dcm"
+    fp = "./tests/data/ct_scout_01.dcm"
     ret = MeasureScout(fp)
     results[ret['AccessionNumber']] = ret
 
-    fp = "../test/data/CT000001.dcm"
+    fp = "./tests/data/ct_scout_02.dcm"
     ret = MeasureScout(fp)
     logging.debug(pformat(ret))
     results[ret['AccessionNumber']].update(ret)
@@ -96,25 +97,47 @@ def test_measurement():
 
     return True
 
-def measure_directory():
+def measure_glob(regex, out_json):
+    fns = glob.glob(regex)
+    logging.debug(fns)
+
     results = {}
-
-    dir_regex = "/Users/derek/Desktop/Barrows/*dcm"
-    # dir_regex = "../test/data/*dcm"
-    fns = glob.glob(dir_regex)
-
     for fp in fns:
         ret = MeasureScout(fp)
-        if not results.get(ret['AccessionNumber']):
-            results[ret['AccessionNumber']] = ret
-        else:
-            results[ret['AccessionNumber']].update(ret)
 
-    json.dump(results.values(), open('/Users/derek/Desktop/scouts.json', 'w'))
-    logging.debug(pformat(results))
+        key = ret.get("AccessionNumber")
+        if not key:
+            key = ret.get("PatientName")
+
+        if not results.get(key):
+            results[key] = ret
+        else:
+            results[key].update(ret)
+
+    json.dump(results.values(), open(out_json, 'w'))
+    logging.debug(pformat(results.values()))
+
+def test_glob():
+    regex = r"./tests/data/ct_scout*.dcm"
+    out_file = "./tests/measurements.json"
+    measure_glob(regex, out_file)
+    with open(out_file, 'r') as f:
+        output = f.read()
+    res = json.loads(output)
+
+    os.remove(out_file)
+
+    assert(res == [{
+        "AccessionNumber": "",
+        "lateral_dim": 42.90788177339901,
+        "AP_dim": 28.21344537815126,
+        "PatientName": "Anonymized1"
+        }]
+    )
+
 
 if __name__=="__main__":
 
     logging.basicConfig(level=logging.DEBUG)
-    measure_directory()
+    test_glob()
 

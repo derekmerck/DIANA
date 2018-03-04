@@ -1,45 +1,63 @@
 
 import os
 import sys
-print os.getcwd()
-
-sys.path.append(os.getcwd())
 
 import logging
 import yaml
 import datetime as dt
-from connect.Gateway import *
-from connect.UpdateIndex import UpdateRemoteStudyIndex, UpdateRemoteSeriesIndex
+import math
 
-logging.basicConfig(level=logging.DEBUG)
+from Orthanc import OrthancProxy
+from Splunk import Splunk
+from DianaConnect import get_it
 
-with open('secrets.yaml') as f:
-    credentials = yaml.load(f)
 
-orthanc0 = OrthancGateway(address=credentials['orthanc0_address'])
-pacs_proxy = OrthancGateway(address=credentials['pacs_proxy_address'])
-splunk = SplunkGateway(address=credentials['splunk_address'],
-                       hec_address=credentials['hec_address'])
+def update_remote_study_index_over_time(proxy, index, start_dt, end_dt, incr, q=None):
 
-remote="gepacs"
-
-def UpdateRSIOverRange(year, month, day, n_days, h_incr=3, modality="CT"):
-
-    if h_incr >= 6:
+    if math.abs(incr) >= 6:
         # It looks like q/r can only handle about a hundred returned answers at a time
-        logging.warn("Don't set the hourly increment any higher than 6 -- that is close to the upper limit for a normal day")
+        logging.warn("Don't set the hourly increment higher than 6, that is close to the upper limit on returned studies")
 
-    for _day in range(0, n_days):
-        d = dt.datetime(year, month, day) + dt.timedelta(_day)
-        # logging.debug('date: {year}{month:02d}{day:02d}'.format(year=year, month=d.month, day=d.day))
-        for t in range(0, 24, h_incr):
-            UpdateRemoteStudyIndex(pacs_proxy, remote, splunk,
-                                    study_date='{year}{month:02d}{day:02d}'.format(year=d.year, month=d.month, day=d.day),
-                                    study_time='{start:02d}0000-{end:02d}5959'.format(start=t, end=t + h_incr - 1),
-                                    modality=modality
-                                   )
+    if q==None:
+        q = {'modality': 'CT'}
 
-# UpdateRSIOverRange(2017, 5, 1, 18, modality="CT")
+    start = start_dt
+    while start > end_dt:
 
-UpdateRemoteSeriesIndex(pacs_proxy, 'riha', splunk, accession_number='51475723')
+        # Determine study_date
+        study_date = "{}-{}".format(dt.date(start), dt.date(start + incr))
+        # Determine study_time
+        study_time = "{}-{}".format(dt.time(start), dt.time(start + incr))
+
+        q['study_date'] = study_date
+        q['study_time'] = study_time
+
+        results = proxy.search_remote(q)
+        splunk.update(results)
+        start = start+incr
+
+
+if __name__=="__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
+    with open('secrets.yaml') as f:
+        secrets = yaml.load(f)
+
+    # Remote for deathstar service is "GEPACS"
+    deathstar  = OrthancProxy(**secrets['services']['deathstar'])
+    splunk     = Splunk(**secrets['services']['splunk'])
+
+    start_time = dt.now()
+    end_time   = dt.date("01-01-2015")
+    incr       = "-3h"
+
+    update_remote_study_index_over_time(
+        deathstar,
+        splunk,
+        start_time,
+        end_time,
+        incr
+    )
+
+
 

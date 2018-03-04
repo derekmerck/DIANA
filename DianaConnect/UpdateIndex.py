@@ -4,7 +4,7 @@ from io import BytesIO
 # import json
 import datetime
 from Gateway import *
-from MeasureScout import MeasureScout
+from measure_scout import MeasureScout
 
 
 def UpdateSeriesIndex( orthanc, splunk, splunk_index='series' ):
