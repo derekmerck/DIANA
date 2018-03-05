@@ -138,6 +138,10 @@ class Orthanc(HTTPDixelStorage):
         # except requests.exceptions.ConnectionError:
         #     logging.warn(r.content)
 
+        if r.status_code != 200:
+            return Dixel(dixel.id, meta=meta, level=dixel.level)
+            return dixel
+
         items = r.json()
         if "AnonymizedFrom" in items:
             meta['Anonymized'] = True
@@ -308,6 +312,9 @@ class OrthancProxy(Orthanc):
 
             def qdict(dixel):
                 qdict = {'PatientID': dixel.meta['PatientID'],
+                         'PatientName': '',
+                         'PatientSex': '',
+                         'PatientBirthDate': '',
                          'StudyInstanceUID': '',
                          'SeriesInstanceUID': dixel.meta.get('SeriesInstanceUID', ''),
                          'SeriesDescription': '',
@@ -364,6 +371,9 @@ class OrthancProxy(Orthanc):
                 url = '{0}/queries/{1}/answers/{2}/content?simplify'.format(self.url, dixel.meta['QID'], aid)
                 # r = self.session.get(url)
                 r = self.do_get(url)
+
+                if r.status_code != 200:
+                    return dixel
 
                 tags = r.json()
 
@@ -436,8 +446,7 @@ class OrthancProxy(Orthanc):
 
     def update(self, dixel, **kwargs):
 
-        if dixel.meta.get('AccessionNumber') and\
-                not dixel.meta.get("RetrieveAETitle"):
+        if dixel.meta.get('StudyInstanceUID'):
             # run a PACS search for this study
             d = self.get(dixel, **kwargs)
         else:

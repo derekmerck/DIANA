@@ -172,21 +172,31 @@ class HTTPDixelStorage(DixelStorage):
         r.status_code = 499
         try:
             r = self.session.get(url, headers=headers, params=params)
+            r = requests.get(url, headers=headers, params=params, auth=self.session.auth)
         except requests.exceptions.ConnectionError as e:
             logging.error(e.message)
+            logging.error(e.request.url)
             logging.error(e.request.headers)
             logging.error(e.request.body)
+            logging.error(e.response)
+            if e.response:
+                r = e.response
         return r
 
     def do_post(self, url, data=None, json=None, headers=None):
         r = requests.Response()
         r.status_code = 499
         try:
-            r = self.session.post(url, data=data, json=json, headers=headers)
+            # r = self.session.post(url, data=data, json=json, headers=headers)
+            r = requests.post(url, data=data, json=json, headers=headers, auth=self.session.auth)
         except requests.exceptions.ConnectionError as e:
             logging.error(e.message)
+            logging.error(e.request.url)
             logging.error(e.request.headers)
             logging.error(e.request.body)
+            logging.error(e.response)
+            if e.response:
+                r = e.response
         return r
 
     def do_delete(self, url, headers=None):
@@ -196,6 +206,10 @@ class HTTPDixelStorage(DixelStorage):
             r = self.session.delete(url, headers=headers)
         except requests.exceptions.ConnectionError as e:
             logging.error(e.message)
+            logging.error(e.request.url)
             logging.error(e.request.headers)
             logging.error(e.request.body)
+            logging.error(e.response)
+            if e.response:
+                r = e.response
         return r
