@@ -272,23 +272,24 @@ class OrthancProxy(Orthanc):
             qdict['ModalitiesInStudy'] == q.get('Modality')
             del(qdict['Modality'])
 
-        if DicomLevel==DicomLevel.SERIES or DicomLevel==DicomLevel.INSTANCES:
+        if level==DicomLevel.SERIES or DicomLevel==DicomLevel.INSTANCES:
             qds = {'SeriesInstanceUID': '',
                     'SeriesDescription': '',
-                    'SeriesNumber': ''}
+                    'SeriesNumber': '',
+                    'NumberOfSeriesRelatedInstances': ''}
             qdict.update( qds )
 
-        if DicomLevel==DicomLevel.INSTANCES:
+        if level==DicomLevel.INSTANCES:
             qds = {'SOPInstanceUID': ''}
             qdict.update( qds )
 
         if q:
             qdict.update(q)
 
-        data = {'Level': level,
+        data = {'Level': str(level),
                 'Query': qdict}
 
-        self.logger.debug(pformat(data))
+        # self.logger.debug(pformat(data))
 
         url = '{0}/modalities/{1}/query'.format(self.url, remote_aet)
         self.logger.debug(url)
@@ -296,11 +297,32 @@ class OrthancProxy(Orthanc):
         headers = {"Accept-Encoding": "identity",
                    "Accept": "application/json"}
         r = self.do_post(url, json=data, headers=headers)
-        if r.status_code == 200:
-            return r.json()
-        else:
-            self.logger.error("Proxy did not return 200")
+
+        if r.status_code != 200:
             return r
+
+        qid = r.json()["ID"]
+
+        url = '{0}/queries/{1}/answers'.format(self.url, qid)
+        r = self.do_get(url)
+
+        if r.status_code != 200:
+            return r
+
+        answers = r.json()
+
+        ret = []
+
+        for aid in answers:
+            url = '{0}/queries/{1}/answers/{2}/content?simplify'.format(self.url, qid, aid)
+            r = self.do_get(url)
+
+            if r.status_code != 200:
+                return r
+
+            ret.append(r.json())
+
+        return ret
 
 
     def get(self, dixel, **kwargs):

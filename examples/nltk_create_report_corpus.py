@@ -139,3 +139,16 @@ if __name__=="__main__":
 
     metadata_fn = os.path.join(ROOT_DIR, "corpus_meta.csv")
     save_csv(metadata_fn, worklist, fieldnames)
+
+    """"
+    if thin but NOT sagittal (or and axial):
+       declare failure
+       
+    failure:    
+       ask for all series assocaited with study id
+       pick the one with the most slices
+       flag the ones that are "dynamic"
+       nothing with thick, mip, sagittal or coronal
+       1mm is thin enough?
+    
+    """
