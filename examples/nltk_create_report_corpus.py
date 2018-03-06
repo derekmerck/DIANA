@@ -47,6 +47,7 @@ if __name__=="__main__":
 
     for d in worklist:
         r = Report(dixel=d)
+
         anon_id = orthanc_id(d.meta['PatientID'], d.meta['AccessionNumber'])
         r.write(out_dir, "{}.txt".format(anon_id), anonymize=True, nesting=1)
 

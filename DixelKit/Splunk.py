@@ -1,4 +1,3 @@
-from Dixel import *
 from DixelStorage import DixelStorage
 
 from pprint import pformat
