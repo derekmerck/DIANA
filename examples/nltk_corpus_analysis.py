@@ -1,7 +1,7 @@
 """
 Example of reading a report corpus and generating a concordance and bi-grams
 
-Create a NLTK plaintext corpus using `examples/create_report_corpus.py`
+Create a NLTK plaintext corpus using `examples/nltk_create_report_corpus.py`
 """
 
 from pprint import pprint
@@ -9,9 +9,10 @@ import nltk
 from nltk.corpus import CategorizedPlaintextCorpusReader, stopwords
 import logging
 
-CORPUS_ROOT = '/Users/derek/Desktop/ELVO/elvo_corpus'
+CORPUS_ROOT = "/Users/derek/Data/RADCAT/corpus"
 
 if __name__ == "__main__":
+    # For reports with category in the f/n abc_def+3.txt
     reports = CategorizedPlaintextCorpusReader(CORPUS_ROOT, '.*',
                              cat_pattern=r'.*\+(.+)\.txt')
 

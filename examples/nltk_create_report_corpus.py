@@ -2,6 +2,9 @@
 Reads Montage csv output from a source folder, anonymizes and saves
 reports into NLTK plaintext corpus format.  Add categories to filenames
 to generate a categorized plaintext corpus.
+
+Montage output is segmented into 2 week chunks b/c of the 25k entry
+limit on returned items.
 """
 
 from glob import glob
@@ -14,9 +17,10 @@ from Report import Report
 from DixelTools import load_csv, save_csv, orthanc_id
 
 # Set this to the root of your source directory
-ROOT_DIR = "/Users/derek/Desktop/RADCAT"
+ROOT_DIR = "/Users/derek/Data/RADCAT"
 # A procedure code -> body region mapping
 P2BP_LUT = 'img2region.csv'
+REBUILD_CORPUS = False
 
 if __name__=="__main__":
     logging.basicConfig(level=logging.DEBUG)
@@ -49,7 +53,8 @@ if __name__=="__main__":
         r = Report(dixel=d)
 
         anon_id = orthanc_id(d.meta['PatientID'], d.meta['AccessionNumber'])
-        r.write(out_dir, "{}.txt".format(anon_id), anonymize=True, nesting=1)
+        if REBUILD_CORPUS:
+            r.write(out_dir, "{}.txt".format(anon_id), anonymize=True, nesting=1)
 
         age = float( d.meta['Patient Age'] )
         if age <= 18:
@@ -115,13 +120,17 @@ if __name__=="__main__":
         if radcat == "UNK":
             logging.warn("No RADCAT in {}".format(d))
 
+        radcat3 = "Yes" if d.meta.get('radcat3') else "No"
+
         new_meta = {'id': anon_id,
                     'modality': modality,
                     'body_part': body_part,
+                    'cpt': d.meta["CPT Code"],
                     'sex': d.meta['Patient Sex'],
                     'age': new_age,
                     'status': d.meta['Patient Status'],
                     'radcat': radcat,
+                    'radcat3': radcat3,
                     'radiologist': new_phys,
                     'organization': new_org}
 
@@ -130,25 +139,14 @@ if __name__=="__main__":
     fieldnames = ['id',
                   'modality',
                   'body_part',
+                  'cpt',
                   'sex',
                   'age',
                   'status',
                   'radcat',
+                  'radcat3',
                   'radiologist',
                   'organization']
 
     metadata_fn = os.path.join(ROOT_DIR, "corpus_meta.csv")
     save_csv(metadata_fn, worklist, fieldnames)
-
-    """"
-    if thin but NOT sagittal (or and axial):
-       declare failure
-       
-    failure:    
-       ask for all series assocaited with study id
-       pick the one with the most slices
-       flag the ones that are "dynamic"
-       nothing with thick, mip, sagittal or coronal
-       1mm is thin enough?
-    
-    """

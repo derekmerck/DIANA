@@ -81,6 +81,7 @@ class Report(object):
         patterns = {
             'lungrads': 'Lung-RADS .*[Cc]ategory (\d)',
             'radcat': '(?i)RADCAT(?: Grade)?:? ?R?(\d)',
+            'radcat3': '(?i)RADCAT(?: Grade)?:? ?R?3',
             'ctdi': 'CTDIvol = (\d*\.*\d*).*mGy',
             'dlp': 'DLP = (\d*\.*\d*).*mGy-cm',
             'lungrads_s': 'Lung-RADS .*[Cc]ategory \d-?([Ss])',
