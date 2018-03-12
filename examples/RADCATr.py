@@ -9,8 +9,8 @@ import logging
 import csv
 import re
 import argparse
-from tkinter import *
-from tkinter import ttk
+from Tkinter import *
+import ttk
 
 # In case running from /examples folder in git
 sys.path.insert(0, os.path.abspath('../DixelKit'))
@@ -31,10 +31,11 @@ fieldnames = []
 def load_data():
     global items, fieldnames
     fp = os.path.join(data_root, fn)
-    with open(fp, 'r') as f:
+    with open(fp, 'rU') as f:
         rows = csv.DictReader(f)
         fieldnames = rows.fieldnames + ['radcat', 'radcat3', 'audit_radcat', 'audit_radcat3', 'agrees']
         for row in rows:
+            # logging.debug(row)
             items.append(row)
 
 
@@ -112,6 +113,8 @@ def make_ui():
         item = items[current]
 
         r = Report(text=item['Report Text'])
+        # logging.debug(r.text)
+
         extractions = r.extractions()
         item['radcat'] = int(extractions.get('radcat'))
         item['radcat3'] = "Yes" if extractions.get('radcat3') else "No"
@@ -250,7 +253,13 @@ if __name__=="__main__":
     else:
         logging_level = logging.WARN
 
-    logging.basicConfig(level=logging_level)
+    # Then just go ahead and put it in DEBUG anyway...
+    logging.basicConfig(level=logging.DEBUG)
+
+    # logging.debug(logging_level)
     load_data()
+
+    # logging.debug(items)
+
     make_ui()
     root.mainloop()
