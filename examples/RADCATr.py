@@ -1,19 +1,27 @@
 """
-DIANnotate!
-RADCATr?
+RADCATr - RADCAT Review Interface
+Merck, Winter 2018
 """
 
-import logging
+import sys
 import os
+import logging
 import csv
 import re
 import argparse
 from tkinter import *
 from tkinter import ttk
+
+# In case running from /examples folder in git
+sys.path.insert(0, os.path.abspath('../DixelKit'))
 from Report import Report
 
-# data_root = "/Users/derek/Desktop/PHI"
-# fn = "search.csv"
+__desc__ = """
+Open a CSV dump from Montage and audit entries with a Tkinter GUI.
+Results are saved as they are generated as `source+audit.csv`.
+"""
+__version__ = "0.1.0"
+__prog__ = "RADCATr"
 
 root = Tk()
 current = 0
@@ -120,7 +128,7 @@ def make_ui():
         # logging.debug(item['radcat3'])
 
 
-    root.title("Montage RADCAT Reviewer")
+    root.title("RADCAT Reviewer")
 
     """
     GUI layout row/column design
@@ -218,19 +226,31 @@ def make_ui():
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('csv_fp')
+    parser = argparse.ArgumentParser(prog=__prog__, description=__desc__)
+    parser.add_argument('csv_fp', help="Fully qualified path to Montage `source.csv` file.")
+    parser.add_argument('--verbose', '-v', help="Report match info on console", action='count')
+    parser.add_argument('--version', action="version", version='%(prog)s {}'.format(__version__))
     opts = parser.parse_args()
 
     global fn, data_root
     data_root = os.path.split(opts.csv_fp)[0]
     fn = os.path.split(opts.csv_fp)[1]
 
+    return opts
+
 
 if __name__=="__main__":
 
-    logging.basicConfig(level=logging.DEBUG)
-    parse_args()
+    opts = parse_args()
+
+    if opts.verbose >= 2:
+        logging_level = logging.DEBUG
+    if opts.verbose == 1:
+        logging_level = logging.INFO
+    else:
+        logging_level = logging.WARN
+
+    logging.basicConfig(level=logging_level)
     load_data()
     make_ui()
     root.mainloop()
