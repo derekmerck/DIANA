@@ -333,17 +333,17 @@ class OrthancProxy(Orthanc):
             dicom_level = "series"
 
             def qdict(dixel):
-                qdict = {'PatientID': dixel.meta['PatientID'],
+                qdict = {'PatientID': dixel.meta.get('PatientID',''),
                          'PatientName': '',
                          'PatientSex': '',
                          'PatientBirthDate': '',
                          'StudyInstanceUID': '',
                          'SeriesInstanceUID': dixel.meta.get('SeriesInstanceUID', ''),
                          'SeriesDescription': '',
-                         'SeriesNumber': '',
+                         'SeriesNumber': dixel.meta.get('SeriesNumber', ''),
                          'StudyDate': '',
                          'StudyTime': '',
-                         'AccessionNumber': dixel.meta['AccessionNumber']}
+                         'AccessionNumber': dixel.meta.get('AccessionNumber', '')}
                 # if dixel.level == DicomLevel.STUDIES:
                 #     qdict['ModalitiesInStudy'] = 'CT'
                 qdict.update(kwargs.get('qdict', {}))
@@ -451,8 +451,8 @@ class OrthancProxy(Orthanc):
         # if not dixel.meta.get('QID') or not dixel.meta.get('AID'):
         dixel = find_series(dixel)
 
-        if not dixel.meta['AID']:
-            logging.warn("Could not find {}".format(dixel))
+        if not dixel.meta.get('AID'):
+            logging.warn("Could not find {}".format(pformat(dixel.meta)))
             return dixel
 
         if kwargs.get('retrieve'):
@@ -468,7 +468,9 @@ class OrthancProxy(Orthanc):
 
     def update(self, dixel, **kwargs):
 
-        if dixel.meta.get('StudyInstanceUID'):
+        if True:
+        # if not dixel.meta.get('SeriesInstanceUID'):
+        # if dixel.meta.get('StudyInstanceUID'):
             # run a PACS search for this study
             d = self.get(dixel, **kwargs)
         else:

@@ -184,7 +184,7 @@ def lookup_seruids(proxy, series_qs, worklist=None,
                    data_root=None, csv_fn=None, save_file=False):
     """Lookup series UUIDs from PACS, accepts worklist or fn"""
 
-    if data_root and csv_fn:
+    if not worklist and data_root and csv_fn:
         csv_in = os.path.join(data_root, csv_fn)
         worklist, fieldnames = load_csv(csv_in)
     else:
@@ -192,7 +192,7 @@ def lookup_seruids(proxy, series_qs, worklist=None,
 
     for item in series_qs:
         qdict = item['qdict']
-        worklist = proxy.update_worklist(worklist, qdict=qdict, suffix=item['suffix'])
+        worklist = proxy.update_worklist(worklist, qdict=qdict, suffix=item.get('suffix', ''))
 
     if save_file:
         csv_out = os.path.splitext(csv_fn)[0]+"+seruids.csv"

@@ -1,13 +1,19 @@
-from tkinter import *
-from tkinter import ttk
+"""
+DIANnotate!
+RADCATr?
+"""
+
 import logging
 import os
 import csv
-from Report import Report
 import re
+import argparse
+from tkinter import *
+from tkinter import ttk
+from Report import Report
 
-data_root = "/Users/derek/Desktop/PHI"
-fn = "search.csv"
+# data_root = "/Users/derek/Desktop/PHI"
+# fn = "search.csv"
 
 root = Tk()
 current = 0
@@ -52,10 +58,12 @@ def make_ui():
 
         agrees = (item['audit_radcat'] == item['radcat']) and (item['audit_radcat3'] == item['radcat3'])
 
-        logging.debug(item['audit_radcat'])
-        logging.debug(item['audit_radcat3'])
-        logging.debug(item['audit_radcat']==item['radcat'])
-        logging.debug(item['audit_radcat3']==item['radcat3'])
+        # logging.debug(item['audit_radcat'])
+        # logging.debug(item['audit_radcat3'])
+        logging.info("Report {:<3} RADCAT grade agreement: {} (originally scored {})".format(
+            "{}:".format(current+1), item['audit_radcat']==item['radcat'], item['radcat']))
+        logging.info("           RADCAT f/u agreement: {} (originally scored {})".format(
+            item['audit_radcat3']==item['radcat3'], item['radcat3']))
 
         item['agrees'] = "Yes" if agrees else "No"
 
@@ -108,13 +116,14 @@ def make_ui():
         report_text.insert('1.0', r.anonymized())
         report_text['state'] = 'disabled'
 
-        logging.debug(item['radcat'])
-        logging.debug(item['radcat3'])
+        # logging.debug(item['radcat'])
+        # logging.debug(item['radcat3'])
 
 
     root.title("Montage RADCAT Reviewer")
 
     """
+    GUI layout row/column design
     +--------------+---+---------------+
     |              |   |     label     |    0
     +              |   +---------------+
@@ -208,9 +217,20 @@ def make_ui():
     go(0)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('csv_fp')
+    opts = parser.parse_args()
+
+    global fn, data_root
+    data_root = os.path.split(opts.csv_fp)[0]
+    fn = os.path.split(opts.csv_fp)[1]
+
+
 if __name__=="__main__":
 
     logging.basicConfig(level=logging.DEBUG)
+    parse_args()
     load_data()
     make_ui()
     root.mainloop()

@@ -140,7 +140,7 @@ class MetaTranslator(object):
             if v=='?':
                 continue
             t = tokenize_key(k)
-            logging.debug(t)
+            # logging.debug(t)
             if not t:
                 ret[k] = v
                 continue
@@ -240,7 +240,7 @@ class DixelReader(object):
 
         return subitems
 
-    def read_csv(self):
+    def read_csv2(self):
 
         with open(self.fp, 'rU') as f:
             items = csv.DictReader(f)
@@ -251,6 +251,39 @@ class DixelReader(object):
                 worklist = worklist + subitems
 
             return worklist
+
+    def read_csv1(self, secondary_id=None, dicom_level=DicomLevel.STUDIES):
+        with open(self.fp, 'rU') as f:
+            items = csv.DictReader(f)
+            s = set()
+            for item in items:
+                # Need to create a unique identifier without having tags
+                #   1. Use OID if available
+                id = item.get('OID')
+                #   2. Use AN if available
+                if not id:
+                    id = item.get('AccessionNumber')
+                #   3. If no AN, try PatientID + secondary_id (ie, Treatment Time)
+
+                if not id and item.get('Accession Number'):
+                    id = item.get('Accession Number')
+                    item['AccessionNumber'] = item.get('Accession Number')
+                    del (item['Accession Number'])
+
+                if not id:
+                    if not secondary_id:
+                        raise ValueError("Needs AccessionNumber or MRN+Ref")
+                    id = item.get('PatientID') + item.get(secondary_id)
+
+                if not item.get('PatientID'):
+                    item['PatientID'] = item.get('Patient MRN')
+                    del (item['Patient MRN'])
+
+                # logging.debug(pformat(item))
+
+                d = Dixel(id, level=dicom_level, meta=item)
+                s.add(d)
+            return s, items.fieldnames
 
 
 def test_reader_f2():
