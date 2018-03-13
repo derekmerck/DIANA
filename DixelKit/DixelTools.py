@@ -61,15 +61,17 @@ def load_csv(csv_file, secondary_id=None, dicom_level=DicomLevel.STUDIES):
             s.add(d)
         return s, items.fieldnames
 
-def save_csv(csv_file, worklist, _fieldnames=None):
+def save_csv(csv_file, worklist, _fieldnames=None, extras=True):
 
     with open(csv_file, "w") as fp:
 
         fieldnames=_fieldnames or []
-        for item in worklist:
-            for k in item.meta.keys():
-                if k not in fieldnames:
-                    fieldnames.append(k)
+
+        if extras or not fieldnames:
+            for item in worklist:
+                for k in item.meta.keys():
+                    if k not in fieldnames:
+                        fieldnames.append(k)
 
         writer = csv.DictWriter(fp,
                                 fieldnames=fieldnames,
