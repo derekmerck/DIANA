@@ -63,7 +63,7 @@ class Orthanc(Requester):
             self.remove(dixel)
 
         if dixel not in self:
-            data = dixel.file(compress)
+            data = dixel.read_file(compress)
             if data:
                 # logging.debug("Putting")
                 headers = {'content-type': 'application/dicom'}

@@ -10,7 +10,6 @@ from pytictoc import TicToc
 Each of the CIRR's 256 1st level subfolders has about 60GB of data in it...
 """
 
-
 def dicom_dir_inventory(dcm_dir, cache):
     worklist = set()
     n = 0
@@ -69,8 +68,9 @@ def upload_dicom_dir(dcm_dir, dest, cache=None, compress=False):
 
 def test_upload_dicom_dir_w_compression():
 
+    DB_SELECTION = 14
     DCM_DIR = "/Users/derek/Desktop/Christianson/00"
-    R = RedisCache(db=15, clear=True)
+    R = RedisCache(db=DB_SELECTION, clear=True)
     orthanc = Orthanc(host="trusty64", port=8142, user="orthanc", password="0rthanC!", clear=True)
     assert(orthanc.size()==0)
 
@@ -87,9 +87,58 @@ def test_upload_dicom_dir_w_compression():
 
 if __name__ == "__main__":
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
-    test_upload_dicom_dir_w_compression()
+    # test_upload_dicom_dir_w_compression()
+
+    INVENTORY_DIR         = False
+    REFACTOR_FILES_TO_ANS = False
+    UPLOAD_ANS            = True
+
+    dcm_dir = "/Users/derek/Desktop/Christianson"
+
+    db_files = 14
+    R = RedisCache(db=db_files, clear=INVENTORY_DIR)
+
+    db_accessions = 13
+    Q = RedisCache(db=db_accessions, clear=REFACTOR_FILES_TO_ANS)
+
+    orthanc = Orthanc(host="trusty64", port=8142, user="orthanc", password="0rthanC!", clear=UPLOAD_ANS)
+
+    if INVENTORY_DIR:
+        logging.info("Inventorying DICOM dir")
+        dicom_dir_inventory(dcm_dir, R)
+
+    if REFACTOR_FILES_TO_ANS:
+        logging.info("Refactoring files to accession numbers")
+        for k in R.keys():
+            v = R.get(k)
+            fp = k
+            accession_num = v['AccessionNumber']
+            Q.lpush(accession_num, fp)
+
+    def upload_accession(dest, accession_number, accession_cache, file_cache, compress=False, lazy=True):
+
+        # All members of this accession
+        fns = accession_cache.lget(accession_number)
+
+        logging.debug(fns)
+
+        # Create a worklist
+        worklist = set()
+        for fp in fns:
+            # fp = os.path.join(dcm_dir, fn[0:2], fn[2:4], fn)
+            logging.debug(fp)
+            d = Dixel(key=fp, cache=file_cache)
+            worklist.add(d)
+            logging.debug(pformat(d.data))
+
+        dest.add_all(worklist, compress=compress, lazy=True)
+
+    if UPLOAD_ANS:
+        upload_accession(orthanc, 'X001650710', Q, R)
+        upload_accession(orthanc, 'A2954207', Q, R)
+
 
 
 

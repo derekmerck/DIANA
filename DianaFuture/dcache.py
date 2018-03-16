@@ -206,6 +206,16 @@ class RedisCache(DictCache):
         if len(data) > 0:
             self.redis.hmset(key, data)
 
+    def lget(self, key, start=0, stop=-1):
+        if self.redis.exists(key):
+            return self.redis.lrange(key, start, stop)
+        else:
+            pass
+
+    def lpush(self, key, data):
+        if len(data) > 0:
+            self.redis.lpush(key, data)
+
     def keys(self, pattern="*"):
         return self.redis.keys(pattern)
 
