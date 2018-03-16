@@ -1,3 +1,9 @@
+"""
+Dictionary caching class
+
+Variables beginning with a leading underscore are reserved for class attributes, i.e., "_key"
+"""
+
 import redis
 import csv
 import pickle
@@ -10,81 +16,115 @@ class DictCache(object):
     """
     Persistent dict caching
     """
-    def delete(self, id, *args, **kwargs):
+    def delete(self, key, *args, **kwargs):
         raise NotImplementedError
 
-    def get(self, id, *args, **kwargs):
+    def get(self, key, *args, **kwargs):
         raise NotImplementedError
 
-    def put(self, id, data, *args, **kwargs):
+    def put(self, key, data, *args, **kwargs):
         raise NotImplementedError
 
     def clear(self):
         raise NotImplementedError
 
+    def keys(self):
+        raise NotImplementedError
+
+    def values(self):
+        raise NotImplementedError
+
+    def kvs(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        raise NotImplementedError
+
+    def __nonzero__(self):
+        """Exists, even if nothing in it"""
+        return True
+
 
 class FileDictCache(DictCache):
 
-    def __init__(self, fp, load_fn, save_fn, clear=False):
+    def __init__(self, fp, load_fn, save_fn, autosave=True, clear=False):
+        super(FileDictCache, self).__init__()
         self.fp = fp
+        self.logger = logging.getLogger("{}<{}>".format(self.__class__.__name__, fp))
         self.cache = {}
+        self.autosave = autosave
         self.save_fn = save_fn
         if clear:
             self.clear()
         if os.path.exists(self.fp):
             load_fn()
+        else:
+            self.logger.warn("No existing cache at {}".format(fp))
 
     def clear(self):
         if os.path.exists(self.fp):
             os.remove(self.fp)
 
-    def delete(self, id, **kwargs):
-        if id in self.cache.keys():
-            del(self.cache[id])
-        self.save_fn()
+    def delete(self, key, **kwargs):
+        if key in self.cache.keys():
+            del(self.cache[key])
+        if self.autosave:
+            self.save_fn()
 
-    def get(self, id, **kwargs):
-        if id in self.cache.keys():
-            return self.cache[id]
+    def get(self, key, **kwargs):
+        if key in self.cache.keys():
+            return self.cache[key]
         else:
-            self.logger.warn('Nothing set for id {}'.format(id))
+            self.logger.warn('Nothing set for key {}'.format(key))
 
-    def put(self, id, data, force=False,**kwargs):
-        if id in self.cache.keys() and not force:
-            self.logger.warn("Id {} already exists, use 'force' to overwrite".format(id))
+    def put(self, key, data, force=False, **kwargs):
+        if key in self.cache.keys() and not force:
+            self.logger.warn("key {} already exists, use 'force' to overwrite".format(key))
             return
         if len(data) == 0:
-            self.delete(id)
+            self.delete(key)
             return
-        self.cache[id] = data
-        self.save_fn()
+        self.cache[key] = data
+        if self.autosave:
+            self.save_fn()
+
+    def keys(self):
+        return self.cache.keys()
+
+    def values(self):
+        return self.cache.values()
+
+    def __len__(self):
+        return len(self.cache.keys())
 
 
 class CSVCache(FileDictCache):
 
-    def __init__(self, fp, id_field='_id', clear=False, fieldnames=None):
+    def __init__(self, fp, key_field='_key', fieldnames=None, clear=False, autosave=True, remap_fn=None):
         self.fieldnames = fieldnames
-        self.id_field = id_field
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.debug("Reading cache")
-        super(CSVCache, self).__init__(fp, self.load_csv, self.save_csv, clear)
+        self.key_field = key_field
+        self.remap_fn = remap_fn # CSV caches from Montage or Copath will have non-normalized dixels in them
+        super(CSVCache, self).__init__(fp, self.load_csv, self.save_csv, clear=clear, autosave=autosave)
 
     def load_csv(self):
 
-        # self.logger.debug("Loading {}".format(self.fp))
-
+        self.logger.debug("Reading cache")
         with open(self.fp, 'rU') as f:
             reader = csv.DictReader(f)
             self.fieldnames = reader.fieldnames
             for item in reader:
-                key = item.get(self.id_field)
 
                 # Trim unset fields out
                 data = {}
                 for k, v in item.iteritems():
-                    if v and k !=  "_id":
+                    if v and k != '_key':
                         data[k] = v
 
+                if self.remap_fn:
+                    data = self.remap_fn(key=None, data=data)
+
+                # After remapping
+                key = data.get(self.key_field)
                 self.cache[key] = data
 
 
@@ -93,11 +133,12 @@ class CSVCache(FileDictCache):
         if len(self.cache) == 0:
             return
 
-        # convert cache into list of dicts w id
+        # convert cache into list of dicts w keys
         items = []
         for key, v in self.cache.iteritems():
             item = dict(v)
-            item[self.id_field] = key
+            if not item.get(self.key_field):
+                item[self.key_field] = key
             items.append(item)
 
         # Use explicit fieldnames if present
@@ -120,9 +161,8 @@ class CSVCache(FileDictCache):
 
 class PickleCache(FileDictCache):
 
-    def __init__(self, fp, clear=False):
-        self.logger = logging.getLogger(self.__class__.__name__)
-        super(PickleCache, self).__init__(fp, self.load_pickle, self.save_pickle, clear)
+    def __init__(self, fp, clear=False, autosave=True):
+        super(PickleCache, self).__init__(fp, self.load_pickle, self.save_pickle, clear=clear, autosave=autosave)
 
     def load_pickle(self):
         with open(self.fp, 'rb') as f:
@@ -136,58 +176,89 @@ class PickleCache(FileDictCache):
 class RedisCache(DictCache):
 
     def __init__(self, host='localhost', port=6379, password=None, db=0, clear=False):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger("{}<db:{}>".format(self.__class__.__name__, db))
+        super(RedisCache, self).__init__()
         self.redis = redis.Redis(
             host=host,
             port=port,
             password=password,
             db=db)
         if clear:
-            self.redis.flushdb()
+            self.clear()
 
-    def delete(self, id, **kwargs):
-        self.redis.delete(id)
+    def clear(self):
+        self.redis.flushdb()
 
-    def get(self, id, **kwargs):
-        if self.redis.exists(id):
-            return self.redis.hgetall(id)
+    def delete(self, key, **kwargs):
+        self.redis.delete(key)
+
+    def get(self, key, **kwargs):
+        if self.redis.exists(key):
+            return self.redis.hgetall(key)
         else:
-            self.logger.warn('Nothing set for id {}'.format(id))
+            pass
 
-    def put(self, id, data, force=False, **kwargs):
-        if self.redis.exists(id) and not force:
-            self.logger.warn("Id {} already exists, use 'force' to overwrite".format(id))
+    def put(self, key, data, force=False, **kwargs):
+        if self.redis.exists(key) and not force:
+            self.logger.warn("Key {} already exists, use 'force' to overwrite".format(key))
             return
-        self.delete(id)
+        self.delete(key)
         if len(data) > 0:
-            self.redis.hmset(id, data)
+            self.redis.hmset(key, data)
+
+    def keys(self, pattern="*"):
+        return self.redis.keys(pattern)
+
+    def values(self):
+        ret = []
+        for k in self.keys():
+            ret.append(self.get(k))
+
+    @property
+    def cache(self):
+        ret = {}
+        for k in self.keys():
+            ret[k] = self.get(k)
+        return ret
+
+    def __len__(self):
+        return len(self.keys())
+
 
 class Persistent(object):
 
-    def __init__(self, key, data=None, cache=None, init_fn=None, **kwargs):
+    def __init__(self, key, data=None, cache=None, init_fn=None, remap_fn=None, **kwargs):
         self.key = key
         self.data = data or {}
         self.cache = cache
 
         # Use data if provided
         if data:
+            # logging.debug("Setting data")
             self.data = dict(data)
-            self.persist()
 
         # Otherwise, try to load key
         if not data and self.cache:
+            # logging.debug("Calling loader fn")
             self.data = self.cache.get(self.key)
 
         # Otherwise, call the init_fn
-        if not self.data:
-            self.data = init_fn(self.key)
-            self.persist()
+        if not self.data and init_fn:
+            self.data = init_fn(key=self.key, data=self.data)
+
+        # Call the data remapper if there is one
+        if remap_fn:
+            # logging.debug("Calling remapper fn")
+            self.data = remap_fn(key=self.key, data=self.data)
+
+        self.persist()
 
     def persist(self, cache=None):
         # Accepts an alternate dcache to save to
         cache = cache or self.cache
         if not cache:
             return
+        # logging.debug("Putting {} in cache {}".format(self.key, cache))
         cache.put(self.key, self.data, force=True)
 
 
@@ -201,7 +272,7 @@ def test_persistence():
             "bird": "parrot"}
 
     p = Persistent("12345", data, R)
-    q = Persistent("12345", dcache=Q)
+    q = Persistent("12345", cache=Q)
 
     logging.debug(p.data)
     logging.debug(q.data)
@@ -251,6 +322,7 @@ def test_csv():
     D = CSVCache(fp)
 
     foo = D.get('foo')
+    logging.debug(foo)
     assert(foo=={'dog': 'lab'})
 
     bar = D.get('bar')
@@ -278,8 +350,9 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
 
+    test_redis()
+    test_csv()
+    test_pickle()
+
     test_persistence()
 
-    # test_redis()
-    # test_csv()
-    # test_pickle()
