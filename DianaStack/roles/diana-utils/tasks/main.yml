@@ -29,12 +29,6 @@
     - splunk-sdk
   when: FRESH is defined
 
-- name: Install DIANA-Utils from local
-  copy:
-    src:  ../../DIANA/utilities
-    dest: /usr/src/DIANA
-  become: yes
-  when:   false # LOCAL_DIANA is defined
 
 - name: Install DIANA-Utils from github
   git:
@@ -42,5 +36,4 @@
     dest: /usr/src/DIANA
     force: yes
   become: yes
-  when:   LOCAL_DIANA is not defined
 

@@ -103,11 +103,13 @@
         path: /protect3/
         port: 8042
 
-  - role:        diana-fe
-    dfe_config:  central_dfe_cfg.yml
-
   - role:        diana-monitor
     dmon_config: central_dmon_cfg.yml
+    tags:        supervisor
+
+  - role:        diana-fe
+    dfe_config:  central_dfe_cfg.yml
+    tags:        supervisor
 
 
 

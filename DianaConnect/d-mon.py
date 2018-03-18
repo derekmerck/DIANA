@@ -219,7 +219,9 @@ class SplunkGateway(Gateway):
 
         url = '{0}/services/collector/event'.format(self.addr)
 
-        data = collections.OrderedDict([('time', epoch(data['InstanceCreationDateTime'])),
+        creation_dt = data.get('InstanceCreationDateTime') or datetime.now()
+
+        data = collections.OrderedDict([('time', epoch(creation_dt)),
                                         ('host', source),
                                         ('sourcetype', '_json'),
                                         ('index', dest),
