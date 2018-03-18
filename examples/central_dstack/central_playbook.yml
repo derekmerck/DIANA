@@ -1,7 +1,7 @@
 # Setup Central Imaging DIANA Stack
 # Merck, Fall 2017
 
-# > ansible-playbook -i secrets/my_inventory.yml --vault-password secrets/vault_pw.txt central2_playbook.yml
+# > ansible-playbook -i ../../secrets/local_inventory.yml --vault-password ../../secrets/vault_pw.txt central_playbook.yml
 
 ---
 - name: Setup Central Imaging DIANA Indexer
@@ -10,7 +10,7 @@
   hosts: indexer
 
   vars_files:
-  - secrets/vault.yml
+  - ../../secrets/vault.yml
   - globals.yml
 
   roles:
@@ -23,7 +23,7 @@
   hosts: archive
 
   vars_files:
-  - secrets/vault.yml
+  - ../../secrets/vault.yml
   - globals.yml
 
   # Additional required credentials for the archive services
@@ -36,15 +36,16 @@
   # BROWN STUDIES
   # ---------------------------
 
+  roles:
   - role:      orthanc
     title:     Christianson Imaging
-    name:      orthanc_ci
+    c_name:    orthanc_ci
     api_port:  8045
     admin_pw:  "{{ orthanc_ci_pw }}"
 
-  - role:      roles/orthanc
+  - role:      orthanc
     title:     Christianson Queue
-    name:      orthanc_ci_in
+    c_name:    orthanc_ci_in
     api_port:  8145
     dicom_port: 4145
     admin_pw:  "{{ orthanc_ci_pw }}"
@@ -61,13 +62,13 @@
 
   - role:      orthanc
     title:     HOBIT Imaging
-    name:      orthanc_hb
+    c_name:    orthanc_hb
     api_port:  8046
     admin_pw:  "{{ orthanc_hb_pw }}"
 
   - role:      orthanc
     title:     HOBIT Queue
-    name:      orthanc_hb_in
+    c_name:    orthanc_hb_in
     api_port:  8146
     dicom_port: 4146
     admin_pw:  "{{ orthanc_hb_pw }}"
@@ -80,7 +81,7 @@
 
   - role:      orthanc
     title:     ProTECT III Imaging
-    name:      orthanc_p3
+    c_name:    orthanc_p3
     api_port:  8047
     admin_pw:  "{{ orthanc_p3_pw }}"
 
@@ -90,6 +91,7 @@
 
   - role: nginx
     conf_type: tfe
+    port: 80
     r_proxies:
       orthanc_ci:
         path: /christianson/
@@ -101,11 +103,11 @@
         path: /protect3/
         port: 8042
 
-  - role:        diana-tfe
-    tfe_config:  central2_tfe_cfg.yml
+  - role:        diana-fe
+    dfe_config:  central_dfe_cfg.yml
 
   - role:        diana-monitor
-    dmon_config: central2_dmon_cfg.yml
+    dmon_config: central_dmon_cfg.yml
 
 
 

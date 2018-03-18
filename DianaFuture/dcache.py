@@ -216,6 +216,16 @@ class RedisCache(DictCache):
         if len(data) > 0:
             self.redis.lpush(key, data)
 
+    def sget(self, key):
+        if self.redis.exists(key):
+            return self.redis.smembers(key)
+        else:
+            pass
+
+    def sadd(self, key, data):
+        if len(data) > 0:
+            self.redis.sadd(key, data)
+
     def keys(self, pattern="*"):
         return self.redis.keys(pattern)
 
@@ -237,10 +247,11 @@ class RedisCache(DictCache):
 
 class Persistent(object):
 
-    def __init__(self, key, data=None, cache=None, init_fn=None, remap_fn=None, **kwargs):
+    def __init__(self, key, data=None, cache=None, init_fn=None, remap_fn=None, ro=False, **kwargs):
         self.key = key
         self.data = data or {}
         self.cache = cache
+        self.ro = ro
 
         # Use data if provided
         if data:
@@ -256,6 +267,9 @@ class Persistent(object):
         if not self.data and init_fn:
             self.data = init_fn(key=self.key, data=self.data)
 
+        if not self.data:
+            raise ValueError("No data can be sourced for {}".format(key))
+
         # Call the data remapper if there is one
         if remap_fn:
             # logging.debug("Calling remapper fn")
@@ -264,6 +278,8 @@ class Persistent(object):
         self.persist()
 
     def persist(self, cache=None):
+        if self.ro:
+            return
         # Accepts an alternate dcache to save to
         cache = cache or self.cache
         if not cache:

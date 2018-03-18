@@ -1,8 +1,8 @@
 ---
 - name:   Copy trial front-end interface config
   copy:
-    src:  "{{ tfe_config }}"
-    dest: /tmp/tfe_cfg.yml
+    src:  "{{ dfe_config }}"
+    dest: /tmp/dfe_cfg.yml
 
 - name: Add supervisor-gunicorn.conf to supervisord
   template:

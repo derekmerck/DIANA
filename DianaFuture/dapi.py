@@ -53,22 +53,28 @@ class Orthanc(Requester):
             self.clear()
         self.remote_names = remote_names
 
-    def add(self, dixel, lazy=True, compress=False):
+    def add(self, dixel, lazy=True, force=False, compress=False):
         # TODO: Should be "compressed", "uncompressed", "as_is" (default)
 
         if not dixel.dlvl == DLVL.INSTANCES:
             self.logger.warn("Can only 'put' instances")
 
-        if not lazy:
+        if force:
             self.remove(dixel)
 
-        if dixel not in self:
+        if not lazy or dixel not in self:
             data = dixel.read_file(compress)
             if data:
                 # logging.debug("Putting")
                 headers = {'content-type': 'application/dicom'}
                 url = "instances"
-                return self.do_post(url, data=data, headers=headers)
+                try:
+                    r = self.do_post(url, data=data, headers=headers)
+                except:
+                    self.logger.error("Failed to post {}".format(dixel.oid()))
+                    r = -1
+                return r
+
             else:
                 self.logger.warn("No data for {}".format(dixel))
 
@@ -124,7 +130,7 @@ class Orthanc(Requester):
     def size(self, unit="MB"):
         stats = self.statistics()
         if unit == "MB":
-            return stats['TotalDiskSizeMB']
+            return float(stats['TotalDiskSizeMB'])
         elif unit == "TB":
             return float(stats['TotalDiskSizeMB'])/1000.0
         else:

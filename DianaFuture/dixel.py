@@ -79,7 +79,7 @@ class Dixel(dcache.Persistent):
         # logging.debug("Reading DCM file")
         tags = dicom.read_file(dcm_fp, stop_before_pixels=True)
         # Don't want to save complex data types in cache
-        _data = {'PatientID':         tags[0x0010, 0x0020].value,
+        _data = {'PatientID':        tags[0x0010, 0x0020].value,
                 'AccessionNumber':   tags[0x0008, 0x0050].value,
                 'StudyInstanceUID':  tags[0x0020, 0x000d].value,
                 'SeriesInstanceUID': tags[0x0020, 0x000e].value,
@@ -129,8 +129,8 @@ class Dixel(dcache.Persistent):
 
         return _data
 
-    def __init__(self, key, data=None, cache=None, init_fn=None, remap_fn=None, dlvl=DLVL.STUDIES):
-        super(Dixel, self).__init__(key, data=data, cache=cache, init_fn=init_fn, remap_fn=remap_fn)
+    def __init__(self, key, data=None, cache=None, init_fn=None, remap_fn=None, dlvl=DLVL.STUDIES, ro=False):
+        super(Dixel, self).__init__(key, data=data, cache=cache, init_fn=init_fn, remap_fn=remap_fn, ro=ro)
         if not self.data.get('_dlvl'):
             self.dlvl = dlvl
         self.persist()
