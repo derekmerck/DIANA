@@ -29,12 +29,14 @@
     value:      ["{{ hostvars[item]['dicom_aet'] }}", "{{ hostvars[item]['dicom_host'] }}", "{{ hostvars[item]['dicom_port'] }}"]
   with_items:   "{{ groups['dicom_modalities'] }}"
   register:     mod_items
+  when:         groups['dicom_modalities'] is defined
 
 - name:         make a modalities dict
   set_fact:
     _modalities: "{{ _modalities | combine( {item.ansible_facts.key: item.ansible_facts.value} ) }}"
     cacheable:  no
   with_items:   "{{ mod_items.results }}"
+  when:         groups['dicom_modalities'] is defined
 
 - debug:        var=_modalities
 
@@ -47,12 +49,14 @@
       Password: "{{ hostvars[item]['orthanc_pword'] }}"
   with_items:   "{{ groups['orthanc_peers'] }}"
   register:     peer_items
+  when:         groups['orthanc_peers'] is defined
 
 - name:         make a peers dict
   set_fact:
     _peers:      "{{ _peers | combine( {item.ansible_facts.key: item.ansible_facts.value} ) }}"
     cacheable:  no
   with_items:   "{{ peer_items.results }}"
+  when:         groups['orthanc_peers'] is defined
 
 - debug:        var=_peers
 

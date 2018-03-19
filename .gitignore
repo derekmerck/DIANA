@@ -5,6 +5,7 @@
 notes*
 ignore*
 *retry
+# Single leading underscore fns
 \_[^\_]*rst
 \_[^\_]*py
 

@@ -139,11 +139,23 @@ role: `hl7_consumer`
 
 3. Install dashboards
 
+## Notes
 
-## REST Head Uploads
+#### REST Head Uploads
 
 Max file size is set to 8MB in `nginx`.  Most CTs are only .5MB, but some long scouts for panscans may be 4+MB uncompressed.
 
+
+#### ssh-agent in Pycharm
+
+Set agent a regular terminal, then share it with `eval`.
+
+```
+$ ssh-agent
+$ agent-add
+> [prompt for password]
+$ eval `(ssh-agent)`
+```
 
 ## License
 
