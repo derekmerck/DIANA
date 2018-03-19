@@ -311,7 +311,7 @@ if __name__ == "__main__":
 
     opts = parse_args()
 
-    opts.verbose = None
+    # opts.verbose = None
 
     if not opts.verbose:
         log_level = logging.INFO
@@ -331,14 +331,14 @@ if __name__ == "__main__":
     all           = opts.all
     compress      = opts.compress
 
-    # Overrides for testing...TODO: REMOVE
-    workers       = 8
-    directory     = "/Users/derek/Desktop/Christianson"
-    unstructured  = False
-    preindexed    = False
-    # accession     = 'A2954207'
-    all           = True
-    compress      = True
+    # # Overrides for testing...TODO: REMOVE
+    # workers       = 8
+    # directory     = "/Users/derek/Desktop/Christianson"
+    # unstructured  = False
+    # preindexed    = False
+    # # accession     = 'A2954207'
+    # all           = True
+    # compress      = True
 
     CLEAR_R       = False
     CLEAR_Q       = False

@@ -21,12 +21,18 @@ ROOT_DIR = "/Users/derek/Data/RADCAT"
 # A procedure code -> body region mapping
 P2BP_LUT = 'img2region.csv'
 REBUILD_CORPUS = False
+TRIM_AND_UPDATE = True
 
 if __name__=="__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-    source_dir = os.path.join(ROOT_DIR, 'source')
-    out_dir = os.path.join(ROOT_DIR, 'corpus')
+    # source_dir = os.path.join(ROOT_DIR, 'source')
+    # out_dir = os.path.join(ROOT_DIR, 'corpus')
+    # out_file = os.path.join(ROOT_DIR, "corpus_meta.csv")
+
+    source_dir = os.path.join(ROOT_DIR, 'reconcile')
+    out_file = os.path.join(ROOT_DIR, "reconcile_meta.csv")
+
 
     # Setup worklist
     worklist = set()
@@ -35,6 +41,21 @@ if __name__=="__main__":
     logging.debug(fns)
     for fn in fns:
         partial, _ = load_csv(fn)
+
+        # For reconcilation -- read radcat from fn and select 100 entries
+        if TRIM_AND_UPDATE:
+            for d in partial:
+                if fn.find('[!-]RADCAT1'):
+                    d.meta['radcat'] = 1
+                elif fn.find('[!-]RADCAT2'):
+                    d.meta['radcat'] = 2
+                elif fn.find('[!-]RADCAT4'):
+                    d.meta['radcat'] = 4
+                elif fn.find('[!-]RADCAT5'):
+                    d.meta['radcat'] = 5
+                d.meta['radcat3'] = fn.find('[!-]RADCAT3') >= 0
+            partial = random.sample(partial, 100)
+
         worklist = worklist.union(partial)
 
     logging.debug(worklist)
@@ -132,7 +153,8 @@ if __name__=="__main__":
                     'radcat': radcat,
                     'radcat3': radcat3,
                     'radiologist': new_phys,
-                    'organization': new_org}
+                    'organization': new_org,
+                    'report_text': d.meta['Report Text']}
 
         d.meta = new_meta
 
@@ -146,7 +168,7 @@ if __name__=="__main__":
                   'radcat',
                   'radcat3',
                   'radiologist',
-                  'organization']
+                  'organization',
+                  'report_text']
 
-    metadata_fn = os.path.join(ROOT_DIR, "corpus_meta.csv")
-    save_csv(metadata_fn, worklist, fieldnames)
+    save_csv(out_file, worklist, fieldnames)

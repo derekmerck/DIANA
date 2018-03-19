@@ -20,7 +20,7 @@ __desc__ = """
 Open a CSV dump from Montage and audit entries with a Tkinter GUI.
 Results are saved as they are generated as `source+audit.csv`.
 """
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __prog__ = "RADCATr"
 
 root = Tk()
@@ -33,14 +33,17 @@ def load_data():
     fp = os.path.join(data_root, fn)
     with open(fp, 'rU') as f:
         rows = csv.DictReader(f)
-        fieldnames = rows.fieldnames + ['radcat', 'radcat3', 'audit_radcat', 'audit_radcat3', 'agrees']
+        fieldnames = rows.fieldnames + ['audit_radcat', 'audit_radcat3', 'agrees']
         for row in rows:
             # logging.debug(row)
             items.append(row)
 
 
 def save_data():
-    out_fn = "{}+audit{}".format(os.path.splitext(fn)[0], os.path.splitext(fn)[1])
+    if fn.find("+audit") < 0:
+        out_fn = "{}+audit{}".format(os.path.splitext(fn)[0], os.path.splitext(fn)[1])
+    else:
+        out_fn = fn
     fp = os.path.join(data_root, out_fn)
     with open(fp, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -87,7 +90,7 @@ def make_ui():
 
     def go_unscored():
         for i in range(current+1, len(items)):
-            if not items[i].get('radcat'):
+            if not items[i].get('audit_radcat'):
                 go(i)
                 break
 
@@ -112,14 +115,14 @@ def make_ui():
 
         item = items[current]
 
-        r = Report(text=item['Report Text'])
+        r = Report(text=item['report_text'])
         # logging.debug(r.text)
 
-        extractions = r.extractions()
-        item['radcat'] = int(extractions.get('radcat'))
-        item['radcat3'] = "Yes" if extractions.get('radcat3') else "No"
+        # extractions = r.extractions()
+        # item['radcat'] = int(extractions.get('radcat'))
+        # item['radcat3'] = "Yes" if extractions.get('radcat3') else "No"
 
-        complete = [k for k in items if k.get('radcat')]
+        complete = [k for k in items if k.get('audit_radcat')]
         task_label_str.set("Report {} of {} ({} complete)".format(current+1, len(items), len(complete)))
 
         report_text['state'] = 'normal'
