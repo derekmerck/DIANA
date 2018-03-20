@@ -4,12 +4,10 @@ splunk-sdk
 gunicorn
 aenum
 numpy
-
 bokeh
 python-magic
 flask
 scipy
-flask_restplus
 scikit-learn
 pydicom
 requests

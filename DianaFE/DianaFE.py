@@ -140,14 +140,21 @@ config_file = os.environ['dfe_config']
 config, pages = prerender(config_file)
 
 if os.environ.get('splunk_host'):
-    splunk_host = os.environ['splunk_host']
-    splunk_password = os.environ['splunk_password']
 
-    # Create a splunk service instance and log in
-    splunk = client.connect(host=splunk_host,
-                            port=8089,
-                            username="admin",
-                            password=splunk_password)
+    try:
+
+        splunk_host = os.environ['splunk_host']
+        splunk_password = os.environ['splunk_password']
+
+        # Create a splunk service instance and log in
+        splunk = client.connect(host=splunk_host,
+                                port=8089,
+                                username="admin",
+                                password=splunk_password)
+
+    except client.AuthenticationError:
+        splunk = None
+
 else:
     splunk = None
 

@@ -26,13 +26,14 @@ TRIM_AND_UPDATE = True
 if __name__=="__main__":
     logging.basicConfig(level=logging.DEBUG)
 
+    # Build a corpus and key
     # source_dir = os.path.join(ROOT_DIR, 'source')
     # out_dir = os.path.join(ROOT_DIR, 'corpus')
     # out_file = os.path.join(ROOT_DIR, "corpus_meta.csv")
 
+    # Create a deidentified reconciliation dataset (with TRIM_AND_UPDATE)
     source_dir = os.path.join(ROOT_DIR, 'reconcile')
     out_file = os.path.join(ROOT_DIR, "reconcile_meta.csv")
-
 
     # Setup worklist
     worklist = set()
@@ -154,7 +155,8 @@ if __name__=="__main__":
                     'radcat3': radcat3,
                     'radiologist': new_phys,
                     'organization': new_org,
-                    'report_text': d.meta['Report Text']}
+                    'report_text': Report(d.meta['Report Text']).anonymized()
+                    }
 
         d.meta = new_meta
 
@@ -169,6 +171,7 @@ if __name__=="__main__":
                   'radcat3',
                   'radiologist',
                   'organization',
-                  'report_text']
+                  'report_text'
+                  ]
 
     save_csv(out_file, worklist, fieldnames)

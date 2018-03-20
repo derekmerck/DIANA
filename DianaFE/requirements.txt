@@ -1,7 +1,7 @@
 pyyaml
 flask
 Flask-HTTPAuth
-flask_restplus
+flask-restplus
 markdown
 jinja2
 numpy
