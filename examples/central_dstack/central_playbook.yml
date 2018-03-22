@@ -15,7 +15,7 @@
 
   roles:
   - role: splunk
-  # !!NEED TO ADD HEC TOKEN BY HAND TO SECRETS!!
+
 
 - name: Setup Central Imaging Archive
 

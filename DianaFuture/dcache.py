@@ -278,7 +278,8 @@ class Persistent(object):
         self.persist()
 
     def persist(self, cache=None):
-        if self.ro:
+        # ignore ro if a new cache is given (it's a copy)
+        if self.ro and not cache:
             return
         # Accepts an alternate dcache to save to
         cache = cache or self.cache

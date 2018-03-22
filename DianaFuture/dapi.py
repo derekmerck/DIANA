@@ -4,6 +4,7 @@ import logging
 from pprint import pformat
 from dixel import DLVL
 import json
+import hashlib
 
 
 class Requester(object):
@@ -45,6 +46,19 @@ class Requester(object):
 # Implements a set-type interface for dixels with "add", "remove", "get", "__contains__"
 class Orthanc(Requester):
 
+    @classmethod
+    def simple_anon_map(cls, dixel):
+        return {
+            'Replace': {
+                'PatientName': dixel.data['AnonName'],
+                'PatientID': dixel.data['AnonID'],
+                'PatientBirthDate': dixel.data['AnonDoB'].replace('-', ''),
+                'AccessionNumber': hashlib.md5(d.data['AccessionNumber']).hexdigest(),
+            },
+            'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription'],
+            'Force': True
+        }
+
     def __init__(self, host="localhost", port=8042, user=None, password=None, clear=False,
                  remote_names=None, **kwargs):
         self.logger = logging.getLogger("Orthanc<{}:{}>".format(host, port))
@@ -84,7 +98,7 @@ class Orthanc(Requester):
 
         if get_type == 'tags':
             if dixel.dlvl is DLVL.INSTANCES:
-                url = '{}/tags'.format(url)
+                url = '{}/tags?simplify'.format(url)
             else:
                 url = '{}/shared-tags?simplify'.format(url)
             # TODO: Check compression, etc.
@@ -141,11 +155,14 @@ class Orthanc(Requester):
         for d in worklist:
             self.add(d, lazy, compress)
 
-    def anonymize(self, dixel, replacement_dict=None):
+    def anonymize(self, dixel, replacement_map=None):
 
         url = "{}/{}/anonymize".format(dixel.dlvl, dixel.oid())
 
-        replacement_json = json.dumps(replacement_dict)
+        if not replacement_map:
+            replacement_map = self.simple_anon_map
+
+        replacement_json = json.dumps(replacement_map(dixel))
         # logging.debug(replacement_json)
 
         headers = {'content-type': 'application/json'}
@@ -176,10 +193,14 @@ class Orthanc(Requester):
 
         keys[DLVL.SERIES] = keys[DLVL.STUDIES] + ['SeriesInstanceUID',
                         'SeriesDescription',
+                        'ProtocolName',
                         'SeriesNumber',
                         'NumberOfSeriesRelatedInstances']
 
-        keys[DLVL.INSTANCES] = keys[DLVL.SERIES] + ['SOPInstanceUID']
+        # Minimal, we are going to want to retreive this
+        keys[DLVL.INSTANCES] = ['SOPInstanceUID','SeriesInstanceUID']
+        if dixel.data.get('SOPInstanceUID'):
+            keys[DLVL.INSTANCES] = ['SOPInstanceUID']
 
         def add_key(q, key, dixel):
             q[key] = dixel.data.get(key, '')
@@ -229,7 +250,7 @@ class Orthanc(Requester):
             if retrieve:
                 # Just grab the first one and return
                 url = 'queries/{}/answers/{}/retrieve'.format(qid, aid)
-                r = self.do_post(url, data=self.remote_names[remote_aet])
-                return r
+                rr = self.do_post(url, data=self.remote_names[remote_aet])
+                logging.debug(rr)
 
         return ret

@@ -45,7 +45,13 @@ if __name__=="__main__":
 
         # For reconcilation -- read radcat from fn and select 100 entries
         if TRIM_AND_UPDATE:
+            partial0 = set()
             for d in partial:
+                if d.meta['Report Text'].lower().find('swenson') >= 0 or \
+                   d.meta['Report Text'].lower().find('movson') >= 0:
+                    logging.debug("Throwing out {} report".format(d.meta['Report Finalized By']))
+                    continue
+
                 if fn.find('[!-]RADCAT1'):
                     d.meta['radcat'] = 1
                 elif fn.find('[!-]RADCAT2'):
@@ -55,7 +61,8 @@ if __name__=="__main__":
                 elif fn.find('[!-]RADCAT5'):
                     d.meta['radcat'] = 5
                 d.meta['radcat3'] = fn.find('[!-]RADCAT3') >= 0
-            partial = random.sample(partial, 100)
+                partial0.add(d)
+            partial = random.sample(partial0, 100)
 
         worklist = worklist.union(partial)
 

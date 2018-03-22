@@ -25,7 +25,7 @@ app.register_blueprint(Get_a_GUID.api_bp, url_prefix='/guid')
 auth = HTTPBasicAuth()
 
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('DIANA TFE')
+logger = logging.getLogger('DianaFE')
 
 from hashlib import md5
 

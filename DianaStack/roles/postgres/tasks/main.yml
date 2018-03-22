@@ -13,7 +13,7 @@
 
     log_driver: splunk
     log_options:
-      splunk-token: "{{ splunk_hec_token }}"
+      splunk-token: "{{ diana_svc_tok }}"
       splunk-url: http://{{ indexer_ip | default(dockerhost_ip) }}:8088
       splunk-index: diana_svc
       splunk-source: postgres

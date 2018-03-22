@@ -19,7 +19,6 @@ Series are identified as the SHA-1 hash of the concatenation of their PatientID 
 Instances are identified as the SHA-1 hash of the concatenation of their PatientID tag (0010,0020), their StudyInstanceUID tag (0020,000d), their SeriesInstanceUID tag (0020,000e), and their SOPInstanceUID tag (0008,0018).
   -- http://book.orthanc-server.com/faq/orthanc-ids.html
 """
-
 def orthanc_id(PatientID, StudyInstanceUID, SeriesInstanceUID=None, SOPInstanceUID=None):
     if not SeriesInstanceUID:
         s = "|".join([PatientID, StudyInstanceUID])
@@ -99,10 +98,13 @@ class Dixel(dcache.Persistent):
                 'ExamCode':           data.get("Exam Code"),
                 'ExamDescription':    data.get("Exam Description"),
                 'PatientStatus':      data.get("Patient Status"),
-                'ReportText':         data.get("Report Text"),
-                'StudyDate':          normalize_date(data["Exam Completed Date"])}
+                'ReportText':         data.get("Report Text")}
+        if data.get('Exam Completed Date'):
+            _data['StudyDate']=       normalize_date(data["Exam Completed Date"])
         if data.get('radcat'):
             _data['Radcat'] =         data.get("radcat")
+        if data.get('CancerStatus'):
+            _data['CancerStatus'] = data.get("CancerStatus")
 
         # Preserve any reserved keys
         for k in data.keys():

@@ -6,7 +6,7 @@ Winter 2018
 
 <https://github.com/derekmerck/DIANA/tree/master/DianaConnect>
 
-Also sometimes named Tithonus or CopyDICOM
+Also sometimes called Tithonus or CopyDICOM
 
 ## Overview
 

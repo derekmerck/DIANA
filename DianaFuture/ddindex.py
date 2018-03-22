@@ -26,7 +26,7 @@ asynchronous processing pooling.
 
 Usage:
 
-# Build pre-index cache of /orthanc/db using services enumerated in `secretes.yml`
+# Build pre-index cache of /orthanc/db using services enumerated in `secrets.yml`
 $ python ddindex.py --workers 8 --config_file secrets.yml \
 > --redis_svc dev:redis --orthanc_svc dev:orthanc /orthanc/db
 
@@ -272,7 +272,7 @@ def parse_args():
     p.add_argument('--redis', '-r',     default='services:dev:redis',   help="Redis config section path")
     p.add_argument('--orthanc', '-o',   default='services:dev:orthanc', help="Orthanc config section path (req for upload")
 
-    p.add_argument('--workers', '-w',   default=8, help='Number of workers in threading pool')
+    p.add_argument('--workers', '-w',   default=8, type=int, help='Number of workers in threading pool')
 
     p.add_argument('directory',         )  # Perhaps no directory = pre-indexed?
     p.add_argument('--unstructured',    action= 'store_true',  help="Not an orthanc structured db (slow walk)")
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     all           = opts.all
     compress      = opts.compress
 
-    # # Overrides for testing...TODO: REMOVE
+    # # Overrides for testing...
     # workers       = 8
     # directory     = "/Users/derek/Desktop/Christianson"
     # unstructured  = False
