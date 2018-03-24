@@ -17,7 +17,7 @@ def read(*paths):
 
 app = Flask(__name__)
 api_bp = Blueprint('guid_api', __name__,
-                     template_folder='templates')
+                    template_folder='templates')
 
 # TODO: Need to revise to support blueprinting better
 guid_api = Api(app, version=__version__, title='GUIDMint API',
@@ -25,7 +25,6 @@ guid_api = Api(app, version=__version__, title='GUIDMint API',
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("Get-a-GUID")
-
 
 # @guid_api.route('/ndar')
 # def get_ndar_guid():

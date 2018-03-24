@@ -8,11 +8,9 @@ Winter 2018
 
 ## Overview
 
-Python library and Flask app to generate 1-way hashes for globally consistent identifiers in study anonymization.
+Python library and Flask REST api to generate 1-way hashes for study ids, pseudonyms, and approximate-birth-date for globally consistent identifiers in study anonymization.
 
-A reference web implementation of the most recent master branch is available at <http://get-a-guid.xn--zm-mka.biz.biz/info>.
-
-It is intended to be used as an adjunct with an automatic anonymization framework like [XNAT's](http://www.xnat.org) [DicomEdit](http://nrg.wustl.edu/software/dicomedit/).  A reference anonymization script using `get-a-guid` is available here: <https://gist.github.com/derekmerck/5d4f40a7b952525a09c4>.
+A reference web implementation of the most recent master branch is available at <http://get-a-guid.xn--zm-mka.biz.biz>.
 
 
 ## Dependencies
@@ -30,19 +28,94 @@ To use it as a Python library:
 >>> import GUIDMint
 >>> mint = GUIDMint.PseudoMint()
 >>> mint.mint_guid( "MERCK^DEREK^L" )
-u'BEW6DDOUE2IV237F'
+u'AYJOAUVBBT54F6TP'
 ````
 
 To create a local server instance:
 
 ```bash
-$ python Get_a_GUID.py &  
+$ python get_a_guid.py &  
   * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)  
-$ curl -4 "localhost:5000/guid?value=MERCK^DEREK^L"
-BEW6DDOU  
+$ curl "localhost:5000/guid/pseudonym/pseudo_id?value=MERCK^DEREK^L"
+{"dob": "1968-07-25", "gender": "U", "guid": "AYJOAUVBBT54F6TP", "name": "ANDRONIS^YEVETTE^J"}
 ```
 
-To create a public [Heroku](http://www.heroku.com) server instance:
+## Algorithm
+
+Multiple algorithms ('mints') are available.  The `md5` mint simply hashes the `name` parameter to create a name and id, and generates an approximate-date-of-birth.
+
+```bash
+$ curl "localhost:5000/guid/md5/pseudo_id?value=MERCK^DEREK^L"
+{ "dob": "1966-03-16", "gender": "U", "guid": "392ec5209964bfad", "name": "392ec5209964bfad"}
+```
+
+Other mint classes can be created by overriding basic functionality and then easily plugged into the architecture.
+
+### PseudMint Global Unique Identifier (GUID)
+
+This must generate a unique and reproducibly generated tag against any consistent set object-specific variables.
+
+Generation method:
+
+1. A `value` parameter is passed in; depending on the available data, this may be a patient name, an MRN, or a subject ID, or any unique combination of those elements along with gender and dob
+2. The [sha256](http://en.wikipedia.org/wiki/Secure_Hash_Algorithm) hash of the value is computed and the result is encoded into [base32](http://en.wikipedia.org/wiki/Base32)
+3. If the first three characters are not alphabetic, the value is rehashed until it is (for pseudonym generation)
+4. By default only the 64 bit prefix is used and any padding symbols are stripped.
+
+  
+### Pseudonyms
+
+It is often useful to replace the subject name with something more natural than a GUID.  
+Any string beginning with at least 3 (capitalized) alphabetic characters can be used to reproducibly generate a ["John Doe"](http://en.wikipedia.org/wiki/John_Doe) style placeholder name in DICOM patient name format (`last^first^middle`).  This is very useful for alphabetizing subject name lists similarly to their ID while still allowing for anonymized data sets to be referenced according to memorable names.
+
+Generation method:
+
+1. A `guid` parameter is requried and `gender` (M,F,U) is optional (defaults to U)
+2. Using the `guid` as a random seed, a gender-appropriate first name and gender-neutral family name is selected from a uniform distribution taken from the US census
+3. The result is returned in DICOM patient name format.
+
+[pname_fmt]:(http://support.dcmtk.org/docs/classDcmPersonName.html#f8ee9288b91b6842e4417185d548cda9)
+
+```bash
+$ curl "localhost:5000/guid/pseudonym/pseudo_id?value=MERCK^DEREK^L&gender=M"
+{"dob": "1956-02-03", "gender": "M", "guid": "MLSUJGK22EKMCMBX", "name": "MEMS^LIONEL^S"}
+$ curl "localhost:5000/guid/pseudonym/pseudo_id?value=MERCK^DEREK^L&gender=M"
+{"dob": "1961-03-20", "gender": "F", "guid": "IRF4WKGJGW36GQKJ", "name": "IACOPINO^RANDA^F"}
+```
+
+_Note that each (value, gender, dob) tuple will result in a unique ID!_
+
+The default name map can be easily replaced to match your fancy (Shakespearean names, astronauts, children book authors).  And with slight modification, a DICOM patient name with up to 5 elements could be generated (i.e., in `last^first^middle^prefix^suffix` format).
+
+
+### Approximate Date-of-Birth
+
+As with pseudonyms, it can be useful to maintain a valid date-of-birth (dob) in de-identified metadata.  Using a GUID as a seed, any dob can be mapped to a random nearby date for a nearly-age-preserving anonymization strategy.  This is useful for keeping an approximate patient age available in a data browser.
+
+
+Generation method:
+
+1. A `dob` parameter in `%Y-%m-%d` format and `guid` parameter are required
+2. Using the `guid` as a random seed, a random integer between -165 and +165 is selected
+3. The original `dob` + the random delta in days is returned
+
+
+### Creating a Pseudo-Identity
+
+A pseudo-id is merely an alias for generating a GUID, pseudonym, and pseudo-dob from a subject name/id/mrn, gender, and dob.
+ 
+Generation method:
+
+1. An initial `value` is parameter is required, either `dob` in `%Y-%m-%d` format or `age` parameter is optional (defaults to a uniform random value between 19 and 65), and a `gender` parameter (M,F,U) is optional (defaults to U)
+2. If `age` is given, it is converted to a `dob` estimate using `dob=now()-365.25*age`
+3. A `guid` is computed using the concatenation of `value|dob|gender` as a seed (thus, the `guid` is _not_ the same as the `guid` hash of only the initial value)
+4. A pseudonym and pseudodob are computed as above
+5. The `guid` and new `name` and `dob` are returned
+
+
+## Implementing as a Public Service
+
+To create a [Heroku](http://www.heroku.com) server instance:
 
 ```bash
 $ heroku create
@@ -54,7 +127,6 @@ $ curl "http://get-a-guid.herokuapp.com/pseudonym/pseudo_id?name=MERCK^DEREK^L"
 
 Single dyno Heroku instances are free to run, but can take a minute to startup after they fall asleep.
 
-
 To create a [Dokku](http://dokku.viewdocs.io/dokku/) server instance:
 
 ```bash
@@ -65,74 +137,6 @@ $ git subtree push --prefix GUIDMint dokku master
 $ curl "http://get-a-guid.xn--zm-mka.biz/pseudonym/pseudo_id?name=MERCK^DEREK^L"
 {"dob": "1968-07-25", "gender": "U", "guid": "AYJOAUVBBT54F6TP", "name": "ANDRONIS^YEVETTE^J"} 
 ```
-
-
-### Global Unique Identifier (GUID)
-
-This is the basic functionality, which is simply intended to be a unique and reproducibly generated tag against any consistent set object-specific variables.
-
-Generation method:
-
-1. A `value` parameter is passed in; depending on the available data, this may be a patient name, an MRN, or a subject ID, or any unique combination of those elements along with gender and dob
-2. The [sha256](http://en.wikipedia.org/wiki/Secure_Hash_Algorithm) hash of the value is computed and the result is encoded into [base32](http://en.wikipedia.org/wiki/Base32)
-3. If the first three characters are not alphabetic, the value is rehashed until it is (for pseudonym generation)
-4. By default only the 64 bit prefix is used and any padding symbols are stripped.
-
-Example: <http://get-a-guid.herokuapp.com/guid?/guid?value=MERCK^DEREK^L">
-  `{'guid': 'BEW6DDOU'}`
-  
-  
-### Pseudonyms
-
-It is often useful to replace the subject name with something more natural than a GUID.  
-Any string beginning with at least 3 (capitalized) alphabetic characters can be used to reproducibly generate a ["John Doe"](http://en.wikipedia.org/wiki/John_Doe) style placeholder name in DICOM patient name format (`last^first^middle`).  This is very useful for alphabetizing subject name lists according to generic ID and for referencing anonymized data sets according to memorable names.
-
-Generation method:
-
-1. A `guid` parameter is requried and `gender` (M,F,U) is optional (defaults to U)
-2. Using the `guid` as a random seed, a gender-appropriate first name and gender-neutral family name is selected from a uniform distribution taken from the US census
-3. The result is returned in DICOM patient name format.
-
-Example: <http://get-a-guid.herokuapp.com/guid?/guid?value=MERCK^DEREK^L">
-  `{'guid': 'BEW6DDOU'}`
-
-[pname_fmt]:(http://support.dcmtk.org/docs/classDcmPersonName.html#f8ee9288b91b6842e4417185d548cda9)
-
-The default name map can be easily replaced to match your fancy (Shakespearean names, astronauts, children book authors).  And with slight modification, a DICOM patient name with up to 5 elements could be generated (`last^first^middle^prefix^suffix`).
-
-<http://get-a-guid.herokuapp.com/name?value=AUUNVBGA5JKUE>  
-`Andronicus^Ulysses^U^Nurse^of Verona`
-
-
-### Pseudo Date-of-Birth
-
-As with pseudonyms, it can be useful to maintain a valid date-of-birth (dob) in de-identified metadata.  Using a GUID as a seed, any dob can be mapped to a random nearby date for a nearly-age-preserving anonymization strategy.  This is useful for keeping an approximate patient age available in a data browser.
-
-
-Generation method:
-
-1. A `dob` parameter in `%Y-%m-%d` format and `guid` parameter are required
-2. Using the `guid` as a random seed, a random integer between -165 and +165 is selected
-3. The original `dob` + the random delta in days is returned
-
-<http://get-a-gid.herokuapp.com/pdob?dob=19710101&guid=AUUNVBGA5JKUE>  
-`19710830`
-
-
-### Creating a Pseudo-Identity
-
-A pseudo-id is merely an alias for generating a GUID, pseudonym, and pseudo-dob from a subject name/id/mrn, gender, and dob.
- 
-Generation method:
-
-1. An initial `value` is parameter is required, either `dob` in `%Y-%m-%d` format or `age` parameter is required, a `gender` parameter (M,F,U) is optional (defaults to U)
-2. If `age` is given, it is converted to a `dob` estimate using `dob=now()-365.25*age`
-3. A `guid` is computed using the concatenation of `value|dob|gender` as a seed (thus, the `guid` is _not_ the same as the `guid` hash of only the initial value)
-4. A pseudonym and pseudodob is computed as above
-5. The `guid` and new `name` and `dob` are returned
-
-<http://get-a-guid.herokuapp.com/pseudo_identity?value=MERCK^DEREK^L&dob=19710101&gender=M>  
-`AUUNVBGA5JKUE`
 
 
 ## Acknowledgements
@@ -147,11 +151,3 @@ Generation method:
 
 [MIT](http://opensource.org/licenses/mit-license.html)
 
-
-## Future Work
-
-- Use a database to link an already generated identifier hash to other source values.  For example, an already generated GUID could be linked to a study ID, so relevant GUID queries against that ID would also return the original GUID hash.  The main drawback to this is that it would require a single central server and persistent memory.
-
-- Check for collisions in a given namespace and, if needed, create a new hash and link as above.  (Possibly using an alternate hash algorithm when collisions are detected.)
-
-- Translate requests directly to the NDAR GUID generator to facilitate data enrollment in FITBIR.

@@ -6,3 +6,4 @@ markdown
 jinja2
 numpy
 bokeh
+python-dateutil

@@ -1,4 +1,4 @@
-# DIANA-connect
+# DIANA Connector
 
 Derek Merck <derek_merck@brown.edu>  
 Brown University and Rhode Island Hospital  

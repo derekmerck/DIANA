@@ -14,7 +14,7 @@ Hospital picture archive and communications systems (PACS) are not well suited f
 
 **DIANA** is a [DICOM][] imaging informatics platform that can be attached to the clinical systems with a very small footprint, and then tuned to support a range of tasks from high-resolution image archival to cohort discovery to radiation dose monitoring.
 
-It is similar to [XNAT][] in providing DICOM services, image data indexing, REST endpoints for scripting, and user access control.  It is dissimilar in that it is not a monolithic codebase, but an amalgamation of free and free and open source (FOSS) systems.  Indeed, XNAT can be setup as a component of DIANA.
+It is similar to [XNAT][] in providing DICOM services, image data indexing, REST endpoints for scripting, and user access control.  It is dissimilar in that it is not a monolithic codebase, but an amalgamation of free and free and open source (FOSS) systems.
 
 [DICOM]: http://www.dicomstandard.org/
 [XNAT]:  http://www.xnat.org

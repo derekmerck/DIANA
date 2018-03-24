@@ -1,4 +1,4 @@
-# DIANA-frontend
+# DIANA Front-End Service
 
 Derek Merck <derek_merck@brown.edu>  
 Brown University and Rhode Island Hospital  
@@ -36,9 +36,11 @@ Flask server providing a simple, flexible front-end html framework for listing a
 ```bash
 $ cd DianaFE
 $ export FLASK_APP="DianaFE.py"
-$ export dfe_config="../examples/DianaFE/central_dfe_cfg.yml"
+$ export dfe_config="../examples/central_dstack/central_dfe_cfg.yml"
 $ python -m flask run
 ```
+
+See <../examples/central_dstack/central_dfe_cfg.yml> for a configuration reference.
 
 
 ## GUIDMint Integration

@@ -1,33 +1,31 @@
 import os
 import sys
 import logging
-import dateutil.parser
 import csv
-
-from flask import Flask, render_template, Markup, abort
-from flask_httpauth import HTTPBasicAuth
+from hashlib import md5
+import dateutil.parser
 import markdown
-from jinja2 import FileSystemLoader, Environment
 import yaml
+from flask import Flask, render_template, Markup, abort, Blueprint
+from flask_httpauth import HTTPBasicAuth
+from jinja2 import FileSystemLoader, Environment
 from bokeh.plotting import figure, output_file, show
 from bokeh.embed import components
 from splunklib import client
 
 # In case DIANA is being run from folders
 sys.path.append('../')
-from GUIDMint import Get_a_GUID
+from GUIDMint import guid_bp
 
 __version__ = "0.2.0"
 
 app = Flask(__name__)
-app.register_blueprint(Get_a_GUID.api_bp, url_prefix='/guid')
+app.register_blueprint(guid_bp, url_prefix="/guid")
 
 auth = HTTPBasicAuth()
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('DianaFE')
-
-from hashlib import md5
 
 # Super simple password check
 @auth.verify_password
