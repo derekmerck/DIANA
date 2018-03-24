@@ -4,3 +4,6 @@
     name: "{{ c_name }}"
     state: stopped
   ignore_errors: yes  # Might not exist yet
+
+
+# TODO: Orthanc container should be forced into a started state if stopped, but doesn't always happen

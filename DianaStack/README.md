@@ -160,3 +160,19 @@ $ eval `(ssh-agent)`
 ## License
 
 MIT
+
+
+TODO: Setup splunk with HL7 app, website monitor app, dose_rx app, REST api app
+
+Create /opt/splunk/git-apps
+Clone apps
+ln -s /opt/splunk/git-apps/DIANA/DianaSplunk/dose_rx /opt/splunk/apps/rad_rx ... etc.
+
+
+Make a `splunkbase` folder in the `splunk` role and download and add any Splunkbase extensions that you need.
+
+In particular, the DianaApps use:
+
+- hl7
+- rest
+- website_perf

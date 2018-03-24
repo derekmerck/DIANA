@@ -53,7 +53,7 @@ class Orthanc(Requester):
                 'PatientName': dixel.data['AnonName'],
                 'PatientID': dixel.data['AnonID'],
                 'PatientBirthDate': dixel.data['AnonDoB'].replace('-', ''),
-                'AccessionNumber': hashlib.md5(d.data['AccessionNumber']).hexdigest(),
+                'AccessionNumber': hashlib.md5(dixel.data['AccessionNumber']).hexdigest(),
             },
             'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription'],
             'Force': True

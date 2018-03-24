@@ -113,8 +113,8 @@ def render_stats(study_id):
 
         return render_md(pages['stats_' + study_id], bokeh_div=bokeh_div, bokeh_script=bokeh_script)
 
-
 def prerender(config_file):
+    global splunk
 
     def render_from_template(directory, template_name, **kwargs):
         loader = FileSystemLoader(directory)
@@ -124,6 +124,7 @@ def prerender(config_file):
 
     with open(config_file) as f:
         config = yaml.load(f)
+        config['splunk_available'] = (splunk != None)
 
     pages = {'index': render_from_template('templates', 'index.md.j2', **config)}
 
@@ -135,9 +136,6 @@ def prerender(config_file):
             pages['stats_'+value['study_id']] = render_from_template('templates', 'stats.md.j2', **value)
 
     return config, pages
-
-config_file = os.environ['dfe_config']
-config, pages = prerender(config_file)
 
 if os.environ.get('splunk_host'):
 
@@ -157,6 +155,10 @@ if os.environ.get('splunk_host'):
 
 else:
     splunk = None
+
+config_file = os.environ['dfe_config']
+config, pages = prerender(config_file)
+
 
 if __name__ == '__main__':
     logger.debug('Starting up DianaFE server app')

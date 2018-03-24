@@ -4,7 +4,7 @@
 
 indexer:   &INDEXER
   indexer: http://{{ dockerhost_ip }}:8088
-  indexer_token: "{{ splunk_hec_token }}"
+  indexer_token: "{{ diana_dcm_tok }}"
   indexer_dest:  dicom
 
 tasks:
@@ -42,4 +42,4 @@ tasks:
     password:    {{ orthanc_p3_pw }}
     <<:          *INDEXER
 
-delay: 2
+delay: 5

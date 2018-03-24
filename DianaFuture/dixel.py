@@ -51,6 +51,14 @@ class DLVL(Enum):
     STUDIES = auto()
     PATIENTS = auto()
 
+    def child(self):
+        if self==DLVL.STUDIES:
+            return DLVL.SERIES
+        elif self==DLVL.SERIES:
+            return DLVL.INSTANCES
+        else:
+            logging.warn("Bad child request for {}".format(self))
+
     def __str__(self):
         return '{0}'.format(self.name.lower())
 
@@ -148,6 +156,9 @@ class Dixel(dcache.Persistent):
 
     def write_file(self, file_data, save_dir=None):
         save_dir = save_dir or os.path.split( self.data.get('FilePath') )[0]
+
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
 
         if self.dlvl == DLVL.INSTANCES:
             fn = self.data['PatientID'] + '.dcm'  # Single file

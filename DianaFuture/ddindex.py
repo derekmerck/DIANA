@@ -1,4 +1,8 @@
 """
+TODO: When a specific AN is requested, lookup any file, figure out the
+TODO: SERUID and series OID, check which instances exist for ONLY
+TODO: that study -- this would be so much faster!
+
 DCM Dir Indexer
 Merck, Winter 2018
 
@@ -6,14 +10,14 @@ Occasionally, postgres containers will fail or orthanc db folders
 have to be migrated from one node to another, which requires
 rebuilding the postgres database.
 
-Indexing and/or uploding very large DICOM directories (>40M slices!)
+Indexing and/or uploding very large DICOM directories (>20M slices!)
 is hugely time consuming, and inevitable crashes require starting
 over from scratch re-reading files to figure out if they are already
 indexed or need to be re-uploaded.
 
 `ddindex.py` uses a Redis cache to pre-index enough information about
-each file to compute it's OID and Accession membership without touching
-the original file.  Once the db directory is pre-indexed, it can be
+each file to compute it's OID and Accession membership without needing to
+reread the original file.  Once the dcm directory is pre-indexed, it can be
 partially uploaded, and then resumed later from the same spot with minimal
 overhead from verifying the pre-index.  If the pre-index cache is known to
 be complete, this can be skipped entirely. Uploading is then just a matter
@@ -223,7 +227,7 @@ def upload_dcm_files(workers, accession_number=None):
     logging.info("  Workers:      {}".format(workers))
 
     if compress:
-        logging.info("  J2K Compression ON")
+        logging.info("  J2K Compress: ON")
 
     t = TicToc()
     t.tic()

@@ -1,0 +1,13 @@
+[rest://{{ orthanc_hb_title }} Repo Stats]
+auth_password = {{ orthanc_hb_pw }}
+auth_type = basic
+auth_user = orthanc
+endpoint = http://{{ dockerhost_ip }}:{{ orthanc_hb_port }}/statistics
+host = {{ c_name }}
+http_method = GET
+index = diana_svc
+index_error_response_codes = 0
+response_type = json
+sequential_mode = 0
+sourcetype = _json
+streaming_request = 0

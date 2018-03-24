@@ -1,6 +1,7 @@
 import logging
 import os
 from pprint import pformat
+import hashlib
 from dixel import Dixel, DLVL
 from dcache import CSVCache
 from GUIDMint import PseudoMint
@@ -17,16 +18,24 @@ def create_key_csv(cache, fp):
     logging.debug("Saved {} entries".format(len(N)))
 
 
-def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True, clean_proxy=True):
+def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True, clean_proxy=True, depth=0):
 
-    for key in R.keys():
+    def dixel_save_dir(d, save_dir, depth):
+        fd = save_dir
+        if depth:
+            for de in range(depth):
+                fd = os.path.join(fd, d.data['AnonID'][de])
+        return fd
+
+    for key in cache.keys():
         d = Dixel(key=key, cache=cache)
 
         if not d.data.get('AnonID'):
             logging.warn("No anon ID for MRN {}".format(d.data['PatientID']))
             continue
 
-        fp = os.path.join(save_dir, d.data['AnonID'] + '.zip')
+        dsd = dixel_save_dir(d, save_dir, depth)
+        fp = os.path.join(dsd, d.data['AnonID'] + '.zip')
 
         # Check if file already exists for lazy!
         if lazy and os.path.exists(fp):
@@ -53,7 +62,8 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
                         'PatientID': d.data['AnonID']},
                   dlvl=d.dlvl)
         file_data = proxy.get(e, get_type='file')
-        e.write_file(file_data, save_dir=save_dir)
+
+        e.write_file(file_data, save_dir=dsd)
 
         if clean_proxy:
             proxy.remove(d)
@@ -126,3 +136,40 @@ def lookup_uids(cache, proxy, remote_aet, retrieve=False, lazy=True):
                 d.data['SOPInstanceUID'] = ret[0].get("SOPInstanceUID")
 
             d.persist()
+
+
+def lookup_child_uids(cache, c_cache, child_qs, proxy, remote_aet):
+    # Use a proxy to lookup child StudyUID, SeriesUID, and SOPInstanceUID data
+    for key in cache.keys():
+        d = Dixel(key=key, cache=cache)
+
+        for q in child_qs:
+            qkey = "{}-{}".format(key, str(hash(pformat(q)))[-4:])
+
+            data = dict(d.data)
+            data.update(q)
+
+            # logging.debug(pformat(data))
+            e = Dixel(key=qkey, data=data, cache=c_cache)
+            # Can't put this in init() for some reason
+            e.dlvl = d.dlvl.child()
+
+            ret = proxy.find(e, remote_aet)
+            if ret:
+
+                # logging.debug(pformat(ret[0]))
+
+                e.data['StudyInstanceUID'] = ret[0].get("StudyInstanceUID")
+                e.data['PatientName'] = ret[0].get("PatientName")
+                e.data['PatientBirthDate'] = ret[0].get("PatientBirthDate")
+                e.data['PatientSex'] = ret[0].get("PatientSex")
+                if e.dlvl == DLVL.SERIES or e.dlvl == DLVL.INSTANCES:
+                    e.data['SeriesInstanceUID'] = ret[0].get("SeriesInstanceUID")
+                if e.dlvl == DLVL.SERIES:
+                    e.data['SeriesDescription'] = ret[0].get("SeriesDescription")
+                    e.data['SeriesNumber'] = ret[0].get("SeriesNumber")
+                    e.data['SeriesNumInstances'] = ret[0].get('NumberOfSeriesRelatedInstances')
+                if e.dlvl == DLVL.INSTANCES:
+                    e.data['SOPInstanceUID'] = ret[0].get("SOPInstanceUID")
+
+                e.persist()

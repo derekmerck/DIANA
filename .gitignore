@@ -9,7 +9,6 @@ ignore*
 \_[^\_]*rst
 \_[^\_]*py
 
-
 # Sphinx output
 _build
 _latex
@@ -18,6 +17,9 @@ _latex
 *.dcm
 .pik
 .pkl
+
+# Splunkbase apps
+splunkbase
 
 ## IntelliJ project files
 .idea

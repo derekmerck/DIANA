@@ -145,7 +145,7 @@
   docker_container:
 
     name: "{{ c_name }}"
-    image: osimis/orthanc
+    image: osimis/orthanc:latest
     # On RHEL, this _may_ need to be ["--logdir...", "config.json"]
     # command: ["--verbose /etc/orthanc/orthanc.json"]
 

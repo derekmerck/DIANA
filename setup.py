@@ -19,5 +19,6 @@ setup(name='DIANA',
       author='Derek Merck',
       author_email='derek_merck@brown.edu',
       url='https://www.github.com/derekmerck/DIANA',
-      packages=['DianaConnect', 'DianaFE', 'DianaStack', 'DixelKit', 'GUIDMint'],
+      packages=['DianaConnect', 'DianaFE', 'DianaStack',
+                'DianaSplunk', 'DixelKit', 'GUIDMint', 'DianaFuture'],
      )

@@ -16,7 +16,9 @@
    {% if value.citation -%}
    * [Primary citation]({{ value.citation }})
    {% endif -%}
+   {% if splunk_available -%}
    * [Image submission stats](stats/{{ value.study_id }})
+   {% endif -%}
    {% if value.ports.queue_api -%}
    * [Upload a study](upload/{{ value.study_id }})
    {% endif -%}

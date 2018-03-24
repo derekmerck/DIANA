@@ -7,3 +7,7 @@
   command: docker restart splunk
 
 # TODO: Setup d-mon for this and register it with supervisord
+
+
+# For each container, add the REST endpoint to /apps/search/local/inputs.conf
+# need host for container as well, either docker0 or actual ip from inventory...
