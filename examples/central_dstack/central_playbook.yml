@@ -96,13 +96,19 @@
     ssl: self_signed
     r_proxies:
       orthanc_ci:
-        path: /christianson/
+        path: /christianson/images
+        port: 8042
+      orthanc_ci_in:
+        path: /christianson/upload/images
         port: 8042
       orthanc_hb:
-        path: /hobit/
+        path: /hobit/images
+        port: 8042
+      orthanc_hb_in:
+        path: /hobit/upload/images
         port: 8042
       orthanc_p3:
-        path: /protect3/
+        path: /protect3/images
         port: 8042
 
 #  - role: ftp-server
@@ -111,9 +117,9 @@
 #    dmon_config: central_dmon_cfg.yml
 #    tags:        supervisor
 #
-#  - role:        diana-fe
-#    dfe_config:  central_dfe_cfg.yml
-#    tags:        supervisor
+  - role:        diana-fe
+    dfe_config:  central_dfe_cfg.yml
+    tags:        supervisor
 
 
 

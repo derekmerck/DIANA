@@ -56,7 +56,7 @@ def render_md(content, template='strapdown.html.j2', **kwargs):
 def render_index():
     return render_md(pages['index'])
 
-@app.route('/upload/<study_id>')
+@app.route('/<study_id>/upload')
 @auth.login_required
 def render_upload(study_id):
     if 'upload_'+study_id not in pages.keys():
@@ -65,7 +65,7 @@ def render_upload(study_id):
         return render_md(pages['upload_' + study_id])
 
 
-@app.route('/stats/<study_id>')
+@app.route('/<study_id>/stats')
 def render_stats(study_id):
     if 'stats_'+study_id not in pages.keys():
         abort(404)
