@@ -18,7 +18,9 @@
 # $ sudo chmod +r /var/log/supervisor/*
 
 - name: Install pip packages
-  pip: name={{ item }}
+  pip:
+    name: "{{ item }}"
+    extra_args: --trusted-host pypi.python.org
   become: yes
   with_items:
     - flask

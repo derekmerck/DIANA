@@ -1,5 +1,7 @@
 # System setup vars
 base_dir:         "/cirr2"
+operator_email:   derek_merck@brown.edu
+operator_org:     RIH 3D Lab
 
 # Network topology
 indexer_ip:       "{{ hostvars[groups['indexer'][0]]['ansible_host'] }}"
@@ -15,5 +17,5 @@ pg_admin_pw:      "{{ vault_pg_admin_pw }}"
 orthanc_db_pw:    "{{ vault_orthanc_db_pw }}"
 orthanc_admin_pw: "{{ vault_orthanc_admin_pw }}"
 
-operator_email:   derek_merck@brown.edu
-operator_org:     RIH 3D Lab
+# Common FTP credentials
+diana_ftp_pw:     "{{ vault_diana_ftp_pw }}"

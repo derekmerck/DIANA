@@ -4,5 +4,4 @@ dependencies:
     vars:
       cert_dir:    "{{secure['cert_dir'] | default('/etc/ssl') }}"
       common_name: "{{secure['common_name']}}"
-      cert_type:   "{{secure['cert_type']}}"
     when: secure is defined

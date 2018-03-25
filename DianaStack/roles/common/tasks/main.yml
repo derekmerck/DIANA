@@ -31,11 +31,17 @@
     - python-setuptools
   when: FRESH is defined
 
+# TODO: Should update pip by default (to 9)
+# sudo curl -k https://bootstrap.pypa.io/get-pip.py | sudo python
+
 - name: Install pip packages
-  pip: name={{ item }}
+  pip:
+    name:  "{{ item }}"
+    extra_args: --trusted-host pypi.python.org
   become: yes
   with_items:
     - docker-py
+    - pexpect
   when: FRESH is defined
 
 - name: Get dockerhost

@@ -20,9 +20,6 @@
     _ports: ["{{ api_port }}:8042", "{{dicom_port}}:4242"]
   when: dicom_port is defined
 
-- debug:
-    msg: "{{ _ports }}"
-
 - name:         lookup modality items
   set_fact:
     key:        "{{ item }}"
@@ -38,8 +35,6 @@
   with_items:   "{{ mod_items.results }}"
   when:         groups['dicom_modalities'] is defined
 
-- debug:        var=_modalities
-
 - name:         lookup peers items
   set_fact:
     key:        "{{ item }}"
@@ -53,12 +48,10 @@
 
 - name:         make a peers dict
   set_fact:
-    _peers:      "{{ _peers | combine( {item.ansible_facts.key: item.ansible_facts.value} ) }}"
+    _peers:     "{{ _peers | combine( {item.ansible_facts.key: item.ansible_facts.value} ) }}"
     cacheable:  no
   with_items:   "{{ peer_items.results }}"
   when:         groups['orthanc_peers'] is defined
-
-- debug:        var=_peers
 
 # ------------------
 # SETUP DB

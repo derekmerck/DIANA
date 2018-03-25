@@ -1,0 +1,58 @@
+---
+- set_fact:
+    data_dir: "{{ base_dir }}/ftp"
+
+- name:    "Setup config folder"
+  file:
+    path:  "{{ data_dir }}"
+    state: directory
+    mode:  0777
+  become:  yes
+
+#- name: Make sure ssl directories exist
+#  file:
+#    path: "{{ secure['cert_dir'] }}"
+#    state: directory
+#  become: yes
+
+- name: Setup Pure-FTP container
+  docker_container:
+
+    name:  ftpd
+    image: stilliard/pure-ftpd:hardened
+    state: started
+    ports: "21:21, {% for port in range(30000, 30009) %}127.0.0.1:{{port}}:{{port}}{% if not loop.last %},{% endif %}{% endfor %}"
+    etc_hosts:
+      dockerhost: "{{ dockerhost_ip }}"
+    volumes:
+      - /home/ftpusers/:{{ base_dir }}/ftp
+#      - "{{ secure.cert_dir }}:{{ secure.cert_dir }}"
+
+    env:
+      PUBLICHOST:  localhost
+      ADDED_FLAGS: -d -d -O clf:/var/log/pureftpd.log
+
+    log_driver: splunk
+    log_options:
+      splunk-token: "{{ diana_svc_tok }}"
+      splunk-url: http://{{ indexer_ip | default(dockerhost_ip) }}:8088
+      splunk-index: diana_svc
+      splunk-source: ftpd
+
+- name: Check for service user
+  command: docker exec ftpd pure-pw show diana -f /etc/pure-ftpd/passwd/pureftpd.passwd
+  register: result
+  ignore_errors: True
+
+- set_fact:
+    user_present: "{{ result.stdout != '' }}"
+- debug:
+    var: user_present
+
+- name: Add service user
+  expect:
+    command:  docker exec -it ftpd pure-pw useradd diana -f /etc/pure-ftpd/passwd/pureftpd.passwd -m -u ftpuser -D /home/ftpusers/diana
+    responses:
+      (?i)password: "{{ diana_ftp_pw }}"
+      (?i)enter it again: "{{ diana_ftp_pw }}"
+  when: not user_present

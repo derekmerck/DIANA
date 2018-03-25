@@ -2,6 +2,7 @@
 # Vagrant has only 500MB out of the box
 
 ---
+
 - name: Reset all _local variables
   set_fact:
     vols:
@@ -11,9 +12,6 @@
 - set_fact:
     vols: "{{ vols }} + [ '{{mount_pt}}:{{mount_pt}}:ro' ]"
   when: mount_pt is defined
-
-- debug:
-    msg: "{{ vols }}"
 
 - name: Make sure splunk-apps exists
   file:

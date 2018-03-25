@@ -32,71 +32,72 @@
     orthanc_hb_pw:    "{{ vault_orthanc_hb_pw }}"
     orthanc_p3_pw:    "{{ vault_orthanc_p3_pw }}"
 
-#    FRESH: True   # Try to install all external dependencies (apt-get/pip/splunk apps)
+    # Try to install all external libraries and dependencies (apt-get/pip/splunk apps)
+#    FRESH: True
 
-#  # ---------------------------
-#  # BROWN STUDIES
-#  # ---------------------------
-#
-#  roles:
-#  - role:      orthanc
-#    title:     Christianson Imaging
-#    c_name:    orthanc_ci
-#    api_port:  8045
-#    admin_pw:  "{{ orthanc_ci_pw }}"
-#
-#  - role:      orthanc
-#    title:     Christianson Queue
-#    c_name:    orthanc_ci_in
-#    api_port:  8145
-#    dicom_port: 4145
-#    admin_pw:  "{{ orthanc_ci_pw }}"
-#    link_peers: yes
-#    peers:
-#      orthanc_ci:
-#        Url:  "http://orthanc_ci:8042"
-#        Username: "orthanc"
-#        Password: "{{ orthanc_ci_pw }}"
-#
-#  # ---------------------------
-#  # NIH/NETT/SIREN STUDIES
-#  # ---------------------------
-#
-#  - role:      orthanc
-#    title:     HOBIT Imaging
-#    c_name:    orthanc_hb
-#    api_port:  8046
-#    admin_pw:  "{{ orthanc_hb_pw }}"
-#
-#  - role:      orthanc
-#    title:     HOBIT Queue
-#    c_name:    orthanc_hb_in
-#    api_port:  8146
-#    dicom_port: 4146
-#    admin_pw:  "{{ orthanc_hb_pw }}"
-#    link_peers: yes
-#    peers:
-#      orthanc_hb:
-#        Url:  "http://orthanc_hb:8042"
-#        Username: "orthanc"
-#        Password: "{{ orthanc_hb_pw }}"
-#
-#  - role:      orthanc
-#    title:     ProTECT III Imaging
-#    c_name:    orthanc_p3
-#    api_port:  8047
-#    admin_pw:  "{{ orthanc_p3_pw }}"
+  # ---------------------------
+  # BROWN STUDIES
+  # ---------------------------
+
+  roles:
+  - role:      orthanc
+    title:     Christianson Imaging
+    c_name:    orthanc_ci
+    api_port:  8045
+    admin_pw:  "{{ orthanc_ci_pw }}"
+
+  - role:      orthanc
+    title:     Christianson Queue
+    c_name:    orthanc_ci_in
+    api_port:  8145
+    dicom_port: 4145
+    admin_pw:  "{{ orthanc_ci_pw }}"
+    link_peers: yes
+    peers:
+      orthanc_ci:
+        Url:  "http://orthanc_ci:8042"
+        Username: "orthanc"
+        Password: "{{ orthanc_ci_pw }}"
+
+  # ---------------------------
+  # NIH/NETT/SIREN STUDIES
+  # ---------------------------
+
+  - role:      orthanc
+    title:     HOBIT Imaging
+    c_name:    orthanc_hb
+    api_port:  8046
+    admin_pw:  "{{ orthanc_hb_pw }}"
+
+  - role:      orthanc
+    title:     HOBIT Queue
+    c_name:    orthanc_hb_in
+    api_port:  8146
+    dicom_port: 4146
+    admin_pw:  "{{ orthanc_hb_pw }}"
+    link_peers: yes
+    peers:
+      orthanc_hb:
+        Url:  "http://orthanc_hb:8042"
+        Username: "orthanc"
+        Password: "{{ orthanc_hb_pw }}"
+
+  - role:      orthanc
+    title:     ProTECT III Imaging
+    c_name:    orthanc_p3
+    api_port:  8047
+    admin_pw:  "{{ orthanc_p3_pw }}"
 
   # ---------------------------
   # SUPPORT SERVICES
   # ---------------------------
-  roles:
 
   - role:      nginx
     conf_type: tfe
     secure:
       common_name: www.central-imaging.com
-      cert_type:   selfsigned
+      # Should be set globally already
+#      cert_type:   {{ cert_type }}
       cert_dir:    /etc/ssl
     r_proxies:
       orthanc_ci:
@@ -115,12 +116,13 @@
         path: /protect3/images/
         port: 8042
 
-#  - role: ftp-server
-#
-#  - role:        diana-monitor
-#    dmon_config: central_dmon_cfg.yml
-#    tags:        supervisor
-#
+  - role:        ftp-server
+
+  # TODO: Add check in d-mon to watch /ftp for new data
+  - role:        diana-monitor
+    dmon_config: central_dmon_cfg.yml
+    tags:        supervisor
+
   - role:        diana-fe
     dfe_config:  central_dfe_cfg.yml
     tags:        supervisor
