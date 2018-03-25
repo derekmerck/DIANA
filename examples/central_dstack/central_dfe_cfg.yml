@@ -12,7 +12,6 @@ postamble: |
 
   This website is built using open source and free tools that are configured with the [DIANA][] stack (see Github link for extensive acknowledgements).  This website is currently hosted on a sponsored [Digital Ocean][] droplet.
 
-  ![DO logo](https://www.digitalocean.com/assets/media/logos-badges/DO_Powered_by_Badge_blue-12f00e6a.png)
 
   [GUIDMint]: https://github.com/derekmerck/DIANA/tree/master/utilities/GUIDMint
   [DIANA]: http://www.github.com/derekmerck/DIANA
