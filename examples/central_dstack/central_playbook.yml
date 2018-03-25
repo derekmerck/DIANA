@@ -1,5 +1,5 @@
 # Setup Central Imaging DIANA Stack
-# Merck, Fall 2017
+# Merck, Fall 2017 - Spring 2018
 
 # > ansible-playbook -i ../../secrets/local_inventory.yml --vault-password ../../secrets/vault_pw.txt central_playbook.yml
 
@@ -32,13 +32,13 @@
     orthanc_hb_pw:    "{{ vault_orthanc_hb_pw }}"
     orthanc_p3_pw:    "{{ vault_orthanc_p3_pw }}"
 
-    # FRESH: True   # Try to install all external dependencies (apt-get/pip/splunk apps)
+#    FRESH: True   # Try to install all external dependencies (apt-get/pip/splunk apps)
 
-  # ---------------------------
-  # BROWN STUDIES
-  # ---------------------------
-
-  roles:
+#  # ---------------------------
+#  # BROWN STUDIES
+#  # ---------------------------
+#
+#  roles:
 #  - role:      orthanc
 #    title:     Christianson Imaging
 #    c_name:    orthanc_ci
@@ -90,25 +90,29 @@
   # ---------------------------
   # SUPPORT SERVICES
   # ---------------------------
+  roles:
 
-  - role: nginx
+  - role:      nginx
     conf_type: tfe
-    ssl: self_signed
+    secure:
+      common_name: www.central-imaging.com
+      cert_type:   selfsigned
+      cert_dir:    /etc/ssl
     r_proxies:
       orthanc_ci:
-        path: /christianson/images
+        path: /christianson/images/
         port: 8042
       orthanc_ci_in:
-        path: /christianson/upload/images
+        path: /christianson/upload/images/
         port: 8042
       orthanc_hb:
-        path: /hobit/images
+        path: /hobit/images/
         port: 8042
       orthanc_hb_in:
-        path: /hobit/upload/images
+        path: /hobit/upload/images/
         port: 8042
       orthanc_p3:
-        path: /protect3/images
+        path: /protect3/images/
         port: 8042
 
 #  - role: ftp-server

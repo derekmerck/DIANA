@@ -44,11 +44,15 @@ http {
     server {
         listen {{ port | default(80) }};
 
-        {%  if ssl is defined %}
+        {%  if secure is defined -%}
         listen 443 ssl;
-        server_name diana.com;
-        ssl_certificate /etc/ssl/crt/diana.com.crt;
-        ssl_certificate_key /etc/ssl/private/diana.com.pem;
+        server_name {{ secure['common_name'] }};
+        ssl_certificate {{ secure['cert_dir'] }}/crt/{{ secure['common_name'] }}.crt;
+        ssl_certificate_key {{ secure['cert_dir'] }}/private/{{ secure['common_name'] }}.pem;
+
+        location ~ /.well-known {
+            root {{ secure['cert_dir'] }}/well-known;
+        }
         {% endif %}
 
         location / {
@@ -56,7 +60,7 @@ http {
             proxy_pass_request_headers      on;
         }
 
-        {% for key, value in r_proxies.iteritems() %}
+        {% for key, value in r_proxies.iteritems() -%}
         location {{ value.path }} {
             proxy_pass http://{{ key }}/;
             proxy_pass_request_headers      on;

@@ -23,8 +23,9 @@ The Diana Service Stack can be configured into various different assemblies acco
 - [pyyaml][]
 - [jinja2][]
 
-enum34
-cffi
+- pyopenssl
+- enum34
+- cffi
 
 ### External Requirements
 
@@ -32,6 +33,7 @@ cffi
 - [Orthanc][] for DICOM storage and bridging DICOM to REST
 - [Postgresql][] 9.5+ for scalable Orthanc backend
 - [Splunk][] 6.6+ for data indexing
+- OpenSSL
 
 [Docker]:http://www.docker.com
 [Orthanc]: https://orthanc.chu.ulg.ac.be
@@ -140,13 +142,26 @@ index.UpdateDoseRegistry( dicom_node )
 
 
 
-## Notes
+## SSL Encryption/SSH
 
-### SSL with Let's Encrypt
+### With a self-signed certficate
+
+Requires Ansible>=2.4 for ssl setup modules.
+
+```
+- role:  nginx
+    ssl: self_signed
+```
+
+Once the cert is created, `git` will start failing to pull with https.
+
+### With Let's Encrypt
 
 
+I picked up a lot of pointers from <https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https>
 
-### ssh-agent in Pycharm
+
+### Using ssh-agent with Pycharm
 
 Set agent a regular terminal, then share it with `eval`.
 

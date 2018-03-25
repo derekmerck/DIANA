@@ -36,14 +36,14 @@ $ pip install -r DIANA/requirements.txt
 
 ## Components
 
-### DIANA-stack
+### DIANA-Stack
 Ansible scripts for flexible, reproducible DICOM service configurations.
 
 * DICOM image archives and routing (Orthanc)
 * Data indexing and forwarding (Splunk)
 
 
-### DIANA-connect
+### DIANA-Connector
 Python scripts for data monitoring and transfer jobs.
 
 * Update data indices with DICOM tag information
@@ -53,13 +53,13 @@ Python scripts for data monitoring and transfer jobs.
 * Automatic deidentification
 
 
-### DIANA-frontend
+### DIANA-Frontend
 A simple, dynanmically configured DIANA front-end html interface for accessing available imaging trial resources.
 
 Reference implementation at <http://www.central-imaging.com/>
 
 
-### DIANA-splunk
+### DIANA-SplunkApps
 Splunk apps and dashboards for informatics and data review
 
 * DIANA-status: DIANA services introspection

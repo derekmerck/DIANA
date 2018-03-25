@@ -14,3 +14,6 @@ pg_admin_pw:      "{{ vault_pg_admin_pw }}"
 # Common Orthanc credentials
 orthanc_db_pw:    "{{ vault_orthanc_db_pw }}"
 orthanc_admin_pw: "{{ vault_orthanc_admin_pw }}"
+
+operator_email:   derek_merck@brown.edu
+operator_org:     RIH 3D Lab

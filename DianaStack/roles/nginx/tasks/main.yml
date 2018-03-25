@@ -4,33 +4,39 @@
 - set_fact:
     config_dir: "{{ base_dir }}/config/nginx"
 
-- name: Make sure ssl directory
-  file:
-    path: "/etc/ssl/{{ item }}"
-    state: directory
-  become: yes
-  with_items:
-    - crt
-    - private
-    - csr
-
-- openssl_privatekey:
-    path: /etc/ssl/private/diana.com.pem
-  become: yes
-
-- openssl_csr:
-    path: /etc/ssl/csr/diana.com.csr
-    privatekey_path: /etc/ssl/private/diana.com.pem
-    common_name: www.diana.com
-  become: yes
-
-- openssl_certificate:
-    path:            /etc/ssl/crt/diana.com.crt
-    privatekey_path: /etc/ssl/private/diana.com.pem
-    csr_path:        /etc/ssl/csr/diana.com.csr
-    provider:        selfsigned
-  when:              ssl is defined and ssl=="self_signed"
-  become:  yes
+#- name: Make sure ssl directory
+#  file:
+#    path: "/etc/ssl/{{ item }}"
+#    state: directory
+#  become: yes
+#  with_items:
+#    - crt
+#    - private
+#    - csr
+#    - well-known
+#  when: ssl is defined
+#
+#- openssl_privatekey:
+#    path: "/etc/ssl/private/{{common_name}}.pem"
+#  become: yes
+#  when: ssl is defined
+#
+#- openssl_csr:
+#    path: "/etc/ssl/csr/{{common_name}}.csr"
+#    privatekey_path: /etc/ssl/private/{{common_name}}.pem
+#    email: derek_merck@brown.edu
+#    common_name: {{common_name}}
+#  become: yes
+#  when: ssl is defined
+#
+## SELF SIGNED CERT
+#- openssl_certificate:
+#    path:            "/etc/ssl/crt/{{common_name}}.crt"
+#    privatekey_path: "/etc/ssl/private/{{common_name}}.pem"
+#    csr_path:        "/etc/ssl/csr/{{common_name}}.csr"
+#    provider:        selfsigned
+#  when:              ssl is defined and ssl=="self_signed"
+#  become:  yes
 
 - name:    "Setup config folder"
   file:
@@ -38,6 +44,13 @@
     state: directory
     mode:  0777
   become:  yes
+
+- name: Make sure ssl directories exist
+  file:
+    path: "{{ secure['cert_dir'] }}"
+    state: directory
+  become: yes
+
 
 - name:    "Create nginx config"
   template:
@@ -57,7 +70,7 @@
     links:        "{{ r_proxies.keys() }}"
     volumes:
       - "{{ config_dir }}/nginx-head.conf:/etc/nginx/nginx.conf:ro"
-      - "/etc/ssl:/etc/ssl"
+      - "{{ secure.cert_dir }}:{{ secure.cert_dir }}"
 
     log_driver: splunk
     log_options:
@@ -65,3 +78,5 @@
       splunk-url: http://{{ indexer_ip | default(dockerhost_ip) }}:8088
       splunk-index: diana_svc
       splunk-source: nginx
+
+  # TODO: Need to restart nginx service if anything has changed in certs.

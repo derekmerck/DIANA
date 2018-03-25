@@ -6,7 +6,7 @@ preamble: |
   Image review areas are all password protected.  Contact the program PI to request access.
 
 postamble: |
-  GUIDs and convenience pseudo-identifiers are assigned to each subject and study on upload using [GUIDMint][].  This website hosts a public GUIDMint REST reference implementation, see the [api docs](/guid/doc).
+  GUIDs and convenience pseudo-identifiers are assigned to each subject and study on upload using [GUIDMint][].  This website hosts a public GUIDMint REST reference implementation, see the [api docs](guid/doc).
 
   ---
 

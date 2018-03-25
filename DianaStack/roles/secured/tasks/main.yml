@@ -1,0 +1,36 @@
+---
+- debug: var=cert_dir
+- debug: var=cert_type
+- debug: var=common_name
+
+- name: Make sure ssl directories exist
+  file:
+    path: "{{ cert_dir }}/{{ item }}"
+    state: directory
+  become: yes
+  with_items:
+    - crt         # cerficates
+    - private     # keys
+    - csr         # cert requests
+    - well-known  # for letsencrypt challenges
+
+- openssl_privatekey:
+    path: "{{cert_dir}}/private/{{common_name}}.pem"
+  become: yes
+
+- openssl_csr:
+    path: "{{cert_dir}}/csr/{{common_name}}.csr"
+    privatekey_path: "{{cert_dir}}/private/{{common_name}}.pem"
+    emailAddress: "{{ operator_email | default('') }} "
+    organizationName: "{{ operator_org | default('') }} "
+    common_name: "{{ common_name }}"
+  become: yes
+
+# SELF SIGNED CERT
+- openssl_certificate:
+    path:            "{{cert_dir}}/crt/{{common_name}}.crt"
+    privatekey_path: "{{cert_dir}}/private/{{common_name}}.pem"
+    csr_path:        "{{cert_dir}}/csr/{{common_name}}.csr"
+    provider:        selfsigned
+  when:              cert_type=="selfsigned"
+  become:  yes
