@@ -29,8 +29,8 @@
 #      - "{{ secure.cert_dir }}:{{ secure.cert_dir }}"
 
     env:
-      PUBLICHOST:  localhost
-      ADDED_FLAGS: -d -d -O clf:/var/log/pureftpd.log
+      PUBLICHOST:  "{{ansible_host}}"
+      ADDED_FLAGS: -d -d -O clf:/var/log/pureftpd.log --tls=0
 
     log_driver: splunk
     log_options:
