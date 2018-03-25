@@ -79,11 +79,13 @@
     src: "{{ role_path }}/splunkbase/"
     dest: "{{ base_dir }}/splunk-apps/"
   become: yes
+  when: FRESH is defined
 
 - name: Install Splunkbase apps from shared dir
   command:  "docker exec splunk bin/splunk install app /opt/splunk/etc/splunk-apps/{{ item | basename }} -update 1 -auth admin:{{ splunk_admin_pw }}"
   with_fileglob:  # fileglob runs on local, so this is a bit of a hack
     - "{{ role_path }}/splunkbase/*.tgz"
+  when: FRESH is defined
 
 - name: Add hl7 monitor if req
   command:  docker exec splunk bin/splunk add monitor {{mount_pt}} -sourcetype hl7_v2 -index hl7 -auth admin:{{ splunk_admin_pw }}

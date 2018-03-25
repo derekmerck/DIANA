@@ -7,6 +7,10 @@
   with_items:
     - supervisor
     - python-numpy
+    - build-essential
+    - libssl-dev
+    - libffi-dev
+    - python-dev
   when: FRESH is defined
 
 # Sometimes `supervisor` messes up the log umask and Splunk can't
@@ -27,8 +31,12 @@
     - pyyaml
     - bokeh
     - splunk-sdk
+    - enum34
+    - cffi
+    - pyopenssl
   when: FRESH is defined
 
+# See https://stackoverflow.com/questions/22073516/failed-to-install-python-cryptography-package-with-pip-and-setup-py for pyopenssl errors
 
 - name: Install DIANA-Utils from github
   git:

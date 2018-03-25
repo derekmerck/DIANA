@@ -26,7 +26,7 @@ It is similar to `XNAT <http://www.xnat.org>`__ in providing DICOM
 services, image data indexing, REST endpoints for scripting, and user
 access control. It is dissimilar in that it is not a monolithic
 codebase, but an amalgamation of free and free and open source (FOSS)
-systems. Indeed, XNAT can be setup as a component of DIANA.
+systems.
 
 Dependencies
 ------------

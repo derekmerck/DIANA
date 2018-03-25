@@ -19,9 +19,12 @@ The Diana Service Stack can be configured into various different assemblies acco
 ### Python Package Requirements
 
 - [Python][] 2.7.11+ for scripting
-- [Ansible][] for service orchestration
+- [Ansible][]>=2.4 for service orchestration
 - [pyyaml][]
 - [jinja2][]
+
+enum34
+cffi
 
 ### External Requirements
 
@@ -135,9 +138,15 @@ index.UpdateDoseRegistry( dicom_node )
 2. Point the HL7 feeds to log to flat text in `mount_pt`
 3. Install the `hl7_flow` dashboards
 
+
+
 ## Notes
 
-#### ssh-agent in Pycharm
+### SSL with Let's Encrypt
+
+
+
+### ssh-agent in Pycharm
 
 Set agent a regular terminal, then share it with `eval`.
 

@@ -4,6 +4,34 @@
 - set_fact:
     config_dir: "{{ base_dir }}/config/nginx"
 
+- name: Make sure ssl directory
+  file:
+    path: "/etc/ssl/{{ item }}"
+    state: directory
+  become: yes
+  with_items:
+    - crt
+    - private
+    - csr
+
+- openssl_privatekey:
+    path: /etc/ssl/private/diana.com.pem
+  become: yes
+
+- openssl_csr:
+    path: /etc/ssl/csr/diana.com.csr
+    privatekey_path: /etc/ssl/private/diana.com.pem
+    common_name: www.diana.com
+  become: yes
+
+- openssl_certificate:
+    path:            /etc/ssl/crt/diana.com.crt
+    privatekey_path: /etc/ssl/private/diana.com.pem
+    csr_path:        /etc/ssl/csr/diana.com.csr
+    provider:        selfsigned
+  when:              ssl is defined and ssl=="self_signed"
+  become:  yes
+
 - name:    "Setup config folder"
   file:
     path:  "{{ config_dir }}"
@@ -23,12 +51,13 @@
     name:  nginx
     image: nginx
     state: started
-    ports: ["{{ port }}:{{ port }}"]
+    ports: ["80:80", "443:443"]
     etc_hosts:
       dockerhost: "{{ dockerhost_ip }}"
-    links: "{{ r_proxies.keys() }}"
+    links:        "{{ r_proxies.keys() }}"
     volumes:
       - "{{ config_dir }}/nginx-head.conf:/etc/nginx/nginx.conf:ro"
+      - "/etc/ssl:/etc/ssl"
 
     log_driver: splunk
     log_options:

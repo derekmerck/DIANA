@@ -44,6 +44,13 @@ http {
     server {
         listen {{ port | default(80) }};
 
+        {%  if ssl is defined %}
+        listen 443 ssl;
+        server_name diana.com;
+        ssl_certificate /etc/ssl/crt/diana.com.crt;
+        ssl_certificate_key /etc/ssl/private/diana.com.pem;
+        {% endif %}
+
         location / {
             proxy_pass http://tfe/;
             proxy_pass_request_headers      on;

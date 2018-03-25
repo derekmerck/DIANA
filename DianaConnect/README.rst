@@ -1,5 +1,5 @@
-DIANA-connect
-=============
+DIANA Connector
+===============
 
 | Derek Merck derek_merck@brown.edu
 | Brown University and Rhode Island Hospital
@@ -7,7 +7,7 @@ DIANA-connect
 
 https://github.com/derekmerck/DIANA/tree/master/DianaConnect
 
-Also sometimes named Tithonus or CopyDICOM
+Also sometimes called Tithonus or CopyDICOM
 
 Overview
 --------

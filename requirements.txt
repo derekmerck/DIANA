@@ -5,14 +5,14 @@ gunicorn
 aenum
 numpy
 bokeh
-python-magic
 flask
 scipy
 scikit-learn
+python-dateutil
 pydicom
 requests
 flask-restplus
 beautifulsoup4
-jinja2
+python-magic
 Flask-HTTPAuth
-python-dateutil
+jinja2
