@@ -31,7 +31,7 @@ studies:
       ports:
         archive_api:   8045
         queue_api:     8145
-        queue_dicom:   4245
+        queue_dicom:   4145
 
 
   NIH/NETT/SIREN:
@@ -46,7 +46,7 @@ studies:
       ports:
         archive_api:   8046
         queue_api:     8146
-        queue_dicom:   4246
+        queue_dicom:   4146
 
     ProtectIII:
       full_name: Progesterone for Treatment of Traumatic Brain Injury Clinical Trial

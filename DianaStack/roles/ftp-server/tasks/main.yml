@@ -21,11 +21,11 @@
     name:  ftpd
     image: stilliard/pure-ftpd:hardened
     state: started
-    ports: "21:21, {% for port in range(30000, 30009) %}127.0.0.1:{{port}}:{{port}}{% if not loop.last %},{% endif %}{% endfor %}"
+    ports: "21:21,{% for port in range(30000, 30010) %}{{port}}:{{port}}{% if not loop.last %},{% endif %}{% endfor %}"
     etc_hosts:
       dockerhost: "{{ dockerhost_ip }}"
     volumes:
-      - /home/ftpusers/:{{ base_dir }}/ftp
+      - "{{ data_dir }}:/home/ftpusers/"
 #      - "{{ secure.cert_dir }}:{{ secure.cert_dir }}"
 
     env:
@@ -56,3 +56,7 @@
       (?i)password: "{{ diana_ftp_pw }}"
       (?i)enter it again: "{{ diana_ftp_pw }}"
   when: not user_present
+
+# <http://getasysadmin.com/2012/12/enable-passive-mode-for-pure-ftpd-on-aws/>
+# $ echo "30000 30009" > /etc/pure-ftpd/conf/PassivePortRange
+# $ echo "ftp.central-imaging.com" > /etc/pure-ftpd/conf/ForcePassiveIP

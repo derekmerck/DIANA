@@ -1,4 +1,9 @@
 ---
+
+#- debug:
+#    msg: "[21:21,{% for port in range(30000, 30010) %}{{port}}:{{port}}{% if not loop.last %},{% endif %}{% endfor %}]"
+
+
 - name: install rhel-extra for cent/rhel
   become: yes
   command: rpm -iUvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
@@ -37,7 +42,7 @@
 - name: Install pip packages
   pip:
     name:  "{{ item }}"
-    extra_args: --trusted-host pypi.python.org
+    extra_args: --trusted-host pypi.python.org  # local dev machine is self signed and confused
   become: yes
   with_items:
     - docker-py

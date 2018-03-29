@@ -74,6 +74,8 @@
     var: days_valid
   when: cert_type=="certbot"
 
+#TODO: This doesn't work right -- something with char vs. int?
+
 - debug:
     msg="Ready to renew"
   when: cert_type=="certbot" and days_valid | int > 0 and days_valid | int < 30
