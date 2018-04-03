@@ -276,17 +276,17 @@ def parse_args():
     p.add_argument('--redis', '-r',     default='services:dev:redis',   help="Redis config section path")
     p.add_argument('--orthanc', '-o',   default='services:dev:orthanc', help="Orthanc config section path (req for upload")
 
-    p.add_argument('--workers', '-w',   default=8, type=int, help='Number of workers in threading pool')
+    p.add_argument('--workers', '-w',   default=8, type=int,  help='Number of workers in threading pool')
 
     p.add_argument('directory',         )  # Perhaps no directory = pre-indexed?
-    p.add_argument('--unstructured',    action= 'store_true',  help="Not an orthanc structured db (slow walk)")
-    p.add_argument('--preindexed', '-p',action= 'store_true',  help="Assume pre-index is clean and skip caching")
+    p.add_argument('--unstructured',    action='store_true',  help="Not an orthanc structured db (slow walk)")
+    p.add_argument('--preindexed', '-p',action='store_true',  help="Assume pre-index is clean and skip caching")
 
-    p.add_argument('--all',             action= 'store_true',  help="Bulk upload entire directory")
-    p.add_argument('--accession',       default=None,          help="Upload an individual accession number")
-    p.add_argument('--compress', '-z',  action= 'store_true',  help="Use JPG2K when uploading")
+    p.add_argument('--all',             action='store_true',  help="Bulk upload entire directory")
+    p.add_argument('--accession',       default=None,         help="Upload an individual accession number")
+    p.add_argument('--compress', '-z',  action='store_true',  help="Use JPG2K when uploading")
     p.add_argument('--version',         action='version')
-    p.add_argument('--verbose', '-v',   action='count',        help="Set output level v/vv")
+    p.add_argument('--verbose', '-v',   action='count',       help="Set output level v/vv")
 
     opts = p.parse_args()
 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
 
     opts = parse_args()
 
-    # opts.verbose = None
+    # opts.verbose = 1
 
     if not opts.verbose:
         log_level = logging.INFO

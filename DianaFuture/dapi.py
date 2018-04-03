@@ -5,17 +5,24 @@ from pprint import pformat
 from dixel import DLVL
 import json
 import hashlib
+import yaml
+import re
+from datetime import timedelta
+from dateutil import parser as dateutil_parser
 
 
 class Requester(object):
 
-    def __init__(self, host, port, auth):
+    def __init__(self, host, port, auth, path=''):
 
         self.base_url = "http://{}:{}".format(host, port)
+        self.path = path
         self.auth = auth
 
     def do_get(self, url, headers=None, params=None):
+        url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
+        logging.debug(url)
         r = requests.get(url, params=params, headers=headers, auth=self.auth)
 
         logging.debug(r.headers)
@@ -27,6 +34,7 @@ class Requester(object):
             return r.content
 
     def do_post(self, url, data=None, json=None, headers=None):
+        url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
         r = requests.post(url, data=data, json=json, headers=headers, auth=self.auth)
         if not r.status_code == 200:
@@ -35,12 +43,83 @@ class Requester(object):
             return r.json()
 
     def do_delete(self, url):
+        url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
         r = requests.delete(url, auth=self.auth)
         if not r.status_code == 200:
             raise requests.ConnectionError
         else:
             return r.json()
+
+
+class Montage(Requester):
+
+    def __init__(self, host, port=80, user=None, password=None, index="rad", **kwargs):
+        self.logger = logging.getLogger("Montage<{}:{}>".format(host, port))
+        super(Montage, self).__init__(host, port, (user, password), "api/v1")
+        self.do_get('')
+        self.path = "/".join([self.path, 'index', index])
+        self.do_get('')
+
+
+    def do_query(self, qdict):
+        r = self.do_get("search", params=qdict)
+        return r["objects"]
+
+    def find(self, dixel, **kwargs):
+
+        def daterange(s_ref, s_delta, s_delta2=None):
+
+            def mk_delta(s):
+                m = re.search('^(?P<op>(\+|\-))(?P<count>\d+)(?P<units>(s|m|h|d|w))$', s)
+                val = int(m.groupdict()['op'] + m.groupdict()['count'])
+                if m.groupdict()['units'] == 's':
+                    td = timedelta(seconds=val)
+                elif m.groupdict()['units'] == 'm':
+                    td = timedelta(minutes=val)
+                elif m.groupdict()['units'] == 'h':
+                    td = timedelta(hours=val)
+                elif m.groupdict()['units'] == 'd':
+                    td = timedelta(days=val)
+                elif m.groupdict()['units'] == 'w':
+                    td = timedelta(weeks=val)
+                else:
+                    raise ()
+
+                return td
+
+            # TODO: does this work with "now"?
+            ref = dateutil_parser.parse(s_ref)
+            delta = mk_delta(s_delta)
+
+            if s_delta2:
+                delta2 = mk_delta(s_delta2)
+            else:
+                delta2 = - delta
+
+            earliest = ref + delta
+            latest = ref + delta2
+
+            return earliest, latest
+
+        qdict = {}
+
+        if dixel.data.get('PatientID'):
+            qdict['patient_mrn'] = dixel.data['PatientID']
+        if dixel.data.get('AccessionNumber'):
+            qdict['accession_number'] = dixel.data['AccessionNumber']
+        if dixel.data.get('RefDate') and dixel.data.get('time_delta'):
+            (start_date, end_date) = daterange(dixel.data.get('RefDate'), dixel.data.get('time_delta'))
+            qdict['start_date'] = start_date
+            qdict['end_date']   = end_date
+
+        for k, v in kwargs.iteritems():
+            qdict[k] = v
+
+                 # : "2016-11-17",
+                 # "end_date": "2016-11-19"
+
+        return self.do_query(qdict)
 
 
 # Implements a set-type interface for dixels with "add", "remove", "get", "__contains__"
@@ -59,10 +138,10 @@ class Orthanc(Requester):
             'Force': True
         }
 
-    def __init__(self, host="localhost", port=8042, user=None, password=None, clear=False,
-                 remote_names=None, **kwargs):
+    def __init__(self, host="localhost", port=8042, user=None, password=None, path='',
+                 clear=False, remote_names=None, **kwargs):
         self.logger = logging.getLogger("Orthanc<{}:{}>".format(host, port))
-        super(Orthanc, self).__init__(host, port, (user, password))
+        super(Orthanc, self).__init__(host, port, (user, password), path=path)
         if clear:
             self.clear()
         self.remote_names = remote_names
@@ -254,3 +333,31 @@ class Orthanc(Requester):
                 logging.debug(rr)
 
         return ret
+
+
+
+import pytest
+@pytest.fixture
+def report_db():
+    logging.basicConfig(level=logging.DEBUG)
+    with open("secrets.yml", 'r') as f:
+        secrets = yaml.load(f)
+
+    return Montage(**secrets['services']['prod']['montage'])
+
+def test_montage(report_db):
+
+    qdict = {"q": "cta",
+             "modality": 4,
+             "exam_type": [8683, 7713, 8766],
+             "start_date": "2016-11-17",
+             "end_date": "2016-11-19"}
+
+    r = report_db.query(qdict)
+    logging.debug(pformat(r))
+
+
+if __name__=="__main__":
+
+    logging.basicConfig(level=logging.DEBUG)
+    test_montage(report_db())

@@ -6,19 +6,21 @@ from dixel import Dixel, DLVL
 from dcache import CSVCache
 from GUIDMint import PseudoMint
 
-def create_key_csv(cache, fp):
+def create_key_csv(cache, fp, key_fields=None):
     N = CSVCache(fp,
                  key_field="AccessionNumber",
                  autosave=False, clear=True)
-    for k in cache.keys():
-        d = Dixel(key=k, cache=cache)
-        # logging.debug(d.data)
-        N.put(k, d.data)
+    for k, v in cache.cache.iteritems():
+        v_ = {}
+        for kk, vv in v.iteritems():
+            if kk in key_fields or not key_fields:
+                v_[kk] = vv
+        N.put(k, v_)
     N.save_fn()
     logging.debug("Saved {} entries".format(len(N)))
 
 
-def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True, clean_proxy=True, depth=0):
+def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True, clean_proxy=True, depth=0, dry_run=False):
 
     def dixel_save_dir(d, save_dir, depth):
         fd = save_dir
@@ -30,6 +32,9 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
     for key in cache.keys():
         d = Dixel(key=key, cache=cache)
 
+        # An AnonID isn't usually going to be assigned until
+        # there has been a DICOM UID lookup, so this is a
+        # reasonable check for "record complete"
         if not d.data.get('AnonID'):
             logging.warn("No anon ID for MRN {}".format(d.data['PatientID']))
             continue
@@ -42,11 +47,22 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
             logging.debug('{} already exists -- skipping'.format(d.data['AnonID'] + '.zip'))
             continue
 
+        loc = d.data.get('RetrieveAETitle').lower()
+        if not proxy.remote_names.get(loc):
+            logging.warn("No retrieve loc for {}.zip".format(d.data['AnonID']))
+            continue
+
+        if dry_run:
+            logging.debug("Dry-run, so not trying to retreive {}.zip".format(d.data['AnonID']))
+            continue
+
         if not d in proxy:
             proxy.find(d, remote_aet, retrieve=True)
 
         if not d in proxy:
             logging.warn("{} was not retrieved successfully!".format(d.data["AccessionNumber"]))
+            d.data['status'] = "unretrievable"
+            d.persist()
             continue
 
         r = proxy.anonymize(d, replacement_map=anon_map)
@@ -70,14 +86,9 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
             proxy.remove(e)
 
 
-def set_anon_ids(cache, mint=None, lazy=True):
+def set_anon_ids(cache=None, mint=None, lazy=True, dixel=None):
 
-    if not mint:
-        mint = PseudoMint()
-
-    for key in cache.keys():
-        d = Dixel(key=key, cache=cache)
-
+    def set_anon_id(d):
         if lazy and not \
             (d.data.get('AnonID') and
              d.data.get('AnonName') and
@@ -89,7 +100,7 @@ def set_anon_ids(cache, mint=None, lazy=True):
 
             if not name or not dob:
                 logging.debug('Inadequate data to anonymize {}'.format(d.data.get('PatientID')))
-                continue
+                raise KeyError
 
             dob = "-".join([dob[:4],dob[4:6],dob[6:]])
             anon = mint.pseudo_identity(name=name, gender=gender, dob=dob)
@@ -99,6 +110,57 @@ def set_anon_ids(cache, mint=None, lazy=True):
             d.data['AnonDoB'] = anon[2]
 
             d.persist()
+
+    if not mint:
+        mint = PseudoMint()
+
+    if dixel:
+        set_anon_id(dixel)
+        return
+
+    if cache:
+        for key in cache.keys():
+            d = Dixel(key=key, cache=cache)
+            set_anon_id(d)
+        #
+        # if lazy and not \
+        #     (d.data.get('AnonID') and
+        #      d.data.get('AnonName') and
+        #      d.data.get('AnonDoB') ):
+        #
+        #     name = d.data.get('PatientName')
+        #     gender = d.data.get('PatientSex', 'U')
+        #     dob = d.data.get('PatientBirthDate')
+        #
+        #     if not name or not dob:
+        #         logging.debug('Inadequate data to anonymize {}'.format(d.data.get('PatientID')))
+        #         continue
+        #
+        #     dob = "-".join([dob[:4],dob[4:6],dob[6:]])
+        #     anon = mint.pseudo_identity(name=name, gender=gender, dob=dob)
+        #
+        #     d.data['AnonID'] = anon[0]
+        #     d.data['AnonName'] = anon[1]
+        #     d.data['AnonDoB'] = anon[2]
+        #
+        #     d.persist()
+
+def lookup_accessions(cache, report_db, lazy=True):
+    # Use a proxy and a condition (time) to identify study_level accession nums/stuids
+
+    for key in cache.keys():
+        d = Dixel(key=key, cache=cache)
+
+        if d.dlvl != DLVL.STUDIES:
+            logging.debug("Can only lookup AccessionNumber for study level dixels, skipping MRN {}".format(d.data['PatientID']))
+            continue
+
+        if lazy and d.data.get('AccessionNumber'):
+            logging.debug("Already have AccessionNumber info for {}, skipping.".format(d.data['AccessionNumber']))
+            continue
+
+        report_db.find(d, time_delta="-1d")
+        d.persist()
 
 
 def lookup_uids(cache, proxy, remote_aet, retrieve=False, lazy=True):
