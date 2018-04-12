@@ -72,7 +72,7 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
         d.data['AnonOID'] = r['ID']
         d.persist()
 
-        # Need an oid and an anon namne to save...
+        # Need an oid and an anon name to save...
         e = Dixel(key=d.data['AnonOID'],
                   data={'OID': d.data['AnonOID'],
                         'PatientID': d.data['AnonID']},

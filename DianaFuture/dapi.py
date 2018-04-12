@@ -145,6 +145,7 @@ class Orthanc(Requester):
         if clear:
             self.clear()
         self.remote_names = remote_names
+        self.peer_name = kwargs.get('peer_name')
 
     def add(self, dixel, lazy=True, force=False, compress=False):
         # TODO: Should be "compressed", "uncompressed", "as_is" (default)
@@ -194,6 +195,27 @@ class Orthanc(Requester):
     def remove(self, dixel):
         url = '{}/{}'.format(str(dixel.dlvl), dixel.oid())
         return self.do_delete(url)
+
+    def copy(self, dixel, dest):
+        if type(dest) == Orthanc:
+            # Use push-to-peer
+            url = "peers/{}/store".format(dest.peer_name)
+            return self.do_post(url, data=dixel.oid())
+        else:
+            raise ValueError("Orthanc doesn't know how to copy to {}".format(dest))
+
+    def inventory(self, level):
+        if level == DLVL.STUDIES:
+            inv = self.do_get("studies")
+        elif level == DLVL.SERIES:
+            inv = self.do_get("series")
+        elif level == DLVL.INSTANCES:
+            inv = self.do_get("instances")
+        else:
+            self.logger.warn("Can only 'inventory' study, series, instance levels")
+            return
+
+        return inv
 
     def __contains__(self, dixel):
 

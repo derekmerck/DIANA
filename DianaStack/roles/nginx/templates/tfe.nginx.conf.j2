@@ -10,8 +10,9 @@ events {
 
 http {
 
-    # set client body size to 2M #
-    client_max_body_size 2M;
+    # set client body size to 10M #
+    client_max_body_size 10M;
+    client_body_buffer_size 10M;
 
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
