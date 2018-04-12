@@ -190,7 +190,7 @@ class Dixel(dcache.Persistent):
                 fn = os.path.split(fp)[-1]
                 self.logger.debug('Compressing {}'.format(fn))
 
-                fpz = os.path.join("/tmp", "{}.compressed".format(fp))
+                fpz = os.path.join("/tmp", "{}.compressed".format(fn))
                 ret_code = subprocess.call(['gdcmconv', '-U', '--j2k', fp, fpz])
 
                 if ret_code != 0:
