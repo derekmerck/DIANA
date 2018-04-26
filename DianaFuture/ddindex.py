@@ -236,6 +236,14 @@ def upload_dcm_files(workers, accession_number=None):
         # Upload single accession
         fps = Q.sget(accession_number)
         logging.info("  Upload:       Accession {}".format(accession_number))
+
+    if accession_numbers:
+        # Upload multiple accessions
+        fps = []
+        for accession_number in accession_numbers:
+            fps.append(Q.sget(accession_number))
+            logging.info("  Upload:       Accession {}".format(accession_number))
+
     else:
         # Upload _all_
         fps = R.keys()
@@ -284,6 +292,7 @@ def parse_args():
 
     p.add_argument('--all',             action='store_true',  help="Bulk upload entire directory")
     p.add_argument('--accession',       default=None,         help="Upload an individual accession number")
+    p.add_argument('--accession_list',  default=None,         help="Upload a list of accession numbers")
     p.add_argument('--compress', '-z',  action='store_true',  help="Use JPG2K when uploading")
     p.add_argument('--version',         action='version')
     p.add_argument('--verbose', '-v',   action='count',       help="Set output level v/vv")
@@ -332,6 +341,7 @@ if __name__ == "__main__":
     unstructured  = opts.unstructured
     preindexed    = opts.preindexed
     accession     = opts.accession
+    accession_list = opts.accession_list
     all           = opts.all
     compress      = opts.compress
 
@@ -359,11 +369,23 @@ if __name__ == "__main__":
             s = unstructured_subdirs(directory)
         index_dcm_dirs(s, workers)
 
+    accession_numbers = []
+    if accession_list:
+        with open(accession_list, 'rU') as f:
+            data = f.read()
+            accession_numbers = data.split()
+
+    logging.debug(accession_numbers)
+
+    exit()
+
     # Skip upload unless a specific target is provided
     if accession or all:
         orthanc = Orthanc(clear=CLEAR_O, **opts.orthanc)
         instance_manifest = orthanc.do_get("instances")
-        upload_dcm_files(workers, accession_number=accession)
+        upload_dcm_files(workers,
+                         accession_number=accession,
+                         accession_numbers=accession_numbers)
 
 
 

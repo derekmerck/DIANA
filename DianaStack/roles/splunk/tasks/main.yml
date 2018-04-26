@@ -6,12 +6,26 @@
 - name: Reset all _local variables
   set_fact:
     vols:
+      - "/data/splunk/etc:/opt/splunk/etc"
+      - "/data/splunk/var:/opt/splunk/var"
       - "{{ base_dir }}/splunk-apps:/opt/splunk/etc/splunk-apps:ro"
       - "/var/log/supervisor:/var/log/supervisor:ro"
 
 - set_fact:
     vols: "{{ vols }} + [ '{{mount_pt}}:{{mount_pt}}:ro' ]"
   when: mount_pt is defined
+
+- name: Make sure data/splunk/etc exists
+  file:
+    path: "/data/splunk/etc"
+    state: directory
+  become:  yes
+
+- name: Make sure data/splunk/var exists
+  file:
+    path: "/data/splunk/var"
+    state: directory
+  become:  yes
 
 - name: Make sure splunk-apps exists
   file:
@@ -46,7 +60,7 @@
 
     volumes: "{{ vols }}"
 
-    volumes_from: data
+#    volumes_from: data
 
     env:
       # Answer yes accepts presumptive upgrade

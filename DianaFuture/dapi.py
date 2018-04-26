@@ -182,6 +182,10 @@ class Orthanc(Requester):
             else:
                 url = '{}/shared-tags?simplify'.format(url)
             # TODO: Check compression, etc.
+
+        elif get_type == "info":
+            pass  # OK as is...
+
         elif get_type == "file":
             if dixel.dlvl is DLVL.INSTANCES:
                 url = '{}/file'.format(url)
@@ -320,7 +324,7 @@ class Orthanc(Requester):
         data = {'Level': str(dixel.dlvl),
                 'Query': q}
 
-        url = '/modalities/{}/query'.format(remote_aet)
+        url = 'modalities/{}/query'.format(remote_aet)
         headers = {"Accept-Encoding": "identity",
                    "Accept": "application/json"}
 
