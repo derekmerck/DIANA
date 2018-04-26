@@ -378,7 +378,7 @@ if __name__ == "__main__":
     logging.debug(accession_numbers)
 
     # Skip upload unless a specific target is provided
-    if accession or all:
+    if accession or all or accession_numbers:
         orthanc = Orthanc(clear=CLEAR_O, **opts.orthanc)
         instance_manifest = orthanc.do_get("instances")
         upload_dcm_files(workers,
