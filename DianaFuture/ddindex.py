@@ -213,7 +213,7 @@ def upload_dcm_file(fp):
     else:
         logging.debug("Ignoring: {}".format(fp))
 
-def upload_dcm_files(workers, accession_number=None):
+def upload_dcm_files(workers, accession_number=None, accession_numbers=[]):
     global R, instance_manifest, compress
 
     pool = Pool(processes=workers)
