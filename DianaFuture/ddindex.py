@@ -377,8 +377,6 @@ if __name__ == "__main__":
 
     logging.debug(accession_numbers)
 
-    exit()
-
     # Skip upload unless a specific target is provided
     if accession or all:
         orthanc = Orthanc(clear=CLEAR_O, **opts.orthanc)
