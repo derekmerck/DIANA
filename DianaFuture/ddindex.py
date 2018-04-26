@@ -239,9 +239,9 @@ def upload_dcm_files(workers, accession_number=None, accession_numbers=[]):
 
     if accession_numbers:
         # Upload multiple accessions
-        fps = []
+        fps = set()
         for accession_number in accession_numbers:
-            fps.append(Q.sget(accession_number))
+            fps.update(Q.sget(accession_number))
             logging.info("  Upload:       Accession {}".format(accession_number))
 
     else:
