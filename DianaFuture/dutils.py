@@ -6,14 +6,14 @@ from dixel import Dixel, DLVL
 from dcache import CSVCache
 from GUIDMint import PseudoMint
 
-def create_key_csv(cache, fp, key_fields=None):
+def create_key_csv(cache, fp, fieldnames=None, key_field="AccessionNumber"):
     N = CSVCache(fp,
-                 key_field="AccessionNumber",
+                 key_field=key_field,
                  autosave=False, clear=True)
     for k, v in cache.cache.iteritems():
         v_ = {}
         for kk, vv in v.iteritems():
-            if kk in key_fields or not key_fields:
+            if not fieldnames or kk in fieldnames:
                 v_[kk] = vv
         N.put(k, v_)
     N.save_fn()
@@ -184,6 +184,8 @@ def lookup_uids(cache, proxy, remote_aet, retrieve=False, lazy=True):
         ret = proxy.find(d, remote_aet, retrieve=retrieve)
         if ret:
             # Take the first entry in ret and update the STUID/SERUID/INSTUID so we can retrieve
+            if not d.data.get("AccessionNumber"):
+                d.data['AccessionNumber'] = ret[0].get("AccessionNumber")
             d.data['StudyInstanceUID'] = ret[0].get("StudyInstanceUID")
             d.data['PatientName'] = ret[0].get("PatientName")
             d.data['PatientBirthDate'] = ret[0].get("PatientBirthDate")
