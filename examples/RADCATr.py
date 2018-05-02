@@ -123,8 +123,13 @@ def make_ui():
         # item['radcat3'] = "Yes" if extractions.get('radcat3') else "No"
 
         complete = [k for k in items if k.get('audit_radcat')]
-        task_label_str.set("Report {} of {} ({} complete)\nStatus: {}".format(
-            current+1, len(items), len(complete), item['status'])
+        task_label_str.set("Report {} of {} ({} complete)\n{age}yo {sex} {status} {bp} {mod}".format(
+            current+1, len(items), len(complete),
+            status=item['status'],
+            age=item['age'],
+            sex=item['sex'][0],
+            bp=item['body_part'],
+            mod=item['modality'])
         )
 
         report_text['state'] = 'normal'
