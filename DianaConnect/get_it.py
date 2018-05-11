@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     with open(opts.secrets, 'r') as f:
         secrets = yaml.load(f)
-    proxy = OrthancProxy(**secrets['services'][opts.proxy])
+    proxy = OrthancProxy(**secrets['lifespan'][opts.proxy])
 
     get_it(proxy, opts.patient_id, opts.accession_number, opts.series_number)
 

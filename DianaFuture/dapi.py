@@ -300,7 +300,8 @@ class Orthanc(Requester):
                         'SeriesDescription',
                         'ProtocolName',
                         'SeriesNumber',
-                        'NumberOfSeriesRelatedInstances']
+                        'NumberOfSeriesRelatedInstances',
+                        'Modality']
 
         # Minimal, we are going to want to retreive this
         keys[DLVL.INSTANCES] = ['SOPInstanceUID','SeriesInstanceUID']
@@ -314,12 +315,10 @@ class Orthanc(Requester):
         for k in keys[dixel.dlvl]:
             q = add_key(q, k, dixel)
 
+        if dixel.dlvl == DLVL.STUDIES and dixel.data.get('Modality'):
+            q['ModalitiesInStudy'] = dixel.data.get('Modality')
+
         # logging.debug(pformat(q))
-
-
-        # if dixel.dlvl == DLVL.STUDIES and qdict.get('Modality'):
-        #     _qdict['ModalitiesInStudy'] = qdict.get('Modality')
-        #     del (qdict['Modality'])
 
         data = {'Level': str(dixel.dlvl),
                 'Query': q}

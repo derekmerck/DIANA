@@ -1,5 +1,7 @@
 import dcache
 import dicom
+from PIL import Image as PILImage
+import StringIO
 from aenum import Enum, auto
 import logging
 import os
@@ -103,10 +105,15 @@ class Dixel(dcache.Persistent):
                 'PatientFirstName':   data.get("Patient First Name"),
                 'PatientLastName':    data.get("Patient Last Name"),
                 'AccessionNumber':    data.get("Accession Number"),
-                'ExamCode':           data.get("Exam Code"),
-                'ExamDescription':    data.get("Exam Description"),
+                'OrderCode':          data.get("Exam Code"),
                 'PatientStatus':      data.get("Patient Status"),
-                'ReportText':         data.get("Report Text")}
+                'ReportText':         data.get("Report Text"),
+                'ReferringPhysicianName': data.get('Ordered By'),
+                'Organization':       data.get('Organization'),
+                'StudyDescription':   data.get('Exam Description'),
+                'PatientSex':         data.get('Patient Sex'),
+                'PatientAge':         data.get('Patient Age')
+                 }
         if data.get('Exam Completed Date'):
             _data['StudyDate']=       normalize_date(data["Exam Completed Date"])
         if data.get('radcat'):
@@ -153,6 +160,42 @@ class Dixel(dcache.Persistent):
     @dlvl.setter
     def dlvl(self, value):
         self.data['_dlvl'] = str(value)
+
+    def write_image(self, file_data, save_dir=None):
+
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+
+        file_like = StringIO.StringIO(file_data)
+        ds = dicom.read_file(file_like)
+
+        if ds.Modality != "US":
+            logging.warn("Skipping non-ultrasound data")
+            return
+
+        try:
+            pixels = ds.pixel_array
+            if ds[0x0028, 0x0004].value == "RGB":
+                pixels = pixels.reshape([pixels.shape[1], pixels.shape[2], 3])
+        except NotImplementedError:
+            logging.warn("Skipping bogus data format")
+            return
+
+        try:
+            im = PILImage.fromarray(pixels)
+            fn = self.oid() + '.png'  # Single file
+            fp = os.path.join( save_dir, fn )
+
+            if ds.Modality == "US":
+                # Crop out annotations
+                w, h = im.size
+                im = im.crop((150, 100, w - 100, h - 100))
+
+            im.save(fp)
+        except TypeError:
+            logging.warn("PIL can not handle images of type {}, falling back to DCM".format(ds[0x0028, 0x0004].value))
+            self.data['PatientID'] = self.oid()
+            self.write_file(file_data, save_dir)
 
     def write_file(self, file_data, save_dir=None):
         save_dir = save_dir or os.path.split( self.data.get('FilePath') )[0]

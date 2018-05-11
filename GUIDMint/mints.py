@@ -188,6 +188,7 @@ class PseudoMint(GUIDMint):
 
     def pseudo_identity(self, name, gender="U", dob=None, age=None, *args, **kwargs):
 
+        # TODO: This is not repeatable b/c it depends on now(), which changes
         if not dob and age:
             ddob = datetime.now()-timedelta(days=age*365.25)
             dob = str(ddob.date())
