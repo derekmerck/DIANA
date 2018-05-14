@@ -1,3 +1,14 @@
+#! python
+"""
+dcm2im.py
+Derek Merck, Spring 2018
+
+Convert pixels from a DICOM format image or directory into a standard
+PIL format (png, jpg).
+
+> dcm2py.py -i im000001.dcm
+"""
+
 import os, glob, logging
 from argparse import ArgumentParser
 from dicom import read_file
