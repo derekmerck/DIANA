@@ -23,21 +23,25 @@ import yaml
 from argparse import ArgumentParser
 
 
-def get_it(proxy, patient_id, accession_number, series_number=''):
+def get_it(proxy, patient_id, accession_number, series_number=None):
     meta = {
-        'PatientID': patient_id,
-        'AccessionNumber': accession_number,
-        'SeriesNumber': series_number
+        'AccessionNumber': accession_number
     }
-    d = Dixel(accession_number, meta=meta, level=DicomLevel.SERIES)
+
+    if series_number:
+        meta['SeriesNumber'] = series_number
+        dlvl = DicomLevel.SERIES
+    else:
+        dlvl = DicomLevel.STUDIES
+
+    d = Dixel(accession_number, meta=meta, level=dlvl)
     proxy.get(d, retrieve=True)
 
 
 def parse_args():
     p = ArgumentParser()
-    p.add_argument("-p", "--patient_id", required=True)
     p.add_argument("-a", "--accession_number", required=True)
-    p.add_argument("-r", "--series_number")
+    p.add_argument("-r", "--series_number", default=None)
     p.add_argument("-s", "--secrets", default="./secrets.yml")
     p.add_argument("-o", "--proxy",   default="deathstar")
 
@@ -54,6 +58,6 @@ if __name__ == "__main__":
         secrets = yaml.load(f)
     proxy = OrthancProxy(**secrets['lifespan'][opts.proxy])
 
-    get_it(proxy, opts.patient_id, opts.accession_number, opts.series_number)
+    get_it(proxy, opts.accession_number, opts.series_number)
 
 

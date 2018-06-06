@@ -22,11 +22,11 @@ def create_key_csv(cache, fp, fieldnames=None, key_field="AccessionNumber"):
 
 def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True, clean_proxy=True, depth=0, dry_run=False):
 
-    def dixel_save_dir(d, save_dir, depth):
+    def dixel_save_dir(fn, save_dir, depth):
         fd = save_dir
         if depth:
             for de in range(depth):
-                fd = os.path.join(fd, d.data['AnonID'][de])
+                fd = os.path.join(fd, fn[de])
         return fd
 
     for key in cache.keys():
@@ -37,37 +37,44 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
         # reasonable check for "record complete"
         if not d.data.get('AnonID'):
             logging.warn("No anon ID for MRN {}".format(d.data['PatientID']))
+            d.data['status'] = "missing_info"
             continue
 
-        dsd = dixel_save_dir(d, save_dir, depth)
-        fp = os.path.join(dsd, d.data['AnonID'] + '.zip')
+        if d.data.get('status', 'ready') != "ready":
+            continue
+
+        d.data['fn_base'] = d.data['AnonAccessionNum']
+        fn = '{}.zip'.format(d.data['fn_base'])
+        dsd = dixel_save_dir(fn, save_dir, depth)
+        fp = os.path.join(dsd, fn)
 
         # Check if file already exists for lazy!
         if lazy and os.path.exists(fp):
-            logging.debug('{} already exists -- skipping'.format(d.data['AnonID'] + '.zip'))
+            logging.debug('Skipping {}: already exists'.format(fn[0:7]))
+            d.data['status'] = "done"
             continue
 
-        loc = d.data.get('RetrieveAETitle').lower()
-        if not proxy.remote_names.get(loc):
-            logging.warn("No retrieve loc for {}.zip".format(d.data['AnonID']))
-            continue
+        # loc = d.data.get('RetrieveAETitle').lower()
+        # if not proxy.remote_names.get(loc):
+        #     logging.warn("Skipping {}: No retrieve loc provided".format(fn))
+        #     continue
 
         if dry_run:
-            logging.debug("Dry-run, so not trying to retreive {}.zip".format(d.data['AnonID']))
+            logging.debug("Skipping {}: Dry-run, no retreive attempted".format(fn[0:7]))
             continue
 
         if not d in proxy:
             proxy.find(d, remote_aet, retrieve=True)
 
         if not d in proxy:
-            logging.warn("{} was not retrieved successfully!".format(d.data["AccessionNumber"]))
+            logging.warn("Failed {}: Unsuccessful retrieval!".format(fn[0:7]))
             d.data['status'] = "unretrievable"
             d.persist()
             continue
 
         r = proxy.anonymize(d, replacement_map=anon_map)
 
-        logging.debug(r)
+        # logging.debug(r)
 
         d.data['AnonOID'] = r['ID']
         d.persist()
@@ -75,7 +82,7 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
         # Need an oid and an anon name to save...
         e = Dixel(key=d.data['AnonOID'],
                   data={'OID': d.data['AnonOID'],
-                        'PatientID': d.data['AnonID']},
+                        'fn_base': d.data['fn_base']},
                   dlvl=d.dlvl)
         file_data = proxy.get(e, get_type='file')
 
@@ -84,6 +91,9 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
         if clean_proxy:
             proxy.remove(d)
             proxy.remove(e)
+
+        d.data['status'] = "done"
+        logging.info("Grabbed {}".format(fn[0:7]))
 
 
 def set_anon_ids(cache=None, mint=None, lazy=True, dixel=None):
@@ -180,6 +190,7 @@ def lookup_uids(cache, proxy, remote_aet, retrieve=False, lazy=True):
 
         # retrieve = True
         # logging.debug(d.data['PatientLastName'])
+        d.data['PatientID'] = ""
 
         ret = proxy.find(d, remote_aet, retrieve=retrieve)
         if ret:
@@ -187,6 +198,7 @@ def lookup_uids(cache, proxy, remote_aet, retrieve=False, lazy=True):
             if not d.data.get("AccessionNumber"):
                 d.data['AccessionNumber'] = ret[0].get("AccessionNumber")
             d.data['StudyInstanceUID'] = ret[0].get("StudyInstanceUID")
+            d.data['PatientID'] = ret[0].get("PatientID")
             d.data['PatientName'] = ret[0].get("PatientName")
             d.data['PatientBirthDate'] = ret[0].get("PatientBirthDate")
             d.data['PatientSex'] = ret[0].get("PatientSex")
@@ -200,6 +212,8 @@ def lookup_uids(cache, proxy, remote_aet, retrieve=False, lazy=True):
                 d.data['SOPInstanceUID'] = ret[0].get("SOPInstanceUID")
 
             d.persist()
+        else:
+            logging.warning("No answers for {}".format(d.data["AccessionNumber"]))
 
 
 def lookup_child_uids(cache, c_cache, child_qs, proxy, remote_aet):

@@ -289,8 +289,6 @@ class OrthancProxy(Orthanc):
         data = {'Level': str(level),
                 'Query': qdict}
 
-        # self.logger.debug(pformat(data))
-
         url = '{0}/modalities/{1}/query'.format(self.url, remote_aet)
         self.logger.debug(url)
 

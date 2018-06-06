@@ -1,8 +1,9 @@
-"""Hashes an alphanumeric guid from a given string value
+"""
+Hashes an alphanumeric guid from a given string value
 
-* Given a guid, gender (M/F/U), and name lists, returns a reproducible pseudonym
-* Given a dob (%Y-%m-%d), returns a reproducible pseudodob within 6 months of the original dob
-* If age is input, the dob is assumed to be (now - age*3655.25 days)
+* Given a guid, gender (M/F/U), and name lists -> returns a reproducible pseudonym
+* Given a guid, and dob (%Y-%m-%d) -> returns a reproducible pseudodob within 6 months of the original dob
+* Given a guid, and age (delta Y) -> pseudodob of guide, (now - age*365.25 days); it is NOT reproducible b/c it depends on now
 """
 
 import logging

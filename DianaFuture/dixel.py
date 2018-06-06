@@ -189,13 +189,14 @@ class Dixel(dcache.Persistent):
             if ds.Modality == "US":
                 # Crop out annotations
                 w, h = im.size
-                im = im.crop((150, 100, w - 100, h - 100))
+                im = im.crop((150, 100, w - 100, h))
 
             im.save(fp)
         except TypeError:
             logging.warn("PIL can not handle images of type {}, falling back to DCM".format(ds[0x0028, 0x0004].value))
             self.data['PatientID'] = self.oid()
-            self.write_file(file_data, save_dir)
+            # TODO: FIX NO BASE_FN is SET!
+            # self.write_file(file_data, save_dir)
 
     def write_file(self, file_data, save_dir=None):
         save_dir = save_dir or os.path.split( self.data.get('FilePath') )[0]
@@ -204,9 +205,9 @@ class Dixel(dcache.Persistent):
             os.makedirs(save_dir)
 
         if self.dlvl == DLVL.INSTANCES:
-            fn = self.data['PatientID'] + '.dcm'  # Single file
+            fn = self.data['fn_base'] + '.dcm'  # Single file
         else:
-            fn = self.data['PatientID'] + '.zip'  # Archive format
+            fn = self.data['fn_base'] + '.zip'  # Archive format
         fp = os.path.join(save_dir, fn)
         with open(fp, 'wb') as f:
             f.write(file_data)

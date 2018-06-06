@@ -10,6 +10,7 @@ import re
 from datetime import timedelta
 from dateutil import parser as dateutil_parser
 
+TIMEOUT = 3*60
 
 class Requester(object):
 
@@ -23,7 +24,7 @@ class Requester(object):
         url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
         logging.debug(url)
-        r = requests.get(url, params=params, headers=headers, auth=self.auth)
+        r = requests.get(url, params=params, headers=headers, auth=self.auth, timeout=TIMEOUT)
 
         logging.debug(r.headers)
         if not r.status_code == 200:
@@ -36,7 +37,7 @@ class Requester(object):
     def do_post(self, url, data=None, json=None, headers=None):
         url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
-        r = requests.post(url, data=data, json=json, headers=headers, auth=self.auth)
+        r = requests.post(url, data=data, json=json, headers=headers, auth=self.auth, timeout=TIMEOUT)
         if not r.status_code == 200:
             raise requests.ConnectionError
         else:
@@ -45,7 +46,7 @@ class Requester(object):
     def do_delete(self, url):
         url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
-        r = requests.delete(url, auth=self.auth)
+        r = requests.delete(url, auth=self.auth, timeout=TIMEOUT)
         if not r.status_code == 200:
             raise requests.ConnectionError
         else:
@@ -317,8 +318,6 @@ class Orthanc(Requester):
 
         if dixel.dlvl == DLVL.STUDIES and dixel.data.get('Modality'):
             q['ModalitiesInStudy'] = dixel.data.get('Modality')
-
-        # logging.debug(pformat(q))
 
         data = {'Level': str(dixel.dlvl),
                 'Query': q}
