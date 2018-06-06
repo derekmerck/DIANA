@@ -16,3 +16,4 @@ beautifulsoup4
 python-magic
 Flask-HTTPAuth
 jinja2
+redis

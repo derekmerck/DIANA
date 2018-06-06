@@ -1,5 +1,5 @@
 import dcache
-import dicom
+import pydicom
 from PIL import Image as PILImage
 import StringIO
 from aenum import Enum, auto
@@ -86,7 +86,7 @@ class Dixel(dcache.Persistent):
         if not is_dicom(dcm_fp):
             raise Exception("Not a DCM file: {}".format(dcm_fp))
         # logging.debug("Reading DCM file")
-        tags = dicom.read_file(dcm_fp, stop_before_pixels=True)
+        tags = pydicom.read_file(dcm_fp, stop_before_pixels=True)
         # Don't want to save complex data types in cache
         _data = {'PatientID':        tags[0x0010, 0x0020].value,
                 'AccessionNumber':   tags[0x0008, 0x0050].value,
@@ -167,7 +167,7 @@ class Dixel(dcache.Persistent):
             os.makedirs(save_dir)
 
         file_like = StringIO.StringIO(file_data)
-        ds = dicom.read_file(file_like)
+        ds = pydicom.read_file(file_like)
 
         if ds.Modality != "US":
             logging.warn("Skipping non-ultrasound data")

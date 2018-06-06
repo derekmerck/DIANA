@@ -1,6 +1,6 @@
 '''Measure AP and Lateral dimensions from DICOM localizer images for SSDE calculations'''
 
-import dicom
+import pydicom
 import logging
 import numpy as np
 # from matplotlib import pyplot as plt
@@ -21,7 +21,7 @@ def MeasureScout(fp):
 
     # Read DICOM file and info
     # Get ref file
-    dcm = dicom.read_file(fp)
+    dcm = pydicom.read_file(fp)
 
     # Load spacing values (in mm)
     pixel_spacing = (float(dcm.PixelSpacing[0]), float(dcm.PixelSpacing[1]))

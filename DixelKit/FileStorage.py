@@ -4,7 +4,7 @@
 
 import os
 import magic
-import dicom
+import pydicom
 import itertools
 from hashlib import sha1
 import subprocess
@@ -72,7 +72,7 @@ class FileStorage(DixelStorage):
         magic_type = magic.from_file(dixel.meta['full_path'], mime=True)
         if magic_type == 'application/dicom':
 
-            tags = dicom.read_file(dixel.meta['full_path'])
+            tags = pydicom.read_file(dixel.meta['full_path'])
             # self.logger.debug(tags)
 
             meta = { 'PatientID'         : tags[0x0010, 0x0020].value,

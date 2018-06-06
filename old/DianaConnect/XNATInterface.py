@@ -2,6 +2,7 @@ from Interface import Interface
 from Polynym import DicomSeries, DicomStudy, DicomSubject
 import logging
 import pprint
+import pydicom
 
 
 class XNATInterface(Interface):
@@ -208,7 +209,7 @@ def bulk_folder_upload():
                 instance_worklist = glob('%s/*' % session_dir)
                 instance_file = instance_worklist[0]
 
-                ds = dicom.read_file(instance_file)
+                ds = pydicom.read_file(instance_file)
 
                 #logger.info(ds)
 
