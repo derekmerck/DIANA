@@ -99,6 +99,7 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
 def set_anon_ids(cache=None, mint=None, lazy=True, dixel=None):
 
     def set_anon_id(d):
+
         if lazy and not \
             (d.data.get('AnonID') and
              d.data.get('AnonName') and
@@ -129,6 +130,7 @@ def set_anon_ids(cache=None, mint=None, lazy=True, dixel=None):
         return
 
     if cache:
+
         for key in cache.keys():
             d = Dixel(key=key, cache=cache)
             set_anon_id(d)
@@ -220,6 +222,10 @@ def lookup_child_uids(cache, c_cache, child_qs, proxy, remote_aet):
     # Use a proxy to lookup child StudyUID, SeriesUID, and SOPInstanceUID data
     for key in cache.keys():
         d = Dixel(key=key, cache=cache)
+
+        if d.dlvl == DLVL.SERIES:
+            logging.info("Already found a series for this dixel, skipping")
+            continue
 
         for q in child_qs:
             qkey = "{}-{}".format(key, str(hash(pformat(q)))[-4:])

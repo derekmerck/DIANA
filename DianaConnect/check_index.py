@@ -1,8 +1,4 @@
 
-
-
-
-
 from Splunk import Splunk
 from argparse import ArgumentParser
 import yaml

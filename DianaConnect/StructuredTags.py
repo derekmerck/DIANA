@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
 
-    items = ["or-dose-tags"]
+    items = ["or doses/eames", "or doses/hoontis"]
 
     for item in items:
 

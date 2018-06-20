@@ -17,3 +17,6 @@ python-magic
 Flask-HTTPAuth
 jinja2
 redis
+pillow
+pytest
+enum34
