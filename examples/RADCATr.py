@@ -20,7 +20,7 @@ __desc__ = """
 Open a CSV dump from Montage and audit entries with a Tkinter GUI.
 Results are saved as they are generated as `source+audit.csv`.
 """
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __prog__ = "RADCATr"
 
 root = Tk()
@@ -33,10 +33,13 @@ def load_data():
     fp = os.path.join(data_root, fn)
     with open(fp, 'rU') as f:
         rows = csv.DictReader(f)
-        fieldnames = rows.fieldnames + ['audit_radcat', 'audit_radcat3', 'agrees']
         for row in rows:
             # logging.debug(row)
             items.append(row)
+        if fn.find("+audit") < 0:
+            fieldnames = rows.fieldnames + ['audit_radcat', 'audit_radcat3', 'agrees']
+        else:
+            fieldnames = rows.fieldnames
 
 
 def save_data():

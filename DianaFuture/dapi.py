@@ -37,11 +37,21 @@ class Requester(object):
     def do_post(self, url, data=None, json=None, headers=None):
         url = "/".join([self.path, url])
         url = urlparse.urljoin(self.base_url, url)
-        r = requests.post(url, data=data, json=json, headers=headers, auth=self.auth, timeout=TIMEOUT)
-        if not r.status_code == 200:
-            raise requests.ConnectionError
-        else:
-            return r.json()
+
+        try:
+            r = requests.post(url, data=data, json=json, headers=headers, auth=self.auth, timeout=TIMEOUT)
+            if not r.status_code == 200:
+                raise requests.ConnectionError
+            else:
+                return r.json()
+
+        except requests.ConnectionError:
+            logging.warning("Could not find resource")
+            pass
+
+        except requests.ReadTimeout:
+            logging.warning("Timed out, need to try again")
+            pass
 
     def do_delete(self, url):
         url = "/".join([self.path, url])
