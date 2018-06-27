@@ -20,7 +20,8 @@ def create_key_csv(cache, fp, fieldnames=None, key_field="AccessionNumber"):
     logging.debug("Saved {} entries".format(len(N)))
 
 
-def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True, clean_proxy=True, depth=0, dry_run=False):
+def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
+                   clean_proxy=True, depth=0, dry_run=False, anon=True):
 
     def dixel_save_dir(fn, save_dir, depth):
         fd = save_dir
@@ -35,7 +36,7 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
         # An AnonID isn't usually going to be assigned until
         # there has been a DICOM UID lookup, so this is a
         # reasonable check for "record complete"
-        if not d.data.get('AnonID'):
+        if anon and not d.data.get('AnonID'):
             logging.warn("No anon ID for MRN {}".format(d.data['PatientID']))
             d.data['status'] = "missing_info"
             continue
@@ -43,7 +44,10 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
         if d.data.get('status', 'ready') != "ready":
             continue
 
-        d.data['fn_base'] = d.data['AnonAccessionNum']
+        if anon:
+            d.data['fn_base'] = d.data['AnonAccessionNum']
+        else:
+            d.data['fn_base'] = d.data['AccessionNumber']
         fn = '{}.zip'.format(d.data['fn_base'])
         dsd = dixel_save_dir(fn, save_dir, depth)
         fp = os.path.join(dsd, fn)
@@ -72,25 +76,31 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
             d.persist()
             continue
 
-        r = proxy.anonymize(d, replacement_map=anon_map)
+        if anon:
+            r = proxy.anonymize(d, replacement_map=anon_map)
 
-        # logging.debug(r)
+            # logging.debug(r)
 
-        d.data['AnonOID'] = r['ID']
-        d.persist()
+            d.data['AnonOID'] = r['ID']
+            d.persist()
 
-        # Need an oid and an anon name to save...
-        e = Dixel(key=d.data['AnonOID'],
-                  data={'OID': d.data['AnonOID'],
-                        'fn_base': d.data['fn_base']},
-                  dlvl=d.dlvl)
-        file_data = proxy.get(e, get_type='file')
+            # Need an oid and an anon name to save...
+            e = Dixel(key=d.data['AnonOID'],
+                      data={'OID': d.data['AnonOID'],
+                            'fn_base': d.data['fn_base']},
+                      dlvl=d.dlvl)
+            file_data = proxy.get(e, get_type='file')
+            e.write_file(file_data, save_dir=dsd)
 
-        e.write_file(file_data, save_dir=dsd)
+            if clean_proxy:
+                proxy.remove(e)
+
+        else:
+            file_data = proxy.get(d, get_type='file')
+            d.write_file(file_data, save_dir=dsd)
 
         if clean_proxy:
             proxy.remove(d)
-            proxy.remove(e)
 
         d.data['status'] = "done"
         logging.info("Grabbed {}".format(fn[0:7]))
@@ -133,7 +143,10 @@ def set_anon_ids(cache=None, mint=None, lazy=True, dixel=None):
 
         for key in cache.keys():
             d = Dixel(key=key, cache=cache)
-            set_anon_id(d)
+            try:
+                set_anon_id(d)
+            except KeyError, e:
+                logging.error(e)
         #
         # if lazy and not \
         #     (d.data.get('AnonID') and

@@ -23,7 +23,7 @@ import yaml
 from argparse import ArgumentParser
 
 
-def get_it(proxy, patient_id, accession_number, series_number=None):
+def get_it(proxy, accession_number, series_number=None):
     meta = {
         'AccessionNumber': accession_number
     }
@@ -35,7 +35,7 @@ def get_it(proxy, patient_id, accession_number, series_number=None):
         dlvl = DicomLevel.STUDIES
 
     d = Dixel(accession_number, meta=meta, level=dlvl)
-    proxy.get(d, retrieve=True)
+    proxy.get(d, retrieve=True, dlvl=DicomLevel.STUDIES)
 
 
 def parse_args():
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     with open(opts.secrets, 'r') as f:
         secrets = yaml.load(f)
-    proxy = OrthancProxy(**secrets['lifespan'][opts.proxy])
+    proxy = OrthancProxy(**secrets['services']['lifespan'][opts.proxy])
 
     get_it(proxy, opts.accession_number, opts.series_number)
 
