@@ -37,6 +37,7 @@ def load_data():
             # logging.debug(row)
             items.append(row)
         if fn.find("+audit") < 0:
+            # Add answer columns
             fieldnames = rows.fieldnames + ['audit_radcat', 'audit_radcat3', 'agrees']
         else:
             fieldnames = rows.fieldnames
@@ -60,21 +61,21 @@ def make_ui():
         # logging.debug("setting entries")
         unscored_btn.state(['!disabled'])
 
-        match = re.findall("(\d)", radcat_entry.get())
-        if match:
-            radcat_val = int(match[0])
-        else:
-            radcat_val = ''
-
+        match = re.match("RADCAT(?P<radcat>\d)\+?(?P<radcat3>3)?", radcat_entry.get())
         item = items[current]
 
-        item['audit_radcat'] = radcat_val
-        item['audit_radcat3'] = "Yes" if fu_entry.get() else "No"
+        item['audit_radcat'] = match.group('radcat')
+        item['audit_radcat3'] = "Yes" if match.group('radcat3') else "No"
+
+        if item['audit_radcat'] == "3":
+            item['audit_radcat'] = 2
+            item['audit_radcat3'] = "Yes"
 
         agrees = (item['audit_radcat'] == item['radcat']) and (item['audit_radcat3'] == item['radcat3'])
 
-        # logging.debug(item['audit_radcat'])
-        # logging.debug(item['audit_radcat3'])
+        logging.debug(item['audit_radcat'])
+        logging.debug(item['audit_radcat3'])
+
         logging.info("Report {:<3} RADCAT grade agreement: {} (originally scored {})".format(
             "{}:".format(current+1), item['audit_radcat']==item['radcat'], item['radcat']))
         logging.info("           RADCAT f/u agreement: {} (originally scored {})".format(
@@ -109,12 +110,23 @@ def make_ui():
 
     def update_ui():
         if items[current].get('audit_radcat'):
-            radcat_entry.set("RADCAT{}".format(items[current]['audit_radcat']))
-            fu_entry.set(items[current]['audit_radcat3']=="Yes")
+
+            audit_radcat = items[current]['audit_radcat']
+            audit_radcat3 = items[current]['audit_radcat3']
+
+            if audit_radcat == 2 and audit_radcat3:
+                audit_radcat = 3
+                audit_radcat3 = False
+
+            entry = "RADCAT{}{}".format(
+                audit_radcat,
+                "+3" if audit_radcat3 == "Yes" else ""
+            )
+            radcat_entry.set(entry)
             unscored_btn.state(['!disabled'])
         else:
             radcat_entry.set('')
-            fu_entry.set(False)
+            # fu_entry.set(False)
 
         item = items[current]
 
@@ -189,14 +201,14 @@ def make_ui():
 
     radcat_entry = StringVar()
     radcat_combo = ttk.Combobox(mainframe, textvariable=radcat_entry, state='readonly')
-    radcat_combo['values'] = ('', 'RADCAT1', 'RADCAT2', 'RADCAT4', 'RADCAT5')
+    radcat_combo['values'] = ('', 'RADCAT1', 'RADCAT2', 'RADCAT3', 'RADCAT4', 'RADCAT4+3', 'RADCAT5', 'RADCAT5+3')
     radcat_combo.grid(row=1, column=2, sticky=(S), columnspan=2)
     radcat_combo.bind('<<ComboboxSelected>>', submit)
 
-    fu_entry = BooleanVar()
-    fu_chk = ttk.Checkbutton(mainframe, text='Follow up (RADCAT3)', variable=fu_entry,
-                             onvalue=True, offvalue=False, command=submit)
-    fu_chk.grid(row=2, column=2, columnspan=2)
+    # fu_entry = BooleanVar()
+    # fu_chk = ttk.Checkbutton(mainframe, text='Follow up (RADCAT3)', variable=fu_entry,
+    #                          onvalue=True, offvalue=False, command=submit)
+    # fu_chk.grid(row=2, column=2, columnspan=2)
 
     prev_btn = ttk.Button(mainframe, text="< Back", command=go_prev)
     prev_btn.grid(row=3, column=2, sticky=(W,E))

@@ -41,8 +41,8 @@ def copy_from_pacs(proxy, remote_aet, cache, save_dir, anon_map=None, lazy=True,
             d.data['status'] = "missing_info"
             continue
 
-        if d.data.get('status', 'ready') != "ready":
-            continue
+        # if d.data.get('status', 'ready') != "ready":
+        #     continue
 
         if anon:
             d.data['fn_base'] = d.data['AnonAccessionNum']
