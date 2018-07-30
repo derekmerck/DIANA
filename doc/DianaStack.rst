@@ -1,2 +1,0 @@
-
-.. include:: ../DianaStack/README.rst

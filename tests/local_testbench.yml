@@ -1,0 +1,28 @@
+---
+all:
+
+  children:
+
+    indexer:
+      hosts:
+        localhost:
+
+    broker:
+      hosts:
+        localhost:
+
+    dicom:
+      hosts:
+        localhost:
+
+    diana-worker:
+      hosts:
+        localhost:
+          queues: "default"
+
+
+  vars:
+    cert_type: selfsigned
+    indexer_password: passw0rd!
+    broker_password:  passw0rd!
+    orthanc_password: passw0rd!

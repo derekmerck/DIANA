@@ -1,7 +1,0 @@
----
-dependencies:
-  - role: secured
-    vars:
-      cert_dir:    "{{secure['cert_dir'] | default('/etc/ssl') }}"
-      common_name: "{{secure['common_name']}}"
-    when: secure is defined

@@ -1,5 +1,0 @@
----
-- name: "wait_for_splunk"
-  wait_for: port=8000 delay=3
-
-# TODO: Splunk wait doesn't wait long enough to connect and list tokens (next step)

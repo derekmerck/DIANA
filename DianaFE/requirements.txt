@@ -1,9 +1,0 @@
-pyyaml
-flask
-Flask-HTTPAuth
-flask-restplus
-markdown
-jinja2
-numpy
-bokeh
-python-dateutil

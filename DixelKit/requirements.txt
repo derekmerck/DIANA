@@ -1,8 +1,0 @@
-pydicom
-python-dateutil
-pyyaml
-python-magic
-requests
-splunk-sdk
-aenum
-beautifulsoup4

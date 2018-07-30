@@ -1,0 +1,57 @@
+---
+all:
+  hosts:
+    dev-vagrant:
+      ansible_ssh_host: 192.168.33.10
+      ansible_ssh_port: 22
+      ansible_ssh_user: vagrant
+      ansible_ssh_private_key_file: "test/vagrant/.vagrant/machines/default/virtualbox/private_key"
+
+  children:
+
+    # ----------------
+    # Map machines to roles using groups
+    # ----------------
+
+    indexer:
+      hosts:
+        dev-vagrant:
+      vars:
+        password: passw0rd!
+
+    broker:
+      hosts:
+        dev-vagrant:
+      vars:
+        password: passw0rd!
+
+    dicom:
+      hosts:
+        dev-vagrant:
+      vars:
+        password: passw0rd!
+
+    diana-worker:
+      hosts:
+        dev-vagrant:
+          queues: "default"
+
+
+    # ----------------------
+    # List peers and modalities that are included as
+    # default destinations in Orthanc config
+    # ----------------------
+
+    orthanc_peers:
+      hosts:
+        dev-vagrant:
+          orthanc_host:  192.168.33.10
+          orthanc_port:  8042
+          orthanc_user:  orthanc
+          orthanc_pword: orthanc
+
+  vars:
+    cert_type: selfsigned
+    indexer_password: passw0rd!
+    broker_password:  passw0rd!
+    orthanc_password: passw0rd!

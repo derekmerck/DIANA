@@ -1,4 +1,0 @@
----
-dependencies:
-  - {role: splunk}
-  - {role: diana-utils}

@@ -1,3 +1,0 @@
----
-- name: "wait_for_postgres"
-  wait_for: port=5432 delay=3
