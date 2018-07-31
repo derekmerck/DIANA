@@ -149,9 +149,9 @@ Several roles for containerized services are available on [Ansible-Galaxy][] for
 
 Several multi-architecture Docker images are available on [Docker Hub][] for these roles and compositions.
 
-- [`derekmerck/orthanc`](https://github.com/derekmerck/docker-orthanc-docker)
-- [`derekmerck/conda`](https://github.com/derekmerck/docker-conda-docker) and `derekmerck/keras-tf`
-- [`derekmerck/diana`](https://github.com/derekmerck/docker-diana-docker) and `derekmerck/diana-learn`
+- [`derekmerck/orthanc`](https://github.com/derekmerck/docker-orthanc-xarch)
+- [`derekmerck/conda`](https://github.com/derekmerck/docker-conda-xarch) and `derekmerck/keras-tf`
+- [`derekmerck/diana`](https://github.com/derekmerck/docker-diana-xarch) and `derekmerck/diana-learn`
 
 These containers are built for both `amd64` and `arm32v7` architectures on [travis-ci][] as part of testing, so they are always available from docker hub.
   
