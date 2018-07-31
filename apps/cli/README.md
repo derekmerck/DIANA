@@ -70,3 +70,9 @@ Wrapper command-line tool for Orthanc proxy retrieve from modality.
 
 `secrets.yml` must have a section called "my_proxy" with keys suitable for creating
 an Orthanc instance that knows about the remote "my_pacs".
+
+
+License
+-------------
+
+[MIT](http://opensource.org/licenses/mit-license.html)

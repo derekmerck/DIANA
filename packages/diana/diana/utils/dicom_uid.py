@@ -4,16 +4,20 @@ import attr
 from diana.utils.orthanc_id import orthanc_hash
 import hashlib
 
+
 def hash2int(h, digits):
     return int(h.hexdigest(), 16) % (10 ** digits)
 
+
 def hash_str(s, digits=2):
     return str( hash2int(hashlib.sha1(str(s).encode("UTF8")), digits) )
+
 
 class SuffixStyle(Enum):
     HIERARCHICAL = 1
     OID32 = 2
     RANDOM = 3
+
 
 @attr.s
 class DicomUIDMint(object):

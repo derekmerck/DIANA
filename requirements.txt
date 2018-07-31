@@ -1,1 +1,10 @@
+attrs >= 18.1.0
+beautifulsoup4
+celery
+python-dateutil
+dill
+pillow
+pydicom
 pyyaml
+requests
+redis

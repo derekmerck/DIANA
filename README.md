@@ -12,8 +12,8 @@ Documentation: <https://diana.readthedocs.io>
 Dependencies
 ------------------
 
-- Python 2.7
-- Many Python packages
+- Python 3.6
+- Many [Python packages](packages/diana/requirements.txt)
 - Many Ansible roles
 - Many Docker containers
 
@@ -23,12 +23,9 @@ Overview
 
 Hospital picture archive and communications systems (PACS) are not well suited for "big data" analysis.  It is difficult to identify and extract datasets in bulk, and moreover, high resolution data is often not even stored in the clinical systems.
 
-**DIANA** is a [DICOM][] imaging informatics platform that can be attached to the clinical systems with a very small footprint, and then tuned to support a range of tasks from high-resolution image archival to cohort discovery to radiation dose monitoring.
-
-It is similar to [XNAT][] in providing DICOM services, image data indexing, REST endpoints for scripting, and user access control.  It is dissimilar in that it is not a monolithic codebase, but an amalgamation of free and free and open source (FOSS) systems.
+**DIANA** is a [DICOM][] imaging informatics platform that can be attached to the clinical systems with a very small footprint, and then tuned to support a range of tasks from high-resolution image archival to cohort discovery to radiation dose monitoring.  It provides DICOM services, image data indexing, REST endpoints for scripting, and user access control through an amalgamation of free and free and open source (FOSS) systems.
 
 [DICOM]: http://www.dicomstandard.org/
-[XNAT]:  http://www.xnat.org
 
 
 Installation
@@ -82,9 +79,9 @@ See <apps/get-a-guid/README.md>
 
 - [radcatr](apps/radcatr) is a simple TKL UI for basic report review and annotation
 
-- [study-manager][] is a simple, dynanmically configured DIANA front-end web portal for uploading and accessing available imaging resources from multiple trials and studiers.  A reference implementation is at <http://www.central-imaging.com/>.
+- study-manager is a simple, dynanmically configured DIANA front-end web portal for uploading and accessing available imaging resources from multiple trials and studiers.  A reference implementation is at <http://www.central-imaging.com/>.
 
-- [splunk-apps][] are apps and dashboards for informatics and data review:
+- splunk-apps are apps and dashboards for informatics and data review:
    * DIANA-status: DIANA services introspection
    * RadRx: DICOM structured dose record monitoring
    * RadFlow: hl7 feed analysis and radiologist workload balancing
@@ -98,7 +95,7 @@ caching, etc.
 - [bench](tests/bench) provides a dev configuraqtion for testing with vagrant
 - [unit](tests/unit) collection of short function verfications
 
-See <tests/README.md>
+See [tests/README.md]
 
 
 The DIANA Service Stack
@@ -134,26 +131,29 @@ The `central_im_playbook.yml` is used to configure the Central Imaging archive.
 
 Several roles for containerized services are available on [Ansible-Galaxy][] for these playbooks.
 
-- [derekmerck.nginx-docker](https://github.com/derekmerck/ansible-nginx-docker)
-- [derekmerck.orthanc-docker](https://github.com/derekmerck/ansible-orthanc-docker)
-- [derekmerck.pureftpd-docker](https://github.com/derekmerck/ansible-pureftpd-docker)
-- [derekmerck.redis-docker](https://github.com/derekmerck/ansible-redis-docker)
-- [derekmerck.snappass-docker](https://github.com/derekmerck/ansible-snappass-docker)
-- [derekmerck.splunk-docker](https://github.com/derekmerck/ansible-splunk-docker)
+- [`derekmerck.nginx-docker`](https://github.com/derekmerck/ansible-nginx-docker)
+- [`derekmerck.orthanc-docker`](https://github.com/derekmerck/ansible-orthanc-docker)
+- [`derekmerck.pureftpd-docker`](https://github.com/derekmerck/ansible-pureftpd-docker)
+- [`derekmerck.redis-docker`](https://github.com/derekmerck/ansible-redis-docker)
+- [`derekmerck.snappass-docker`](https://github.com/derekmerck/ansible-snappass-docker)
+- [`derekmerck.splunk-docker`](https://github.com/derekmerck/ansible-splunk-docker)
 
 [Ansible-Galaxy]: https://galaxy.ansible.com
   
 ### Docker xArch Images
 
-[reDiana][] is a `docker-compose` file for setting up a Remote Embedded DIANA instance on a single-board computer, such as a Raspberry Pi.  
+[reDiana][] is a `docker-compose` file for setting up a Remote Embedded DIANA instance on a single-board computer, such as a Raspberry Pi.  It is particularly designed to be controlled through the [Resin.io][] IoT platform.
+
+[reDiana]: https://github.com/derekmerck/reDiana
+[resin.io]: https://resin.io
 
 Several multi-architecture Docker images are available on [Docker Hub][] for these roles and compositions.
 
-- [derekmerck/orthanc](https://github.com/derekmerck/docker-orthanc-docker)
-- [derekmerck/conda](https://github.com/derekmerck/docker-conda-docker)
-- [derekmerck/keras-tf](https://github.com/derekmerck/docker-conda-docker)
+- [`derekmerck/orthanc`](https://github.com/derekmerck/docker-orthanc-docker)
+- [`derekmerck/conda`](https://github.com/derekmerck/docker-conda-docker) and `derekmerck/keras-tf`
+- [`derekmerck/diana`](https://github.com/derekmerck/docker-diana-docker) and `derekmerck/diana-learn`
 
-These containers are built for both `amd64` and `arm32v7` architectures on [travis-ci][] as part of testing, so they are always available from docker hub at `derekmerck/diana-worker` and `derekmerck/orthanc` respectively. 
+These containers are built for both `amd64` and `arm32v7` architectures on [travis-ci][] as part of testing, so they are always available from docker hub.
   
 [Docker Hub]: https://hub.docker.io
 [travis-ci]: https://travis-ci.org
@@ -170,6 +170,7 @@ Future Work
 - Post-processing including ROI cropping and 3D CLAHE
 
 
-## License
+License
+---------------
 
-MIT
+[MIT](http://opensource.org/licenses/mit-license.html)

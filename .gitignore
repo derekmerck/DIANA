@@ -5,6 +5,7 @@ secrets/*
 .coverage
 .coverage_html
 .pytest_cache
+.gitignore
 
 .vagrant/*
 ignore/*

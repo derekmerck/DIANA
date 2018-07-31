@@ -1,4 +1,4 @@
-Diana+ Testing
+DIANA Testing
 ======================
 
 Merck, Summer 2018
@@ -6,7 +6,7 @@ Merck, Summer 2018
 Configuration
 ----------------------
 
-Diana+ has two preconfigured service test benches.
+There are two preconfigured service test benches.
 
 **dev-local** is statically configured with [docker-compose][] (suitable for [Travis CI][])
 

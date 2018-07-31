@@ -13,7 +13,7 @@ $ python3 test/api-test.py
 
 """
 # Keep this before any diana imports
-from config import services, test_star
+from .config import services, test_star
 
 import logging, time
 from celery import chain
