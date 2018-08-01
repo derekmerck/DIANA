@@ -66,7 +66,13 @@ Organization
 
 Can also be installed independly with `pip3 install guidmint`
 
-See <apps/get-a-guid/README.md>
+
+### halibut package
+
+- [halibut](packages/halibut/halibut) utility code for running Keras MobileNet classifiers on DICOM images (contributed by Ian Pan), additional requirements: [scipy][] and [keras][]
+
+[scipy]: https://www.scipy.org
+[keras]: https://keras.io
 
 
 ### apps
@@ -152,7 +158,7 @@ Several multi-architecture Docker images are available on [Docker Hub][] for the
 
 - [`derekmerck/orthanc`](https://github.com/derekmerck/docker-orthanc-xarch)
 - [`derekmerck/conda`](https://github.com/derekmerck/docker-conda-xarch) and `derekmerck/keras-tf`
-- [`derekmerck/diana`](https://github.com/derekmerck/docker-diana-xarch) and `derekmerck/diana-learn`
+- [`derekmerck/diana`](https://github.com/derekmerck/docker-diana-xarch) and `derekmerck/diana-learn` (includes Halibut)
 
 These containers are built for both `amd64` and `arm32v7` architectures on [travis-ci][] as part of testing, so they are always available from docker hub.
   
