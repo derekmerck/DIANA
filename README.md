@@ -31,17 +31,17 @@ Hospital picture archive and communications systems (PACS) are not well suited f
 Installation
 ------------------
 
-From pypi
+From pypi:
 
 ```bash
 pip3 install diana_plus
 ```
 
-From source
+From source:
 
 ```bash
 $ git clone https://www.github.com/derekmerck/DIANA
-$ pip install -e DIANA/packages/guidmint DIANA/packages/diana_plus
+$ pip install -e DIANA/packages/guidmint DIANA/packages/diana
 ```
 
 
@@ -62,14 +62,14 @@ Organization
   
 ### guidmint package
 
-- [guidmint](packages/guidmint/guidmint) implements "mints" for flexible, reproducible anonymization, hashing schemes, and generating repeatable global uids and sham names/dobs
+- [guidmint](packages/guidmint) implements "mints" for flexible, reproducible anonymization, hashing schemes, and generating repeatable global uids and sham names/dobs
 
-Can also be installed independly with `pip3 install guidmint`
+Can also be installed independently with `pip3 install guidmint`
 
 
 ### halibut package
 
-- [halibut](packages/halibut/halibut) utility code for running Keras MobileNet classifiers on DICOM images (contributed by Ian Pan), additional requirements: [scipy][] and [keras][]
+- [halibut](packages/halibut) utility code for running Keras MobileNet classifiers on DICOM images (contributed by Ian Pan), additional requirements: [scipy][] and [keras][]
 
 [scipy]: https://www.scipy.org
 [keras]: https://keras.io

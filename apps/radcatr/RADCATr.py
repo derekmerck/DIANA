@@ -14,7 +14,7 @@ import ttk
 
 # In case running from /examples folder in git
 sys.path.insert(0, os.path.abspath('../DixelKit'))
-from diana.apis.report import Report
+from diana.apis.report import RadiologyReport
 
 __desc__ = """
 Open a CSV dump from Montage and audit entries with a Tkinter GUI.

@@ -17,10 +17,10 @@ setuptools.setup(
     version=metadata.get("version"),
     author=metadata.get("author"),
     author_email=metadata.get("author_email"),
-    description="DICOM analysis and archive core",
+    description="DICOM analysis and archive (DIANA) core",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/derekmerck/diana_plus",
+    url="https://github.com/derekmerck/diana",
     packages=setuptools.find_packages(),
     classifiers=(
         'Development Status :: 3 - Alpha',
