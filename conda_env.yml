@@ -1,0 +1,27 @@
+# $ conda env create -f conda_env.yml -n diana
+
+name: diana
+
+channels:
+  - conda-forge
+  - rpi
+  - defaults
+
+dependencies:
+  - attrs
+  - beautifulsoup4
+  - celery
+  - conda
+  - dill
+  - keras
+  - pillow
+  - pip
+  - pydicom
+  - python=3.6
+  - python-dateutil
+  - pyyaml
+  - redis
+  - requests
+  - scipy
+
+prefix: /opt/conda/envs/diana

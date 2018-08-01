@@ -131,6 +131,7 @@ The `central_im_playbook.yml` is used to configure the Central Imaging archive.
 
 Several roles for containerized services are available on [Ansible-Galaxy][] for these playbooks.
 
+- [`derekmerck.diana-docker`](https://github.com/derekmerck/ansible-diana-docker)
 - [`derekmerck.nginx-docker`](https://github.com/derekmerck/ansible-nginx-docker)
 - [`derekmerck.orthanc-docker`](https://github.com/derekmerck/ansible-orthanc-docker)
 - [`derekmerck.pureftpd-docker`](https://github.com/derekmerck/ansible-pureftpd-docker)
