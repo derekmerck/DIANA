@@ -13,9 +13,10 @@ Dependencies
 ------------------
 
 - Python 3.6
-- Many [Python packages](packages/diana/requirements.txt)
-- Many Ansible roles
-- Many Docker containers
+- Many [Python packages](conda_env.yml)
+- Many [Ansible roles](#ansible-roles)
+- Many [Docker containers](#docker-images)
+
 
 
 Overview
@@ -101,7 +102,7 @@ caching, etc.
 - [bench](tests/bench) provides a dev configuraqtion for testing with vagrant
 - [unit](tests/unit) collection of short function verfications
 
-See [tests/README.md]
+See [tests](tests)
 
 
 The DIANA Service Stack
@@ -147,7 +148,7 @@ Several roles for containerized services are available on [Ansible-Galaxy][] for
 
 [Ansible-Galaxy]: https://galaxy.ansible.com
   
-### Docker xArch Images
+### Docker Images
 
 [reDiana][] is a `docker-compose` file for setting up a Remote Embedded DIANA instance on a single-board computer, such as a Raspberry Pi.  It is particularly designed to be controlled through the [Resin.io][] IoT platform.
 

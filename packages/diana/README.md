@@ -13,9 +13,9 @@ Dependencies
 ------------------
 
 - Python 3.6
-- Many [Python packages](packages/diana/requirements.txt)
-- Many Ansible roles
-- Many Docker containers
+- Many [Python packages](conda_env.yml)
+- Many [Ansible roles](#ansible-roles)
+- Many [Docker containers](#docker-images)
 
 
 Overview
@@ -62,11 +62,11 @@ Organization
   
 ### guidmint package
 
-- [guidmint](packages/guidmint/guidmint) implements "mints" for flexible, reproducible anonymization, hashing schemes, and generating repeatable global uids and sham names/dobs
+- [guidmint](packages/guidmint) implements "mints" for flexible, reproducible anonymization, hashing schemes, and generating repeatable global uids and sham names/dobs
 
 Can also be installed independly with `pip3 install guidmint`
 
-See <apps/get-a-guid/README.md>
+See [get-a-guid](apps/git-a-guid)
 
 
 ### apps
@@ -140,7 +140,7 @@ Several roles for containerized services are available on [Ansible-Galaxy][] for
 
 [Ansible-Galaxy]: https://galaxy.ansible.com
   
-### Docker xArch Images
+### Docker Images
 
 [reDiana][] is a `docker-compose` file for setting up a Remote Embedded DIANA instance on a single-board computer, such as a Raspberry Pi.  It is particularly designed to be controlled through the [Resin.io][] IoT platform.
 
