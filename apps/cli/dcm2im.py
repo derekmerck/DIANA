@@ -6,7 +6,8 @@ Derek Merck, Spring 2018
 Wrapper command-line tool to convert pixels from a DICOM format file or directory
 into a standard image format (png, jpg).
 
-> python dcm2py.py -i im000001.dcm
+$ python dcm2py.py -i im000001.dcm
+
 """
 
 import os, glob, logging

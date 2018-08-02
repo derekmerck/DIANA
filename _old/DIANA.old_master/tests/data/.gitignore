@@ -1,4 +1,0 @@
-# Ignore everything in this directory
-ct_scout_02.dcm
-# Except this file
-!.gitignore

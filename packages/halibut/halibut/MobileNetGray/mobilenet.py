@@ -49,9 +49,9 @@ https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet_v1
 - [MobileNets: Efficient Convolutional Neural Networks for
    Mobile Vision Applications](https://arxiv.org/pdf/1704.04861.pdf))
 """
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
+# from __future__ import print_function
+# from __future__ import absolute_import
+# from __future__ import division
 
 import os
 import warnings

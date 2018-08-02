@@ -5,7 +5,7 @@ Derek Merck, Winter 2018
 
 Wrapper command-line tool for Orthanc proxy retrieve from modality.
 
-> python3 pull-it.py -accession XYZ -series "thin * brain -p my_proxy -d my_pacs -s secrets.yml
+$ python3 pull-it.py -accession XYZ -series "thin * brain -p my_proxy -d my_pacs -s secrets.yml
 
 `secrets.yml` must have a section called "my_proxy" with keys suitable for creating
 an Orthanc instance that knows about the remote "my_pacs".

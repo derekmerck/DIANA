@@ -40,16 +40,28 @@ def dicom_strpdate( dts: str) -> datetime.date:
 
 
 def dicom_strftime( dt: datetime ) -> str:
+    """
+    datetime -> dicom time
+    """
     return dt.strftime( "%Y%m%d%H%M%S" )
 
 
 def dicom_strfdate( dt: datetime ) -> str:
+    """
+    datetime -> dicom date
+    """
     return dt.strftime( "%Y%m%d" )
 
 
 def dicom_strftime2( dt: datetime ) -> (str, str):
+    """
+    datetime -> (dicom date, dicom time)
+    """
     return (dt.strftime( "%Y%m%d" ), dt.strftime( "%H%M%S" ))
 
 
 def dicom_strfname( names: tuple) -> str:
+    """
+    doe john s -> dicome name (DOE^JOHN^S)
+    """
     return "^".join(names)
