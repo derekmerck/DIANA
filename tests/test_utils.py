@@ -1,7 +1,7 @@
 
 import logging
 from diana.utils.dtinterval import test_timerange
-from diana.utils.dicom_simplify import test_simplify
+from diana.utils.dicom.dicom_simplify import test_simplify
 
 if __name__ == "__main__":
 

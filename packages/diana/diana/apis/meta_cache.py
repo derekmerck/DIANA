@@ -6,8 +6,9 @@ from csv import DictReader, DictWriter
 from typing import Union, Mapping
 from dateutil import parser as dtparser
 import attr
-from diana.utils import Pattern, DicomLevel, dicom_strpdate
-from diana.utils.smart_encode import stringify
+from ..utils import Pattern
+from ..utils.smart_encode import stringify
+from ..utils.dicom import DicomLevel, dicom_strpdate
 from .dixel import Dixel
 import os
 

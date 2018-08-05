@@ -1,7 +1,7 @@
 from .app import app
 from celery import chain
 from ..apis import Orthanc, Splunk
-from ..utils import DicomLevel
+from ..utils.dicom import DicomLevel
 from .tasks import do
 
 # Divide these up into 2 parts, discovery, which is part of the beat, and copy, which is distributed/multiplexed in the beat

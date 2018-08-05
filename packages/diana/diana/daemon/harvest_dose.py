@@ -9,14 +9,12 @@ with more complex discrimination if necessary.
 
 import logging
 import attr
-from ..utils import DicomLevel
+from ..utils.dicom import DicomLevel
 from .harvester import Harvester
 
 
 @attr.s
 class DoseReportHarvester(Harvester):
-
-    # TODO: Don't want to deal with these individually -- want batches we can chain and chord together.
 
     """
     discover indexed = splunk.find

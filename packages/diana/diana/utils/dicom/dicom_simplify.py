@@ -10,8 +10,8 @@ Prepare a DICOM tag set for ingestion into splunk:
 
 import logging, json, os
 from pprint import pprint, pformat
-from .smart_encode import SmartJSONEncoder
-from diana.utils import dicom_strpdtime
+from ..smart_encode import SmartJSONEncoder
+from .dicom_strings import dicom_strpdtime
 
 
 def parse_timestamps(tags):

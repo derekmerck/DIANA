@@ -4,7 +4,8 @@ from typing import Mapping
 from datetime import datetime
 import attr
 from .dixel import Dixel
-from ..utils import Pattern, DatetimeInterval, gateway, DicomLevel
+from ..utils import Pattern, DatetimeInterval, gateway
+from ..utils.dicom import DicomLevel
 # splunk-sdk is 2.7 only, so diana.utils.gateway provides a minimal query/put replacement
 
 # Suppress insecure warning

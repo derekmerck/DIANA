@@ -3,31 +3,282 @@ from typing import Callable, Collection
 import attr
 from watchdog.observers import Observer as wdObserver
 from watchdog.events import FileSystemEventHandler as wdHandler
-from diana.apis import DicomFile, Orthanc, Dixel
-from diana.utils import Event, DicomLevel, Pattern
+from ..apis import DicomFile, Orthanc, Dixel, Redis
+from ..utils import Event, Pattern, dtinterval
+from ..utils.dicom import DicomLevel
+
+# - Every five minutes
+#
+# - Run a PACS query
+#
+# - If there are responses
+#
+# - Collect each study
+# - handle it (anonymize, classify, parse)
+#
+# - route it to destinations
+#   - index
+#   - other pacs
+#   - anon -> research archive
+
+
+# -> simplify <-
+
+# watch directory
+#   -> new file
+#     -> unzip if zip
+#     -> for item in folders
+#        -> if dicom
+#            -> anon if needed
+#            -> send it to dest
+
+# watch orthanc
+#   -> new file
+#     -> anonymize if needed
+#     -> send it to dest
+#     -> delete it
+
+
+
+from datetime import datetime, timedelta
+from diana.utils import DatetimeInterval2
+
+
+class Observable(object):
+
+    def changes(self, condition, since: datetime ):
+        raise NotImplemented
+
+    def find(self, condition, timeinterval: DatetimeInterval2):
+        raise NotImplemented
+
+
+class Handler(object):
+
+    def handle(self, item, source, dest=None):
+        raise NotImplemented
+
+@attr.s
+class Observer(object):
+    condition = attr.ib()
+    source = attr.ib( type=Observable )
+    delay = attr.ib(  default=timedelta(seconds=300) )  # Every 5 mins by default
+    schedule = attr.ib(  init=False, type=dtinterval )
+
+    @schedule.init
+    def set_schedule(self):
+        return DatetimeInterval2(begin=datetime.now(), incr=self.delay)
+
+    def update(self):
+        if datetime.now() < self.schedule.end:
+            return
+        new_items = self.source.changes( self.condition, since=self.schedule.begin )
+        next(self.schedule)
+        return new_items
+
+
+@attr.s
+class Reviewer(object):
+    condition = attr.ib()
+    source = attr.ib( type=Observable )
+    schedule = attr.ib( type=dtinterval )
+
+    def update(self):
+        new_items = self.source.find( self.condition, timeinterval=self.schedule )
+        next( self.schedule )
+        return new_items
+
+@attr.s
+class Sender(object):
+    dest=attr.ib()
+
+    def pull_anonymize_and_send(self, _item, source):
+        item = source.find(_item)
+        item = source.anonymize(item)
+        item = source.send(item, self.dest)
+
+    def send(self, _item, source):
+        item = source.get(_item)
+        self.dest.put(item)
+
+    def record_discovery(self, _item, source):
+        # Create an event record
+        discovery_record = {
+            "site": source.name,
+            "discovery_time": datetime.now(),
+            "item_time": item.get('_time'),
+            "study_desc": item.get('StudyDescription'),
+        }
+        self.dest.put(discovery_record)
+
+    # def handle_star(self, _item, source):
+    #     # make chain
+    #     chain( source.get(_item), dest.put() )
+
+
+@attr.s
+class CollectionChannel(object):
+    observers = attr.ib( factory=list )
+    handlers  = attr.ib( factory=list )
+
+    # Call this as a scheduled task
+    def update(self):
+        for o in self.observers:
+            new_items = o()
+
+            for item in new_items:
+                for h in self.handlers:
+                    h(item, observer.source)
+
+    # Call this for an independent thread
+    def run(self):
+        self.update()
+        time.sleep(1)
+
+
+# Collection of channels
+@attr.s
+class Collector(object):
+    channels = attr.ib( init=False, factory=list )
+
+    def run(self):
+        for c in self.channels:
+            c.update()
+
+        time.sleep(1)
+
+
+# EXAMPLE
+
+# Endpoints
+orthanc = Orthanc()
+redis = Redis()
+
+# Observer
+obs = Observer(condition="new_instance", source=orthanc)
+
+# Handler
+p = Sender(dest=redis)
+
+channel = CollectionChannel(observers=[obs.update], handlers=[p.send])
+
+channel.run()
+
+
+
+
+
+
+
+
+items = []
+dest = Pattern
+observer = Observable
+
+items = observer.changes()
+if items:
+    for item in items:
+        if item not in dest:
+
+            # Create an event record
+            item['meta'] = {
+                "site": "Here",
+                "discovery_time": datetime.datetime.now(),
+                "item_time": item.get('_time'),
+                "study_desc": item.get('StudyDescription'),
+            }
+
+            dest.put(item)
+
+
+
+
+
+
+
+
+
+@attr.s
+class ConditionalHandler(object):
+    condition = attr.ib()
+    handler = attr.ib()
+
+    # def test(self, ):
+    #     if condition:
+    #         handler
 
 
 @attr.s
 class Observer(object):
+    source = attr.ib( type=Observable )
+    handlers = attr.ib( factory=list )
 
-    def watch(self, source, handler, condition):
+    # Keep up in real time
+    def watch(self, handlers: list, condition):
         while True:
-            items = source.changes(condition)  # Basically "find recent"
+            items = self.source.changes(condition)  # Basically "find recent"
             if items:
-                handler.handle_items(items)
+                for handler in handlers:
+                    handler.handle_items(items)
 
-    def review(self, source, handler, condition, timekeeper):
+    # scheduled or historical review
+    def review(self, handlers: list, condition, timekeeper: dtinterval):
         for time_interval in timekeeper:
-            items = source.find(condition, time_interval)
+            items = self.source.find(condition, time_interval)
             if items:
-                handler.handle_items(items)
+                for handler in handlers:
+                    handler.handle_items(items)
+
+# queue = Orthanc()
+# archive = Orthanc()
+# splunk = Splunk
+#
+# observer = Observer(source)
+# observer.add_handler( condition, Router(dest=archive) )
+#
+#
+
+
+# - each time dtinterval
+#   - check each source
+#     -for each item
+#       - run each handler for that source
+
+
+@attr.s
+class Observer(object):
+    source = attr.ib( type=Observable )
+
+    # Keep up in real time
+    def watch(self, handlers: list, condition):
+        while True:
+            items = self.source.changes(condition)  # Basically "find recent"
+            if items:
+                for handler in handlers:
+                    handler.handle_items(items)
+
+    # scheduled or historical review
+    def review(self, handlers: list, condition, timekeeper: dtinterval):
+        for time_interval in timekeeper:
+            items = self.source.find(condition, time_interval)
+            if items:
+                for handler in handlers:
+                    handler.handle_items(items)
 
 
 
 # Discovers individual items in real time
 @attr.s
 class Curator(object):
-    source = attr.ib( type=Pattern )
+
+    observers = attr.ib( init=False, factory=dict )
+
+    def add_observer(self, source):
+        self.observers['source'] = {}
+
+    def add_handler_for_observer(self):
+        pass
+
 
     handlers = attr.ib( factory=list )
     observer = attr.ib( factory=Observer )

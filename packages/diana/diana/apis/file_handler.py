@@ -1,8 +1,9 @@
-import os
+import os, time
 from typing import Union, Sequence
 import attr
 from .dixel import Dixel
-from ..utils import DicomLevel, Pattern, gateway
+from ..utils import Pattern, gateway
+from ..utils.dicom import DicomLevel
 
 
 @attr.s
@@ -92,6 +93,17 @@ class DicomFile(Pattern):
 
         self.gateway.write(fn, data, path=path, explode=explode )
         return item
+
+    def remove(self, item: Dixel, path: str=None):
+
+        if type(item) == Dixel:
+            fn = item.meta['FileName']
+            path = item.meta['FilePath']
+        else:
+            fn = item
+
+        return self.gateway.remove(fn, path=path)
+
 
     def get(self, item: Union[str, Dixel], path: str=None, view: str="tags") -> Dixel:
         # print("getting")

@@ -2,7 +2,8 @@ import logging, hashlib, datetime
 import attr
 from dateutil import parser as dtparser
 from .report import RadiologyReport
-from diana.utils import Pattern, DicomLevel, orthanc_id, dicom_strfdate, dicom_strfname, DicomUIDMint
+from ..utils import Pattern, orthanc_id
+from ..utils.dicom import DicomLevel, dicom_strfdate, dicom_strfname, DicomUIDMint
 from guidmint import PseudoMint
 
 

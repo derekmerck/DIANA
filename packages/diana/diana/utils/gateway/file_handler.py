@@ -43,6 +43,10 @@ class FileHandler(object):
             expath.append(block)
         return os.path.join(*expath)
 
+    def remove(self, fn: str, path: str=None):
+        fp = self.fp(fn, path)
+        os.remove( fp )
+
 
 @attr.s
 class ImageFile(FileHandler):

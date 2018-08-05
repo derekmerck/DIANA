@@ -6,7 +6,7 @@ from typing import Union, Iterable
 import attr
 from dill import dumps, loads
 from redis import Redis as RedisGateway
-from diana.utils import Pattern
+from ..utils import Pattern
 from .dixel import Dixel
 
 @attr.s

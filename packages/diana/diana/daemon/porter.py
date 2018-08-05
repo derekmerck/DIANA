@@ -15,8 +15,8 @@ files -> splunk
 import logging
 from typing import Union
 import attr
-from diana.apis import MetaCache, Orthanc, DicomFile, Dixel
-from diana.utils import Pattern
+from ..apis import MetaCache, Orthanc, DicomFile, Dixel
+from ..utils import Pattern
 
 @attr.s
 class Porter(object):

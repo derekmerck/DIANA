@@ -10,7 +10,7 @@ TODO: Collect := at interval: Survey(source, q, dest, q) -> worklist; Transport(
 
 """
 
-import logging
+import logging, datetime, time
 import attr
 from ..utils import DatetimeInterval
 
@@ -29,7 +29,7 @@ class Harvester(object):
     end   = attr.ib(default=None)
     time_window = attr.ib( init=False, type=DatetimeInterval )
 
-    repeat_while = attr.ib( default=True )  # stop condition, true = once
+    repeat_while = attr.ib( default=True )  # stop condition, false = once?
 
     @time_window.default
     def set_dtinterval(self):
@@ -40,6 +40,9 @@ class Harvester(object):
         while self.repeat_while:
             self.collect()
             self.time_window.next()
+            if self.time_window.latest > datetime.datetime.now():
+                delay = self.time_window.latest - datetime.datetime.now()
+                time.sleep(delay.seconds)
 
     def collect(self):
 
@@ -49,21 +52,26 @@ class Harvester(object):
             logging.debug("No recent items, nothing to do")
             return
 
-        indexed = self.discover_indexed()
+        try:
+            indexed = self.discover_indexed()
 
-        if not indexed:
-            logging.debug("No items indexed, need to collect {} recent items".format(len(recent)))
+            if not indexed:
+                logging.debug("No items indexed, need to collect {} recent items".format(len(recent)))
+                new_items = recent
+                self.handle_worklist(new_items)
+                return
+
+            logging.debug("COMPARE==============================")
+            logging.debug( [x.AccessionNumber for x in recent] )
+            logging.debug( [y.AccessionNumber for y in indexed] )
+            logging.debug("=============================/COMPARE")
+
+            new_items = set( x for x in recent if x.meta["AccessionNumber"] not in
+                             [y.meta['AccessionNumber'] for y in indexed])
+        except NotImplementedError:
+            # Indexer not working, take them all
+            logging.debug("No indexer available")
             new_items = recent
-            self.handle_worklist(new_items)
-            return
-
-        logging.debug("COMPARE==============================")
-        logging.debug( [x.AccessionNumber for x in recent] )
-        logging.debug( [y.AccessionNumber for y in indexed] )
-        logging.debug("=============================/COMPARE")
-
-        new_items = set( x for x in recent if x.meta["AccessionNumber"] not in
-                         [y.meta['AccessionNumber'] for y in indexed])
 
         if not new_items:
             logging .debug("No new items, nothing to do")

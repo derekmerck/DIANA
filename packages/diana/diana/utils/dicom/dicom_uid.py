@@ -1,7 +1,7 @@
 import datetime
 from enum import Enum
 import attr
-from diana.utils.orthanc_id import orthanc_hash
+from ..orthanc_id import orthanc_hash
 import hashlib
 
 

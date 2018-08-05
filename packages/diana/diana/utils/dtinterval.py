@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Union
 from dateutil import parser as dtparser
 import attr
-from diana.utils import dicom_strftime, dicom_strftime2
+from .dicom import dicom_strftime, dicom_strftime2
 
 
 def parse_timestr(time_str: Union[str, datetime]) -> Union[datetime, timedelta, None]:

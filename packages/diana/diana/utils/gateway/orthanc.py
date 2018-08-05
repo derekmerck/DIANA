@@ -1,11 +1,10 @@
 # Diana-agnostic API for orthanc, no endpoint or dixel dependencies
 
-import logging, json
 import attr
 from typing import Mapping
 from .requester import Requester
-from ..dicom_level import DicomLevel
-from pprint import pprint
+from diana.utils.dicom.dicom_level import DicomLevel
+
 
 @attr.s
 class Orthanc(Requester):

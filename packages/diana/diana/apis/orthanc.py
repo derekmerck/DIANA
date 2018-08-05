@@ -5,7 +5,8 @@ from pprint import pformat
 from typing import Mapping, Callable, Union
 import attr
 from requests import ConnectionError
-from diana.utils import DicomLevel, Pattern, gateway, dicom_clean_tags, dicom_strfdate, dicom_strpdate, dicom_strpdtime
+from ..utils import Pattern, gateway
+from ..utils.dicom import DicomLevel, dicom_clean_tags, dicom_strfdate, dicom_strpdate, dicom_strpdtime
 from .dixel import Dixel
 
 def apply_tag_map(map, meta):

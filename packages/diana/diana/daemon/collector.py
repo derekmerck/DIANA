@@ -1,8 +1,8 @@
 import logging
 from typing import Collection, Union
 import attr
-from diana.apis import Dixel, Orthanc, OrthancPeer, DicomFile, Splunk
-from diana.utils import Pattern
+from ..apis import Dixel, Orthanc, DicomFile, Splunk
+from ..utils import Pattern
 
 
 @attr.s

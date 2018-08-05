@@ -8,7 +8,7 @@
 
 import glob, os, logging, yaml
 import attr
-from diana.apis import Redis, DicomFile, Orthanc
+from ..apis import Redis, DicomFile, Orthanc
 
 
 # Generates 1024 nested subdirs
