@@ -52,7 +52,7 @@ class ImageFile(Pattern):
         return item
 
 
-@attr.s
+@attr.s(hash=False)
 class DicomFile(Pattern):
     location = attr.ib( default=None )
     gateway = attr.ib( init=False )

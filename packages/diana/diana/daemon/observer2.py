@@ -1,31 +1,66 @@
 """
-Watcher has an observable **source** and multiple **handlers**
-
-The observable source is called for **changes**, this may take a _since_ parameter and _blocking_
-
-
+Subclassed Watcher implementing a number of common Diana workflows
 """
-import logging, zipfile, os
+
+import logging, zipfile, os, time
+from enum import Enum, auto
 import attr
-from diana.apis import Orthanc, DicomFile, Dixel
-from diana.utils import Event, ObservableMixin, Watcher
+from diana.apis import Orthanc, DicomFile, Splunk, Dixel
+from diana.utils import Watcher, ObservableMixin, DatetimeInterval2 as DatetimeInterval
+from diana.utils.dicom.dicom_strings import dicom_strftime2
+
+
+class DianaEventType(Enum):
+
+    INSTANCE_ADDED = auto()  # dcm file or orthanc instance
+    SERIES_ADDED = auto()    # orthanc series
+    STUDY_ADDED = auto()     # zip file or orthanc study
+
+    NEW_MATCH = auto()       # Dose report or other queried item match
+
+    ALERT = auto()           # mention item in warning log
 
 
 @attr.s
-class DixelHandler(object):
-    # For sources -> anon queue
+class DianaWatcher(Watcher):
 
-    dest = attr.ib( default=None )
-    anonymize = attr.ib( default=False )
-    remove = attr.ib( default=False )
-    logger = attr.ib( init=False, factory=logging.getLogger )
-
-
-
-    def unpack_and_put(self, event):
-
-        item_fp = event.data
+    def move(self, event, dest, remove=False):
+        item = event.data
         source = event.source
+
+        item = source.get(item, view="file")
+        if remove:
+            source.remove(item)
+        return dest.put(item)
+
+    def anonymize_and_move(self, event, dest, remove=False):
+        item = event.data
+        source = event.source
+
+        item = source.anonymize(item, remove=remove)
+        item = source.get(item, view="file")
+        item = dest.put(item)
+        source.remove(item)  # Never need to keep anon
+        return item
+
+    def index(self, event, dest):
+        item = event.data
+        source = event.source
+
+        item = source.get(item, view="tags")
+        return dest.put(item)
+
+    def index_by_proxy(self, event, dest):
+        item = event.data
+        source = event.source
+
+        item = source.find(item, retrieve=True)
+        item = source.get(item, view="tags")
+        source.remove(item)
+        return dest.put(item)
+
+    def unpack_and_put(self, event, dest, remove=False):
+        item_fp = event.data
 
         self.logger.debug("Unzipping {}".format(item_fp))
         with zipfile.ZipFile(item_fp) as z:
@@ -35,88 +70,129 @@ class DixelHandler(object):
                     with z.open(filename) as f:
                         self.logger.debug("Uploading {}".format(filename))
                         item = Dixel(file=f)
-                        self.dest.send(item)
-        if self.remove:
+                        dest.send(item)
+        if remove:
             os.remove(item_fp)
 
-    def get_and_put(self, event):
 
-        item_id = event.data
-        source = event.source
+@attr.s(hash=False)
+class ObservableOrthanc(ObservableMixin, Orthanc):
 
-        if self.anonymize:
-            item = source.anonymize(item_id, remove=self.remove)
-            item = source.get(item, view="file")
-        else:
-            item = source.get(item_id, view="file")
-            if self.remove:
-                os.remove(item_id)
+    def changes(self):
+        event_queue = []
+        event_queue.append( (DianaEventType.STUDY_ADDED, 100) )
+        event_queue.append( (DianaEventType.STUDY_ADDED, "barbar") )
+        event_queue.append( (DianaEventType.INSTANCE_ADDED, 100) )
+        event_queue.append( (DianaEventType.INSTANCE_ADDED, "barbar") )
+        return event_queue
 
-        self.dest.put(item)
+@attr.s(hash=False)
+class ObservableOrthancProxy(ObservableMixin, Orthanc):
+    changes_query = attr.ib( factory=dict )
+    domain = attr.ib( default='' )
+
+    def changes(self):
+
+        def set_study_dt(q):
+            interval = DatetimeInterval(*q['StudyDateTimeInterval'])
+
+            d, t0 = dicom_strftime2(interval.earliest)
+            _, t1 = dicom_strftime2(interval.latest)
+
+            q['StudyDate'] = d
+            q['StudyTime'] = "{}-{}".format(t0, t1)
+            del (q['StudyDateTimeInterval'])
+
+            return q
+
+        q = set_study_dt(self.changes_query)
 
 
-
-@attr.s
-# This should actually be a base file class or a mixin
+@attr.s(hash=False)
 class ObservableDicomFile(ObservableMixin, DicomFile):
 
-    from watchdog.observers import Observer as wdObserver
-    from watchdog.events import FileSystemEventHandler as wdHandler
+    def changes(self):
+        pass
 
-    observer = attr.ib( factory=wdObserver )
+    def poll_events(self):
 
-    def poll_changes(self, *kwargs):
-        # Don't need last event for watchdog monitoring
+        from watchdog.observers import Observer
+        from watchdog.events import FileSystemEventHandler, FileSystemEvent
 
-        self.observer.schedule(self, self.location, recursive=True)
-        self.observer.start()
+        @attr.s(hash=False)
+        class WatchdogEventReceiver(FileSystemEventHandler):
+            source = attr.ib()
+
+            def on_any_event(self, wd_event: FileSystemEvent):
+
+                if wd_event.is_directory:
+                    return
+
+                event_data = wd_event.src_path
+                event_type = None
+
+                if wd_event.event_type == "added" and event_data.endswith(".dcm"):
+                    event_type = DianaEventType.INSTANCE_ADDED
+                elif wd_event.event_type == "added" and event_data.endswith(".zip"):
+                    event_type = DianaEventType.STUDY_ADDED
+
+                if event_type:
+                    event = self.source.gen_event(event_type=event_type, event_data=event_data)
+                    # self.logger.debug('Adding to event queue')
+                    self.source.put(event)
+
+        observer = Observer()
+        receiver = WatchdogEventReceiver(source=self)
+
+        observer.schedule(receiver, self.location, recursive=True)
+        observer.start()
         try:
             while True:
-                time.sleep(5)
+                time.sleep(2)
         except:
-            self.observer.stop()
-            print("Error")
-
-        self.observer.join()
+            observer.stop()
+            self.logger.warning("Stopped polling file system for changes")
+        observer.join()
 
 
 if __name__ == "__main__":
 
+    from datetime import datetime, timedelta
+    from diana.utils import Event
+    from diana.utils.dicom import DicomLevel
+
     logging.basicConfig(level=logging.DEBUG)
-    import time
 
-    class MockDicomFile(ObservableMixin, DicomFile):
+    dcm_file =        ObservableDicomFile( location="/Users/derek/Desktop/dcm" )
+    orthanc_queue =   ObservableOrthanc()
+    orthanc_archive = ObservableOrthanc( port=8043 )
 
-        def poll_changes(self, last_event=None, **kwargs):
-            event_queue = []
-            for i in range(3):
-                event_queue.append( self.gen_event("new_file", "foo", "next") )
-            return event_queue
-
-    class MockOrthanc(ObservableMixin, Orthanc):
-
-        def poll_changes(self, last_event=None, **kwargs):
-            event_queue = []
-            for i in range(3):
-                event_queue.append( self.gen_event("new_instance", "foo", "uuid") )
-            return event_queue
-
-
-    # Some test endpoints
-
-    s1_f = MockDicomFile(location="/Users/derek/Desktop/dcm")
-    s1_q = MockOrthanc()
-    s1_o = MockOrthanc( port=8043 )
-    s1_i = MockSplunk( domain = 's1')
-
-    px_o = MockOrthanc( port=8044, proxy='gepacs' )
-    px_i = MockSplunk( domain = 'px' )
-
-    routes = {
-        # [source, event]:      ['action', destination]
-        [s1_f, 'new_file']:        [     'get_and_put', s1_q],
-        [s1_f, 'new_archive']:     [  'unpack_and_put', s1_q],
-        # [s1_q, 'new_instance']: ['anon_get_and_put', s1_o],
-        [s1_q, 'new_instance']:    ['anon_get_and_put_and_put', s1_o, s1_i ],
-        [px_o, 'new_dose_series']: ['pull_get_and_put', px_i ]
+    find_dose_reports = {
+        'level': DicomLevel.SERIES,
+        'StudyDateTimeInterval': (timedelta(minutes=-15),),
+        'Modality': "SR",
+        'SeriesDescription': "*DOSE*"
     }
+    orthanc_proxy =   ObservableOrthancProxy( port=8044, domain="gepacs", changes_query=find_dose_reports )
+
+    splunk = Splunk()
+
+    watcher = DianaWatcher()
+    from functools import partial
+    watcher.routes = {
+        (dcm_file,      DianaEventType.INSTANCE_ADDED): partial(watcher.move,
+                                                                dest=orthanc_queue, remove=True),
+        (dcm_file,      DianaEventType.STUDY_ADDED):    partial(watcher.unpack_and_put,
+                                                                dest=orthanc_queue, remove=True),
+        (orthanc_queue, DianaEventType.INSTANCE_ADDED): partial(watcher.anonymize_and_move,
+                                                                dest=orthanc_archive, remove=True),
+        (orthanc_archive, DianaEventType.STUDY_ADDED):  partial(watcher.index,
+                                                                dest=splunk),
+        (orthanc_proxy, DianaEventType.NEW_MATCH):      partial(watcher.index_by_proxy,
+                                                                dest=splunk),
+        (orthanc_proxy, DianaEventType.ALERT):          logging.warning
+    }
+
+    watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
+
+    watcher.run()

@@ -4,7 +4,6 @@ import inspect
 from pprint import pprint
 
 
-
 @attr.s(cmp=False, hash=None)
 class Pattern(object):
     uid = attr.ib(factory=uuid.uuid4)
