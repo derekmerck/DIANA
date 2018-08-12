@@ -6,6 +6,7 @@ import attr
 import pydicom
 import binascii
 from PIL.Image import fromarray
+from ..dicom import DicomFormatError
 
 @attr.s
 class FileHandler(object):
@@ -116,7 +117,7 @@ class DicomFile(FileHandler):
             return False
 
         if not is_dicom(fp):
-            raise Exception("Not a DCM file: {}".format(fp))
+            raise DicomFormatError("Not a DCM file: {}".format(fp))
 
         if not pixels:
             dcm = pydicom.read_file(fp, stop_before_pixels=True)

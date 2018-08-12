@@ -1,6 +1,7 @@
 .idea
 *.iml
 secrets/*
+_secrets/*
 *.retry
 .coverage
 .coverage_html

@@ -8,3 +8,4 @@ pydicom
 pyyaml
 requests
 redis
+watchog

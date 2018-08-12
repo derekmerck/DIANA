@@ -3,7 +3,7 @@ from dateutil import parser as dateparser
 from datetime import timedelta, datetime
 from hashlib import sha256
 from base64 import b32encode
-from .mint import GUIDMint
+from .mint import GuidMint
 
 DEFAULT_NAMEBANK = "US_CENSUS"
 
@@ -73,7 +73,7 @@ class NameBank (object):
         return (fam_name, sur_name, middle_init)
 
 
-class PseudoMint(GUIDMint):
+class PseudoMint(GuidMint):
     """
     Mint that returns a complete identity, including a pseudonym based on the
     subject GUID and the US Census NameBank
@@ -95,9 +95,9 @@ class PseudoMint(GUIDMint):
         value.sort()
         value = "".join(value)
 
-        candidate = b32encode(sha256(value.encode('utf-8')).digest())
+        candidate = b32encode( self.scramble(value) )
         while not re.match(b"^[A-Z]{3}", candidate):
-            candidate = b32encode(sha256(candidate).digest())
+            candidate = b32encode( self.scramble(value) )
 
         candidate = candidate[:self.hash_prefix_length].decode().strip("=")
         return candidate

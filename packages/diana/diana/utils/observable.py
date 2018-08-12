@@ -8,6 +8,8 @@ Generic Event Routing Framework
 
 """
 
+# TODO: something similar but "reviewable" for historical data pulls
+
 import logging, uuid, time
 from enum import Enum, auto
 from typing import Any, Tuple, List
@@ -44,9 +46,9 @@ class ObservableMixin(object):
 
         def poll():
             while True:
-                events = self.changes()
-                if events:
-                    for event_type, event_data in events:
+                new_events = self.changes()
+                if new_events:
+                    for event_type, event_data in new_events:
                         # logging.debug(change)
                         event = self.gen_event(event_type=event_type, event_data=event_data)
                         # self.logger.debug('Adding to event queue')

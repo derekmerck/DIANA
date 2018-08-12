@@ -1,5 +1,42 @@
 # DICOM node or proxy
 
+
+"""
+Orthanc sekrit keys:
+
+config:
+
+"Dictionary" : {
+    # LO - long string (64 chars)
+ 	# ST - short text (1024 chars)
+
+    "abcd,1003" : [ "ST", "DataSignature",    1, 1, "RIH3D Private Data" ],
+    "abcd,1005" : [ "LO", "KeySignature",     1, 1, "RIH3D Private Data"],
+    "abcd,1007" : [ "LO", "SignatureVersion", 1, 1, "RIH3D Private Data"]
+
+},
+
+stash:
+
+data = {
+    'PatientID':        "1234abcdefg",
+    'PatientName':      "MERCK^DEREK^L",
+    'PatientBirthDate': datetime.now().date(),
+    'AccessionNumber':  "abc1234567",
+    'StudyDescription': "blah blah",
+    'StudyDateTime':    datetime.now(),
+    'Institution':      "Some Hospital"
+}
+
+f = Fernet(key)
+token = f.encrypt(json.dumps(data))
+
+d.tags['DataSignature'] = token
+d.tags['KeySignature'] = md5(key)
+d.tags['SignatureVersion'] = diana.__version__
+
+"""
+
 import datetime
 from pprint import pformat
 from typing import Mapping, Callable, Union
@@ -8,6 +45,7 @@ from requests import ConnectionError
 from ..utils import Pattern, gateway
 from ..utils.dicom import DicomLevel, dicom_clean_tags, dicom_strfdate, dicom_strpdate, dicom_strpdtime
 from .dixel import Dixel
+
 
 def apply_tag_map(map, meta):
     for k,v in map['Replace']:
@@ -128,13 +166,21 @@ class Orthanc(Pattern):
                 return False
 
     def anonymize(self, item: Dixel, replacement_map: Callable[[dict],dict]=simple_sham_map, remove: bool=False) -> Dixel:
+
+        if not item.meta.get('ShamID'):
+            item.set_shams()
+
         replacement_dict = replacement_map(item.meta)
         result = self.gateway.anonymize_item(item.oid(), item.level, replacement_dict=replacement_dict)
+        # self.logger.debug(result)
         if remove:
             self.remove(item)
         # self.logger.debug(result)
         if result:
-            return self.get( result['ID'], level=item.level )
+            if item.level == DicomLevel.INSTANCES:
+                return Dixel( item.sham_oid(), file=result, level=DicomLevel.INSTANCES )
+            else:
+                return self.get( result['ID'], level=item.level )
 
     def remove(self, item: Dixel):
         oid = item.oid()

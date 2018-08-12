@@ -82,6 +82,8 @@ class Dixel(Pattern):
             return orthanc_id(self.meta['ShamID'], self.meta['ShamStudyUID'])
         elif self.level == DicomLevel.SERIES:
             return orthanc_id(self.meta['ShamID'], self.meta['ShamStudyUID'], self.meta['ShamSeriesUID'])
+        elif self.level == DicomLevel.INSTANCES:
+            return orthanc_id(self.meta['ShamID'], self.meta['ShamStudyUID'], self.meta['ShamSeriesUID'], self.meta['ShamInstanceUID'])
 
         raise TypeError("Cannot create sham oid from meta")
 
@@ -108,16 +110,16 @@ class Dixel(Pattern):
         self.meta['ShamDoB']       = dicom_strfdate( sham_identity[2] )
         self.meta['ShamStudyUID']  = dicom_mint.uid(self.meta['PatientID'],
                                                     self.meta['AccessionNumber'])
-        # self.meta['ShamStudyOID'] = orthanc_id(self.meta['ShamID'],
-        #                                        self.meta['ShamStudyUID'])
 
-        if self.level == DicomLevel.SERIES:
+        if self.level == DicomLevel.SERIES or self.level == DicomLevel.INSTANCES:
             self.meta['ShamSeriesUID'] = dicom_mint.uid(self.meta['PatientID'],
                                                         self.meta['AccessionNumber'],
                                                         self.meta['SeriesDescription'])
 
-            # self.meta['ShamSeriesOID'] = orthanc_id(self.meta['ShamID'],
-            #                                         self.meta['ShamStudyUID'],
-            #                                         self.meta['ShamSeriesUID'])
+        if self.level == DicomLevel.INSTANCES:
+            self.meta['ShamInstanceUID'] = dicom_mint.uid(self.meta['PatientID'],
+                                                        self.meta['AccessionNumber'],
+                                                        self.meta['SeriesDescription'],
+                                                        self.meta['InstanceNumber'])
 
         return self

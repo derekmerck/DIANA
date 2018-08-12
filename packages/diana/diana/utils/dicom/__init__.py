@@ -6,3 +6,5 @@ from .dicom_strings import dicom_strfname, \
 
 from .dicom_simplify import dicom_clean_tags
 from .dicom_uid import DicomUIDMint
+
+from .dicom_exceptions import DicomFormatError

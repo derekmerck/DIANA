@@ -148,3 +148,6 @@ class Orthanc(Requester):
     def statistics(self):
         return self.get("statistics")
 
+    def changes(self, current=0, limit=10):
+        params = { 'since': current, 'limit': limit }
+        return self.get("changes", params=params)
