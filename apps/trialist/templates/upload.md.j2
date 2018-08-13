@@ -1,0 +1,31 @@
+## {{ short_name or full_name }} Self-Service Imaging Submission Portal
+
+There are several methods available for submitting a trial subject's imaging studies:
+
+- **CD/DVD Delivery** Request a disk at your file room and have it shipped.
+
+```
+SIREN/{{short_name}} Clinical Coordination
+University of Michigan Hospital
+Ann Arbor, MI
+```
+  
+- **Web Portal Upload** _Coming_ Collect your image data files onto a workstation and create a single .zip archive. Click the "Upload" button below and select the archive for upload.
+
+- **FTP Upload** _Coming_ Collect your image data files onto a workstation as files or create a single zip archive.  Then, use an ftp client (like [Cyberduck][], or [WinSCP Portable][] if you cannot install applications) to log into the [ftp server][ftpd] and upload the zip archive.
+
+- **LifeImage** _Coming_ If your site participates in the LifeIMAGE network, you can send data directly from your PACS via a LifeIMAGE connection. From the LifeIMAGE directory, navigate to the `Rhode Island Hospital` destination and select the `SIREN-{{ short_name }}` service
+
+- **PACS-to-PACS** _Coming_ Create a new DICOM node on your local PACS server and push the studies directly. You can request an institution-specific AE Title from the clinical coordination team.
+
+```yaml
+Address: dcm.{{ domain }}
+Port: {{ trial_base_port + port_offset }}
+AETitle: INSTITUTION SPECIFIC
+```
+
+[ftpd]: ftp://ftp.central-imaging.com:21/{{ short_name }}
+[cyberduck]: https://cyberduck.io
+[Winscp Portable]: https://portableapps.com/apps/internet/winscp_portable
+
+In each case, the study will be anonymized (even if you believe the data has been deidentified before leaving your facility) and uploaded to central imaging for review.  The enrolling site research admin, central reader, and study PI will all be notified by email with the assigned GUID and pseudo-identity.

@@ -1,0 +1,94 @@
+# Configuration docs for `diana-trialist`
+---
+############################
+# Trial info document
+############################
+
+title:   Central Imaging
+domain:  central-imaging.com
+
+preamble: |
+  Organizes deidentified imaging and enrollment data for clinical research.
+  Image review areas are all password protected.  Contact the program PI to request access.
+
+postamble: |
+  GUIDs and convenience pseudo-identifiers are assigned to each subject and study on upload using [GUIDMint][].
+
+  ---
+
+  This website is built using open source and free tools that are configured with the [DIANA][] stack (see Github link for extensive acknowledgements).  This website is currently hosted on a [Digital Ocean][] droplet.
+
+  [GUIDMint]: https://github.com/derekmerck/DIANA/tree/master/utilities/GUIDMint
+  [DIANA]: http://www.github.com/derekmerck/DIANA
+  [Digital Ocean]: https://m.do.co/c/7c8f409b8c3c "Link includes referral code"
+
+apps:
+  # ie, include guid-mint app and map host/guid/pseudo_id, etc.
+  guid-mint:
+    root: /guid
+
+trial_base_port: 42000
+
+# Default credentials for uploading
+credentials:
+  salt: "central-imaging"
+  auth:
+  - 38aa7708a67d4445f2cf5b43b4d53bc3  # ci
+  - 744db2dcceeaa07f9c10a350be1bfafe  # hb
+  - 63d26d25975513450adcd3e1d4b57bd8  # p3
+
+trials:
+############################
+# Trial info keys
+############################
+
+  - Brown University:
+
+      - Christianson Syndrome:
+          full_name: Christianson Syndrome
+          study_id:  christianson
+          pi:        "[Morrow](https://vivo.brown.edu/display/emmorrow)"
+          desc: >
+            Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
+          active: True
+          port_offset: 200
+
+  - NIH/NETT/SIREN:
+
+      - ProtectIII:
+          full_name: Progesterone for Treatment of Traumatic Brain Injury Clinical Trial
+          short_name: ProTECT III
+          study_id: protect3
+          pis:
+            - "[Wright](http://www.em.emory.edu/about/directories/faculty/wright-david.html)"
+          desc: >
+            ProTECT III was a research study to see if progesterone, a hormone normally found in our bodies, was able to limit the amount of brain damage from TBI.  Many previous animal studies and two small studies in humans suggested that progesterone, given after TBI, may result in less brain damage.  The ProTECT III study tested these findings and determined if this treatment could be helpful in adults with moderate to severe TBI.
+          citation: http://www.nejm.org/doi/full/10.1056/NEJMoa1404304
+          url:
+          active: False
+          port_offset: 100
+
+      - HOBIT:
+          full_name:  Hyperbaric Oxygen Brain Injury Treatment Trial
+          short_name: HOBIT
+          study_id:   hobit
+          pis:
+            - "[Barsan](https://medicine.umich.edu/dept/emergency-medicine/william-barsan-md)"
+          url:
+          desc: >
+            By markedly increasing oxygen (O2) delivery to the traumatized brain, hyperbaric oxygen (HBO2) can reverse the lack of O2 that precipitates cellular energy failure and subsequent brain cell death.  The primary aim of this trial is to select the combination of HB02 treatment parameters that is most likely to improve the outcomes of patients with severe TBI.  This trial is supported and sponsored by the SIREN-NETT Network which is funded by the National Institutes of Neurologic Disease and Stroke.
+          active: True
+          port_offset: 110
+
+      - BOOST:
+          full_name:  BOO Treatment Trial
+          short_name: BOOST
+          study_id:   boost
+          pis:
+            - "[Barsan](https://medicine.umich.edu/dept/emergency-medicine/william-barsan-md)"
+          desc: >
+            Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
+          url:
+          active: True
+          port_offset: 120
+

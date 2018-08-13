@@ -1,0 +1,34 @@
+## {{ title }}
+
+{{ preamble }}
+
+{%- for network in trials %}
+{%- for _network, _trials in network.items() -%}
+---
+### {{ _network }}
+  {%- for _trial in _trials %}
+  {%- for _, trial in _trial.items() %}
+  
+#### {{ trial.full_name }}{% if trial.short_name %} ({{ trial.short_name }}){% endif %}
+
+   {{ trial.desc }}
+  
+   {% for pi in trial.pis %}* PI: {{ pi }}{% endfor %}
+   {% if trial.citation -%}
+   * [Primary citation]({{ trial.citation }})
+   {% endif -%}
+   {% if splunk_available -%}
+   * [Image submission stats]({{ trial.study_id }}/stats)
+   {% endif -%}
+   {% if trial.active -%}
+   * [Upload a study]({{ trial.study_id }}/upload)
+   {% endif -%}
+   * [Imaging review]({{ trial.study_id }}/images)
+    
+  {%- endfor %}
+  {%- endfor %}
+{% endfor %}
+{% endfor %}
+---
+
+{{ postamble }}

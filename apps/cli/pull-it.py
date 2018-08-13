@@ -14,7 +14,7 @@ an Orthanc instance that knows about the remote "my_pacs".
 import logging, yaml
 from argparse import ArgumentParser
 from diana.apis import Orthanc, Dixel
-from diana.utils import DicomLevel
+from diana.utils.dicom import DicomLevel
 
 def parse_args():
 

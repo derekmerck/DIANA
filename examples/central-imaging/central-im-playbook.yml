@@ -1,0 +1,149 @@
+---
+
+# Notes -- could also run trialist, snappass, guidmint apps as dokku apps
+
+################################
+# Setup databases
+################################
+
+- hosts: databases
+  tags: databases
+
+  vars:
+    service_password: "passw0rd!"
+    data_dir:         "/data"
+    config_dir:       "/config"
+
+  roles:
+    - name: Splunk
+      role: splunk-docker
+      splunk_password: "{{ service_password }}"
+      splunk_use_data_container: False
+      splunk_data_dir: "{{ data_dir }}/splunk"
+
+    # Pre-req service for DIANA-Watcher and Snappass
+    - name: Redis
+      role: redis-docker
+      password: "{{ service_password }}"
+      # TODO: Add a data container or bind mount
+
+    - name: Postgres
+      role: matic-insurance.docker-postgres
+      # TODO: Add a data container or a bind mount option, fix pg10 to use encrypted pw
+
+
+################################
+# Setup internet services
+################################
+
+- hosts: servers
+  tags: internet
+
+  vars:
+    public_host:      "central-imaging.com"
+    service_password: "passw0rd!"
+    data_dir:         "/data"
+    config_dir:       "/config"
+    trial_config:     "{{ config_dir }}/diana/examples/central-imaging/trails.yml"
+
+  roles:
+
+   # Installing this also links in the examples directory in config
+    - name: front_end
+      role: diana-docker
+      diana_command: "DIANA_TRIALIST_CONFIG={{ trial_config }} gunicorn apps/trialist/trialist.py"
+      diana_volumes:
+        - "{{ config_dir }}/diana/routes:/opt/diana/routes"
+        - "{{ config_dir }}/diana/trialist/trials.yml:/opt/diana/examples/central-imaging/trials.yml"
+      diana_ports:
+        - "5000:5000"
+
+    - name: snappass
+      role: snappass-docker
+      snappass_port:           5001
+      snappass_redis_container_name:  redis
+      snappass_redis_password: "{{ service_password }}"
+      snappass_redis_db:       3
+
+    - name: httpd
+      role: nginx-docker
+      nginx_public_host:     "http.{{ public_host }}"
+      nginx_secure_host:     "https.{{ public_host }}"
+
+    - name: ftpd
+      role: pureftpd-docker
+      pftp_use_data_container: False
+      pftp_data_dir:         "{{ data_dir }}/ftp"
+      pftp_public_host:      "ftp.{{ public_host }}"
+      pftp_service_password: "{{ service_password }}"
+
+# TODO: certbot
+#    - name: certbot
+#      role: certbot <----??
+
+
+################################
+# Setup trails based on trials.yml
+################################
+
+- name: Setup trials
+  hosts: servers
+  tags: trials
+
+  vars:
+    service_password: "passw0rd!"
+    data_dir:         "/data"
+    config_dir:       "/config"
+    trial_config:     "{{ config_dir }}/diana/examples/central-imaging/trails.yml"
+
+  tasks:
+
+    - set_fact:
+        config: "{{ lookup('file', trial_config) | from_yaml }}"
+        trials: config.trials
+        trial_base_port: config.trial_base_port
+
+    - name: Add trial {{ item.key }}
+      include_role:
+        name: queued-orthanc
+      vars:
+        qorth_service: item.key
+        qorth_destination:
+          orthanc_docker_image: osimis/orthanc
+          orthanc_use_data_container: False
+          orthanc_password:  "{{ service_password }}"
+          orthanc_ports:
+            dicom: "{{ trial_base_port + item.value.port_offset + 0 }}"
+            api:   "{{ trial_base_port + item.value.port_offset + 1 }}"
+
+        qorth_queue:
+          orthanc_password:  "{{ service_password }}"
+          orthanc_ports:
+            dicom: "{{ trial_base_port + item.value.port_offset + 2 }}"
+            api:   "{{ trial_base_port + item.value.port_offset + 3 }}"
+
+      with_dict: trials
+
+
+################################
+# Setup a DIANA-Workers (if needed)
+################################
+
+- name: Setup handlers
+  hosts: servers
+  tags: handlers
+
+  vars:
+    service_password: "passw0rd!"
+    data_dir:         "/data"
+    config_dir:       "/config"
+
+  roles:
+    - name: diana
+      role: diana-docker
+      diana_container_name: diana-watcher
+      diana_command: "python3 apps/cli/watcher.py {{ config_dir }}/diana/routes"
+
+      # TODO: when diana/routes is not empty
+
+
