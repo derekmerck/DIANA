@@ -106,8 +106,8 @@
     - debug:
         var: "{{ item }}"
       with_subelements:
-        - "{{ config.trials[:] }}"
-        - full_name
+        - "{{ config.trials }}"
+        - items.full_name
 
 
 
