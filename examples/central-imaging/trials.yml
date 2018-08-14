@@ -42,8 +42,8 @@ trials:
 # Trial info keys
 ############################
 
-  - Brown University:
-
+  - network: Brown University:
+    items:
       - full_name: Christianson Syndrome
         study_id:  christianson
         pi:        "[Morrow](https://vivo.brown.edu/display/emmorrow)"
@@ -52,8 +52,8 @@ trials:
         active: True
         port_offset: 200
 
-  - NIH/NETT/SIREN:
-
+  - network: NETT/SIREN
+    items:
       - full_name: Progesterone for Treatment of Traumatic Brain Injury Clinical Trial
         short_name: ProTECT III
         study_id: protect3

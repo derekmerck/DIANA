@@ -104,8 +104,10 @@
         trial_base_port: config.trial_base_port
 
     - debug:
-        var: "{{ lookup('subelements', item, 'full_name') }}"
-      with_list: "{{ config.trials }}"
+        var: "{{ item }}"
+      with_subelements:
+        - "{{ config.trials[:] }}"
+        - full_name
 
 
 
