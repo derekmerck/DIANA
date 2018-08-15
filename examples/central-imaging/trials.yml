@@ -42,49 +42,45 @@ trials:
 # Trial info keys
 ############################
 
-  - network: Brown University:
-    items:
-      - full_name: Christianson Syndrome
-        study_id:  christianson
-        pi:        "[Morrow](https://vivo.brown.edu/display/emmorrow)"
-        desc: >
-          Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
-        active: True
-        port_offset: 200
+  - full_name: Christianson Syndrome
+    study_id:  christianson
+    pi:        "[Morrow](https://vivo.brown.edu/display/emmorrow)"
+    desc: >
+      Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
+    active: True
+    port_offset: 200
 
-  - network: NETT/SIREN
-    items:
-      - full_name: Progesterone for Treatment of Traumatic Brain Injury Clinical Trial
-        short_name: ProTECT III
-        study_id: protect3
-        pis:
-          - "[Wright](http://www.em.emory.edu/about/directories/faculty/wright-david.html)"
-        desc: >
-          ProTECT III was a research study to see if progesterone, a hormone normally found in our bodies, was able to limit the amount of brain damage from TBI.  Many previous animal studies and two small studies in humans suggested that progesterone, given after TBI, may result in less brain damage.  The ProTECT III study tested these findings and determined if this treatment could be helpful in adults with moderate to severe TBI.
-        citation: http://www.nejm.org/doi/full/10.1056/NEJMoa1404304
-        url:
-        active: False
-        port_offset: 100
+  - full_name: Progesterone for Treatment of Traumatic Brain Injury Clinical Trial
+    short_name: ProTECT III
+    study_id: protect3
+    pis:
+      - "[Wright](http://www.em.emory.edu/about/directories/faculty/wright-david.html)"
+    desc: >
+      ProTECT III was a research study to see if progesterone, a hormone normally found in our bodies, was able to limit the amount of brain damage from TBI.  Many previous animal studies and two small studies in humans suggested that progesterone, given after TBI, may result in less brain damage.  The ProTECT III study tested these findings and determined if this treatment could be helpful in adults with moderate to severe TBI.
+    citation: http://www.nejm.org/doi/full/10.1056/NEJMoa1404304
+    url:
+    active: False
+    port_offset: 100
 
-      - full_name:  Hyperbaric Oxygen Brain Injury Treatment Trial
-        short_name: HOBIT
-        study_id:   hobit
-        pis:
-          - "[Barsan](https://medicine.umich.edu/dept/emergency-medicine/william-barsan-md)"
-        url:
-        desc: >
-          By markedly increasing oxygen (O2) delivery to the traumatized brain, hyperbaric oxygen (HBO2) can reverse the lack of O2 that precipitates cellular energy failure and subsequent brain cell death.  The primary aim of this trial is to select the combination of HB02 treatment parameters that is most likely to improve the outcomes of patients with severe TBI.  This trial is supported and sponsored by the SIREN-NETT Network which is funded by the National Institutes of Neurologic Disease and Stroke.
-        active: True
-        port_offset: 110
+  - full_name:  Hyperbaric Oxygen Brain Injury Treatment Trial
+    short_name: HOBIT
+    study_id:   hobit
+    pis:
+      - "[Barsan](https://medicine.umich.edu/dept/emergency-medicine/william-barsan-md)"
+    url:
+    desc: >
+      By markedly increasing oxygen (O2) delivery to the traumatized brain, hyperbaric oxygen (HBO2) can reverse the lack of O2 that precipitates cellular energy failure and subsequent brain cell death.  The primary aim of this trial is to select the combination of HB02 treatment parameters that is most likely to improve the outcomes of patients with severe TBI.  This trial is supported and sponsored by the SIREN-NETT Network which is funded by the National Institutes of Neurologic Disease and Stroke.
+    active: True
+    port_offset: 110
 
-      - full_name:  BOO Treatment Trial
-        short_name: BOOST
-        study_id:   boost
-        pis:
-          - "[Barsan](https://medicine.umich.edu/dept/emergency-medicine/william-barsan-md)"
-        desc: >
-          Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
-        url:
-        active: True
-        port_offset: 120
+  - full_name:  BOO Treatment Trial
+    short_name: BOOST
+    study_id:   boost
+    pis:
+      - "[Barsan](https://medicine.umich.edu/dept/emergency-medicine/william-barsan-md)"
+    desc: >
+      Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
+    url:
+    active: True
+    port_offset: 120
 

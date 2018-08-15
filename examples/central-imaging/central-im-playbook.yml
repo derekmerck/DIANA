@@ -95,19 +95,21 @@
     data_dir:         "/data"
     config_dir:       "/config"
 #    trial_config:     "{{ config_dir }}/diana/examples/central-imaging/trails.yml"
-    trial_config:     "https://raw.githubusercontent.com/derekmerck/DIANA/diana-star/examples/central-imaging/trials.yml"
+    trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
   tasks:
 
     - set_fact:
-        config: "{{ lookup('url', trial_config, split_lines=False) | from_yaml }}"
-        trial_base_port: config.trial_base_port
+        config: "{{ lookup('file', trial_config, split_lines=False) | from_yaml }}"
+
+    - debug:
+        var: config
 
     - debug:
         var: "{{ item }}"
       with_subelements:
         - "{{ config.trials }}"
-        - items.full_name
+        - full_name
 
 
 

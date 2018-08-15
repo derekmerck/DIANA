@@ -1,0 +1,71 @@
+# Remote Embedded Diana service setup w Resin.io
+# Merck, Summer 2018
+
+# resin docker-compose is 2.1 max
+version: '2.1'
+
+services:
+
+#  broker:
+#    image: redis
+#    command: redis-server --requirepass passw0rd!
+#    ports:
+#      - "6379:6379"
+#    environment:
+#      TZ: America/New_York
+
+  dicom:
+    image: derekmerck/orthanc:or132-arm64v8
+    ports:
+      - "4242:4242"
+      - "8042:8042"
+    privileged: true
+    environment:
+      # If using Resin, turn on the init system, otherwise don't bc it's breaking
+      INITSYSTEM: "on"
+
+#  diana:
+#    image: derekmerck/diana:movidius-arm32v7
+##    links:
+##      - broker
+##      - dicom
+#    privileged: true
+#
+#    network_mode: host
+#    volumes:
+#      - "/dev:/dev"
+#
+#    environment:
+#      INITSYSTEM: "on"
+#
+##      DIANA_BROKER: redis://:passw0rd!@broker:6379/1
+##      DIANA_RESULT: redis://:passw0rd!@broker:6379/2
+##    depends_on:
+##      - broker
+
+  diana:
+    image: derekmerck/diana:learn-arm64v8
+#    links:
+#      - broker
+#      - dicom
+    privileged: true
+    environment:
+      INITSYSTEM: "on"
+
+    devices:
+      - "/dev/nvhost-ctrl:/dev/nvhost-ctrl"
+      - "/dev/nvhost-ctrl-gpu:/dev/nvhost-ctrl-gpu"
+      - "/dev/nvhost-prof-gpu:/dev/nvhost-prof-gpu"
+      - "/dev/nvmap:/dev/nvmap"
+      - "/dev/nvhost-gpu:/dev/nvhost-gpu"
+      - "/dev/nvhost-as-gpu:/dev/nvhost-as-gpu"
+
+#    volumes:
+#      - "/usr/lib/aarch64-linux-gnu/tegra:/usr/lib/aarch64-linux-gnu/tegra"
+
+
+
+#      DIANA_BROKER: redis://:passw0rd!@broker:6379/1
+#      DIANA_RESULT: redis://:passw0rd!@broker:6379/2
+#    depends_on:
+#      - broker

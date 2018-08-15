@@ -1,0 +1,33 @@
+# Remote Embedded Diana service setup w Resin.io
+# Merck, Summer 2018
+
+# Selective Indexer Service
+
+# resin docker-compose is 2.1 max
+version: '2.1'
+
+services:
+
+  dicom:
+    image: derekmerck/orthanc
+    ports:
+      - "4242:4242"
+      - "8042:8042"
+    privileged: true
+    environment:
+      # If using Resin, turn on the init system, otherwise don't bc it's breaking
+      INITSYSTEM: "on"
+
+  diana-watcher:
+    build: watcher
+    privileged: true
+    environment:
+      INITSYSTEM: "on"
+    env_file:
+      - prod.env
+
+
+# Have to add site-specific config:
+
+# - Modality peering info, password to orthanc, possibly using ENV variables over resin?
+# - orthnanc pass DICOM query info, route/pword to central to diana-watcher
