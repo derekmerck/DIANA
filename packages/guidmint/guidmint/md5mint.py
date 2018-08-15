@@ -1,7 +1,7 @@
-from .mint import GUIDMint
+from .mint import GuidMint
 from hashlib import md5
 
-class MD5Mint(GUIDMint):
+class MD5Mint(GuidMint):
     """
     Simple mint that assigns ID as md5 hash
     """
