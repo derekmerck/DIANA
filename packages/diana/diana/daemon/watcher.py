@@ -2,14 +2,17 @@
 Subclassed Watcher implementing a number of common Diana workflows
 """
 
-import logging, zipfile, os
+import logging, zipfile, os, time
 from enum import Enum, auto
+from datetime import timedelta
+from hashlib import md5
 import attr
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from diana.apis import Orthanc, DicomFile, Splunk, Dixel
 from diana.utils import Watcher, ObservableMixin, DatetimeInterval2 as DatetimeInterval
 from diana.utils.dicom import dicom_strftime2, DicomFormatError
+from diana.utils.dicom import DicomUIDMint, DicomLevel
 
 
 class DianaEventType(Enum):
@@ -17,9 +20,7 @@ class DianaEventType(Enum):
     INSTANCE_ADDED = auto()  # dcm file or orthanc instance
     SERIES_ADDED = auto()    # orthanc series
     STUDY_ADDED = auto()     # zip file or orthanc study
-
     NEW_MATCH = auto()       # Dose report or other queried item match
-
     ALERT = auto()           # mention item in warning log
 
 
@@ -59,14 +60,29 @@ class DianaWatcher(Watcher):
         item = source.get(item, view="tags")
         return dest.put(item)
 
-    def index_by_proxy(self, event, dest):
-        item = event.event_data
+    def index_by_proxy(self, event, dest,
+                       anonymize=False,
+                       retrieve=False,
+                       token=None,
+                       index=None):
+
+        item = event.event_data  # This should be a Dixel if a proxied return
         source = event.event_source
 
-        item = source.find(item, retrieve=True)
-        item = source.get(item, view="tags")
-        source.remove(item)
-        return dest.put(item)
+        if retrieve:
+            item = source.find(item, retrieve=True)
+            item = source.get(item, view="tags")
+            source.remove(item)
+
+        if anonymize:
+
+            self.logger.debug(item)
+
+            item.meta['AccessionNumber'] = md5(item.meta['AccessionNumber'].encode('UTF8')).hexdigest()
+            item.meta['PatientID']       = md5(item.meta['PatientID'].encode('UTF8')).hexdigest()
+            item.meta['StudyInstanceUID']= DicomUIDMint().random_suffix()
+
+        return dest.put(item, token=token, index=index, host=event.event_source.location)
 
     def unpack_and_put(self, event, dest, remove=False):
         item_fp = event.event_data
@@ -117,29 +133,51 @@ class ObservableOrthanc(ObservableMixin, Orthanc):
             # source.clear("changes")
             # source.clear("exports")
 
+from collections import deque
 
 @attr.s(hash=False)
 class ObservableOrthancProxy(ObservableMixin, Orthanc):
     changes_query = attr.ib( factory=dict )
-    domain = attr.ib( default='' )
+    default_domain = attr.ib( default=None )
+    default_query_level = attr.ib( default=DicomLevel.STUDIES )
+
+    discovery_queue_len = attr.ib( default=200 )
+    discovery_period = attr.ib( default=-300 )   # 5 mins
+
+    # Keep last n accession numbers in memory
+    discovered = attr.ib()
+    dt_interval = attr.ib(default=DatetimeInterval(timedelta(seconds=discovery_period), None))
+
+    @discovered.default
+    def create_discovery_queue(self):
+        return deque(maxlen=self.discovery_queue_len)
 
     def changes(self):
+        q = {}
+        d, t0 = dicom_strftime2(self.dt_interval.earliest)
+        _, t1 = dicom_strftime2(self.dt_interval.latest)
+        self.dt_interval.next()
+        q['StudyDate'] = d
+        q['StudyTime'] = "{}-{}".format(t0, t1)
+        q.update( self.changes_query )
 
-        def set_study_dt(q):
-            interval = DatetimeInterval(*q['StudyDateTimeInterval'])
+        response = self.find(q, level=DicomLevel.STUDIES, domain=self.default_domain)
 
-            d, t0 = dicom_strftime2(interval.earliest)
-            _, t1 = dicom_strftime2(interval.latest)
+        event_queue = []
 
-            q['StudyDate'] = d
-            q['StudyTime'] = "{}-{}".format(t0, t1)
-            del (q['StudyDateTimeInterval'])
+        for item in response:
+            if item.meta['AccessionNumber'] in self.discovered:
+                # logging.debug("Skipping old item")
+                continue
+            else:
+                # logging.debug("Adding new item")
+                # logging.debug(item)
+                self.discovered.append(item.meta['AccessionNumber'])
+                event_queue.append( (DianaEventType.NEW_MATCH, item) )
 
-            return q
-
-        # q = set_study_dt(self.changes_query)
-
-        return None
+        if event_queue:
+            self.logger.debug("Found {} matches on {}".format( len( event_queue ), self.default_domain))
+            return event_queue
 
 
 @attr.s(hash=False)
@@ -191,13 +229,11 @@ if __name__ == "__main__":
 
     from datetime import datetime, timedelta
     from diana.utils import Event
-    from diana.utils.dicom import DicomLevel
 
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
-
 
     dcm_file =        ObservableDicomFile( location="/Users/derek/Desktop/dcm" )
     orthanc_queue =   ObservableOrthanc( password="passw0rd!" )

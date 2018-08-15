@@ -250,6 +250,8 @@ class Orthanc(Pattern):
         query = {'Level': str(level),
                  'Query': q}
 
+        self.logger.debug(query)
+
         if retrieve:
             retrieve_dest = self.domains[domain]
         else:
@@ -261,11 +263,17 @@ class Orthanc(Pattern):
             worklist = set()
             for d in results:
                 d['StudyDateTime'] = dicom_strpdtime(d['StudyDate'] + d['StudyTime'])
-                d['PatientBirthDate'] = dicom_strpdate(d['PatientBirthDate'])
-                # self.logger.debug(pformat(d))
+                try:
+                    d['PatientBirthDate'] = dicom_strpdate(d['PatientBirthDate'])
+                    # self.logger.debug(pformat(d))
+                except:
+                    # self.logger.info("No patient birthdate discovered")
+                    pass
                 worklist.add( Dixel(meta=d, level=level ) )
 
             return worklist
+
+        return []
 
     def send(self, item: Dixel, peer_dest: str=None, modality_dest: str=None):
         if modality_dest:

@@ -25,6 +25,9 @@ class Splunk(Pattern):
 
     hec_tokens = attr.ib( factory=dict )  # Mapping of domain name -> token
 
+    default_token = attr.ib( default=None )
+    default_index = attr.ib( default='main' )
+
     @gateway.default
     def connect(self):
 
@@ -61,19 +64,26 @@ class Splunk(Pattern):
             return worklist
 
 
-    def put(self, item: Dixel, index: str, host: str, hec: str):
+    def put(self, item: Dixel, host: str, token: str, index: str=None ):
 
-        try:
-            timestamp = item.meta['InstanceCreationDateTime']
-        except:
-            logging.warning("Failed to get 'InstanceCreationDateTime', using now()")
+        if item.meta.get('InstanceCreationDateTime'):
+            timestamp = item.meta.get('InstanceCreationDateTime')
+        elif item.meta.get('StudyDateTime'):
+            timestamp = item.meta.get('StudyDateTime')
+        else:
+            logging.warning("Failed to get inline 'DateTime', using now()")
             timestamp = datetime.now()
+
         event = item.meta
 
         event['level'] = str(item.level)
         event['oid'] = item.oid()
 
-        token = self.hec_tokens[hec]
+        token = self.hec_tokens[token]
+        # self.logger.debug(token)
+
+        if not index:
+            index=self.default_index
 
         # at $time $event was reported by $host for $index with credentials $auth
         self.gateway.put_event( timestamp=timestamp, event=event, host=host, index=index, token=token )

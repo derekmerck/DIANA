@@ -1,5 +1,5 @@
 """
-Generic Event Routing Framework
+Generic Multi-processing Event Routing Framework
 
 - Enumerate EventTypes
 - Watched sources should implement the ObservableMixin.changes() interface and return a list of tuples (type, data)
@@ -14,6 +14,7 @@ import logging, uuid, time
 from enum import Enum, auto
 from typing import Any, Tuple, List
 from multiprocessing import Process, Queue
+from datetime import datetime, timedelta
 import attr
 
 
@@ -38,6 +39,7 @@ class ObservableMixin(object):
     event_count = attr.ib( init=False, default=0 )
     logger = attr.ib(factory=logging.getLogger)
     events = attr.ib(factory=Queue)
+    polling_interval = attr.ib( default=1.0 )
 
     def changes(self) -> List[Tuple[Enum, Any]]:
         raise NotImplementedError
@@ -46,6 +48,9 @@ class ObservableMixin(object):
 
         def poll():
             while True:
+
+                tic = datetime.now()
+
                 new_events = self.changes()
                 if new_events:
                     for event_type, event_data in new_events:
@@ -53,7 +58,10 @@ class ObservableMixin(object):
                         event = self.gen_event(event_type=event_type, event_data=event_data)
                         # self.logger.debug('Adding to event queue')
                         self.events.put(event)
-                time.sleep(1.0)
+
+                toc = datetime.now()
+                if toc-tic < timedelta(seconds=self.polling_interval):
+                    time.sleep((toc-tic).seconds)
 
         p = Process(target=poll)
         p.start()

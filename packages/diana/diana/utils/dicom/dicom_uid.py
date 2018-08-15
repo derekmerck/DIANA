@@ -14,9 +14,9 @@ def hash_str(s, digits=2):
 
 
 class SuffixStyle(Enum):
-    HIERARCHICAL = 1
-    OID32 = 2
-    RANDOM = 3
+    HIERARCHICAL = 'hierachical'
+    OID32 = 'oid32'
+    RANDOM = 'random'
 
 
 @attr.s

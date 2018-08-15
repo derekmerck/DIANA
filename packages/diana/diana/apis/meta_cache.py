@@ -184,6 +184,9 @@ class MetaCache(Pattern):
 
                 writer.writerow(w)
 
+    def __len__(self):
+        return len(self.cache.keys())
+
     def __iter__(self):
         # self.logger.debug("Setting iterator = cache.keys()")
         self.iterator = iter(self.cache.keys())
