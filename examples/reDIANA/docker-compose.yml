@@ -26,8 +26,8 @@ services:
 
     # For testing only - set WATCHER_CONFIG json for each device through the RESIN API
     env_file:
-      - pw_secrets.env
+      - dw_secrets.env
 
     volumes:
       - "/etc/orthanc:/etc/orthanc"
-    command: ["python3", "apps/cli/proxy-watcher.py", "--env", "WATCHER_CONFIG"]
+    command: ["python3", "apps/cli/DIANA-watcher.py", "--env", "DIANA_WATCHER_CONFIG"]

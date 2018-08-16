@@ -35,6 +35,7 @@ source:
 dest:
   pattern:
     class: Splunk
+    host: trusty64
 
     default_index: watcher
     default_token: watcher

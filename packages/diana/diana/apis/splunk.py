@@ -79,16 +79,16 @@ class Splunk(Pattern):
         event['level'] = str(item.level)
         event['oid'] = item.oid()
 
-        token = self.hec_tokens.get(token)
+
         if not token:
-            index=self.default_token
-        # self.logger.debug(token)
+            token=self.default_token
+        _token = self.hec_tokens.get(token)
 
         if not index:
             index=self.default_index
 
         # at $time $event was reported by $host for $index with credentials $auth
-        self.gateway.put_event( timestamp=timestamp, event=event, host=host, index=index, token=token )
+        self.gateway.put_event( timestamp=timestamp, event=event, host=host, index=index, token=_token )
 
         # Real auth description
         # headers = {'Authorization': 'Splunk {0}'.format(self.hec_tok[hec])}

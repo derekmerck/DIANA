@@ -2,7 +2,7 @@
 Subclassed Watcher implementing a number of common Diana workflows
 """
 
-import logging, zipfile, os, time
+import logging, zipfile, os
 from enum import Enum, auto
 from datetime import timedelta
 from hashlib import md5
@@ -12,7 +12,7 @@ from watchdog.events import FileSystemEventHandler, FileSystemEvent
 from diana.apis import Orthanc, DicomFile, Splunk, Dixel
 from diana.utils import Watcher, ObservableMixin, DatetimeInterval2 as DatetimeInterval
 from diana.utils.dicom import dicom_strftime2, DicomFormatError
-from diana.utils.dicom import DicomUIDMint, DicomLevel
+from diana.utils.dicom import DicomUIDMint, SuffixStyle, DicomLevel
 
 
 class DianaEventType(Enum):
@@ -80,7 +80,7 @@ class DianaWatcher(Watcher):
 
             item.meta['AccessionNumber'] = md5(item.meta['AccessionNumber'].encode('UTF8')).hexdigest()
             item.meta['PatientID']       = md5(item.meta['PatientID'].encode('UTF8')).hexdigest()
-            item.meta['StudyInstanceUID']= DicomUIDMint().random_suffix()
+            item.meta['StudyInstanceUID']= DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)
 
         return dest.put(item, token=token, index=index, host=event.event_source.location)
 
@@ -230,7 +230,6 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
 
 if __name__ == "__main__":
 
-    from datetime import datetime, timedelta
     from diana.utils import Event
 
     logging.basicConfig(level=logging.DEBUG)
