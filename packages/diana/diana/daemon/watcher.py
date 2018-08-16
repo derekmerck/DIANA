@@ -137,46 +137,49 @@ from collections import deque
 
 @attr.s(hash=False)
 class ObservableOrthancProxy(ObservableMixin, Orthanc):
-    changes_query = attr.ib( factory=dict )
-    default_domain = attr.ib( default=None )
-    default_query_level = attr.ib( default=DicomLevel.STUDIES )
-
+    query_dict = attr.ib( factory=dict )
+    query_domain = attr.ib( default=None )
+    query_level = attr.ib( default=DicomLevel.STUDIES )
     discovery_queue_len = attr.ib( default=200 )
-    discovery_period = attr.ib( default=-300 )   # 5 mins
+    query_discovery_period = attr.ib( default=300, convert=int )
 
     # Keep last n accession numbers in memory
-    discovered = attr.ib()
-    dt_interval = attr.ib(default=DatetimeInterval(timedelta(seconds=discovery_period), None))
+    discovery_queue = attr.ib(init=False)
+    dt_interval = attr.ib(init=False, type=DatetimeInterval)
 
-    @discovered.default
+    @discovery_queue.default
     def create_discovery_queue(self):
         return deque(maxlen=self.discovery_queue_len)
+
+    @dt_interval.default
+    def set_dt_interval(self):
+        return DatetimeInterval(timedelta(seconds=self.query_discovery_period))
 
     def changes(self):
         q = {}
         d, t0 = dicom_strftime2(self.dt_interval.earliest)
         _, t1 = dicom_strftime2(self.dt_interval.latest)
-        self.dt_interval.next()
+        next( self.dt_interval )
         q['StudyDate'] = d
         q['StudyTime'] = "{}-{}".format(t0, t1)
-        q.update( self.changes_query )
+        q.update( self.query_dict )
 
-        response = self.find(q, level=DicomLevel.STUDIES, domain=self.default_domain)
+        response = self.find(q, level=DicomLevel.STUDIES, domain=self.query_domain)
 
         event_queue = []
 
         for item in response:
-            if item.meta['AccessionNumber'] in self.discovered:
+            if item.meta['AccessionNumber'] in self.discovery_queue:
                 # logging.debug("Skipping old item")
                 continue
             else:
                 # logging.debug("Adding new item")
                 # logging.debug(item)
-                self.discovered.append(item.meta['AccessionNumber'])
+                self.discovery_queue.append(item.meta['AccessionNumber'])
                 event_queue.append( (DianaEventType.NEW_MATCH, item) )
 
         if event_queue:
-            self.logger.debug("Found {} matches on {}".format( len( event_queue ), self.default_domain))
+            self.logger.debug("Found {} matches on {}".format( len( event_queue ), self.query_domain))
             return event_queue
 
 

@@ -1,11 +1,11 @@
 #! python3
 """
-check-it.py
+DIANA-lookup.py
 Derek Merck, Summer 2018
 
 Wrapper command-line tool for Splunk query.
 
-$ python3 check-it.py --query "index=dose_report" -e "-1d" -l now -i my_splunk -s secrets.yml
+$ python3 DIANA-lookup.py --query "index=dose_report" -e "-1d" -l now -i my_splunk -s secrets.yml
 
 `secrets.yml` must have a section called "my_splunk" with keys suitable for creating
 an Splunk instance that can accept the query.

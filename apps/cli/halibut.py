@@ -1,6 +1,6 @@
 #! python3
 """
-classify-it.py
+halibut.py
 Ian Pan, Summer 2018
 
 Wrapper command-line tool for Halibut MobileNetGray classification.
@@ -15,7 +15,8 @@ from halibut.utils import get_mobilenet, get_image_from_dicom, get_prediction
 
 def parse_args():
 
-    parser = argparse.ArgumentParser(description="Binary DICOM image classification with MobileNetGray")
+    parser = argparse.ArgumentParser(prog="Halibut",
+                                     description="Binary DICOM image classification with MobileNetGray")
     parser.add_argument("--model", "-m", type=str,
                         help="Path to model weights")
     parser.add_argument("--dicom", "-d", type=str,

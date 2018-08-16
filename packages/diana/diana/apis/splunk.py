@@ -79,7 +79,9 @@ class Splunk(Pattern):
         event['level'] = str(item.level)
         event['oid'] = item.oid()
 
-        token = self.hec_tokens[token]
+        token = self.hec_tokens.get(token)
+        if not token:
+            index=self.default_token
         # self.logger.debug(token)
 
         if not index:

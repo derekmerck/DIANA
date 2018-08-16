@@ -296,6 +296,9 @@ class Orthanc(Pattern):
     def info(self):
         return self.gateway.statistics()
 
+    def info(self):
+        return self.gateway.post('reset')
+
     @property
     def instances(self):
         oids = self.gateway.get("instances")
