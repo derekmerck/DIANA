@@ -44,6 +44,27 @@
     service_password: "passw0rd!"
     data_dir:         "/data"
     config_dir:       "/config"
+    trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
+
+  pre_tasks:
+
+    # CREATE UPSTREAMS FOR NGINX
+    - set_fact:
+        config: "{{ lookup('file', trial_config, split_lines=False) | from_yaml }}"
+    - set_fact:
+        trials: "{{ config.trials }}"
+        trial_base_port: "{{ config.trial_base_port }}"
+    - set_fact:
+        upstreams: "{{ [{'name': 'trialist', 'path': None,        'pool': [{'port': 5000}] },
+                        {'name': 'snappass', 'path': '/snappass', 'pool': [{'port': 5001}] } ] }}"
+    - set_fact:
+        upstreams: "{{ upstreams + [{'name': trial.study_id, 'path': '/'+trial.study_id+'/images', 'pool': [{'port': trial_base_port|int + trial.port_offset|int + 3}]}] }}"
+      with_list: "{{ trials }}"
+      loop_control:
+        loop_var: trial
+
+    - debug:
+        msg: "{{ upstreams }}"
 
   roles:
 
@@ -51,7 +72,8 @@
     - name: front end
       role: diana-docker
       diana_container_name: DIANA-trialist
-      diana_command: "cd /usr/share/source/diana && git pull & DIANA_TRIALIST_CONFIG=examples/central-imaging/trials.yml gunicorn apps/trialist/trialist.py"
+      diana_workdir: /usr/share/source/diana/apps/trialist
+      diana_command: "bash -c 'git pull && pip install -r requirements.txt && DIANA_TRIALIST_CONFIG=/usr/share/source/diana/examples/central-imaging/trials.yml python3 trialist.py'"
       diana_ports:
         - "5000:5000"
 
@@ -66,6 +88,8 @@
       role: nginx-docker
       nginx_public_host:     "http.{{ public_host }}"
       nginx_secure_host:     "https.{{ public_host }}"
+      nginx_upstreams:  "{{ upstreams }}"
+
 
     - name: ftpd
       role: pureftpd-docker
@@ -105,6 +129,7 @@
 #    - debug:
 #        msg: "{{ trial_base_port|int + item.port_offset|int + 1 }}"
 #      with_list: "{{ trials }}"
+
 
     - name: "Add queued orthancs for {{ trial.full_name }}"
       include_role:
@@ -151,5 +176,4 @@
       diana_command: "python3 apps/cli/watcher.py {{ config_dir }}/diana/routes"
 
       # TODO: when diana/routes is not empty
-
 
