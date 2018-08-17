@@ -44,17 +44,14 @@
     service_password: "passw0rd!"
     data_dir:         "/data"
     config_dir:       "/config"
-    trial_config:     "{{ config_dir }}/diana/examples/central-imaging/trails.yml"
 
   roles:
 
    # Installing this also links in the examples directory in config
-    - name: front_end
+    - name: front end
       role: diana-docker
-      diana_command: "DIANA_TRIALIST_CONFIG={{ trial_config }} gunicorn apps/trialist/trialist.py"
-      diana_volumes:
-        - "{{ config_dir }}/diana/routes:/opt/diana/routes"
-        - "{{ config_dir }}/diana/trialist/trials.yml:/opt/diana/examples/central-imaging/trials.yml"
+      diana_container_name: DIANA-trialist
+      diana_command: "cd /usr/share/source/diana && git pull & DIANA_TRIALIST_CONFIG=examples/central-imaging/trials.yml gunicorn apps/trialist/trialist.py"
       diana_ports:
         - "5000:5000"
 
@@ -101,42 +98,37 @@
 
     - set_fact:
         config: "{{ lookup('file', trial_config, split_lines=False) | from_yaml }}"
+    - set_fact:
+        trials: "{{ config.trials }}"
+        trial_base_port: "{{ config.trial_base_port }}"
 
-    - debug:
-        var: config
+#    - debug:
+#        msg: "{{ trial_base_port|int + item.port_offset|int + 1 }}"
+#      with_list: "{{ trials }}"
 
-    - debug:
-        var: "{{ item }}"
-      with_subelements:
-        - "{{ config.trials }}"
-        - full_name
-
-
-
-    - debug:
-        var: trials
-
-
-    - name: Add trial {{ item.key }}
+    - name: "Add queued orthancs for {{ trial.full_name }}"
       include_role:
         name: queued-orthanc
       vars:
-        qorth_service: item.key
+        qorth_base_name: "{{ trial.study_id }}"
         qorth_destination:
-          orthanc_docker_image: osimis/orthanc
+          orthanc_docker_image: jodogne/orthanc
+          orthanc_pg_backend: False
           orthanc_use_data_container: False
           orthanc_password:  "{{ service_password }}"
           orthanc_ports:
-            dicom: "{{ trial_base_port + item.value.port_offset + 0 }}"
-            api:   "{{ trial_base_port + item.value.port_offset + 1 }}"
+            dicom: "{{ trial_base_port|int + trial.port_offset|int + 2 }}"
+            api:   "{{ trial_base_port|int + trial.port_offset|int + 3 }}"
 
         qorth_queue:
           orthanc_password:  "{{ service_password }}"
           orthanc_ports:
-            dicom: "{{ trial_base_port + item.value.port_offset + 2 }}"
-            api:   "{{ trial_base_port + item.value.port_offset + 3 }}"
+            dicom: "{{ trial_base_port|int + trial.port_offset|int + 0 }}"
+            api:   "{{ trial_base_port|int + trial.port_offset|int + 1 }}"
 
-      with_dict: trials
+      with_list: "{{ trials }}"
+      loop_control:
+        loop_var: trial
 
 
 ################################

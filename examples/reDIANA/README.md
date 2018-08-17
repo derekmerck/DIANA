@@ -19,7 +19,7 @@ $ docker-compose up
 When using Resin.io devices in "local mode" for development and testing, you can also [direct the device's Docker daemon remotely][dev-test].
 
 ```bash
-$ DOCKER_API_VERSION=1.22 DOCKER_HOST=tcp://device_ipl:2375 docker-compose up -d
+$ DOCKER_API_VERSION=1.22 DOCKER_HOST=tcp://device_ip:2375 docker-compose up -d
 ```
 
 [dev-test]: https://github.com/resin-io-playground/resinos-compose
@@ -29,13 +29,13 @@ Docker Image Dependencies
 -------------------------
 
 - [redis](https://hub.docker.com/_/redis/)
-- [derekmerck/orthanc](https://github.com/derekmerck/orthanc-xarch) --  Suggested to use pre-threading Orthanc-1.3.2 tag until [orthanc19][] is addressed
-- [derekmerck/conda](https://github.com/derekmerck/conda-xarch)
-- [derekmerck/keras-tf](https://github.com/derekmerck/conda-xarch)
+- [derekmerck/orthanc](https://github.com/derekmerck/orthanc-xarch) --  Suggested to use pre-threading Orthanc-1.3.2 tag until [orthanc97][] is addressed
+- [derekmerck/diana](https://github.com/derekmerck/diana-xarch)
+- [derekmerck/diana-learn](https://github.com/derekmerck/diana-xarch)
 
-Keras-TF is used instead of Conda for machine learning configurations.
+`diana-learn` includes tensorflow and Keras, and is used for machine learning configurations.
 
-[orthanc19]: https://bitbucket.org/sjodogne/orthanc/issues/97/intermittent-peer-to-peer-send-failures-w
+[orthanc97]: https://bitbucket.org/sjodogne/orthanc/issues/97/intermittent-peer-to-peer-send-failures-w
 
 
 

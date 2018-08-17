@@ -23,11 +23,10 @@ services:
     privileged: true
     environment:
       INITSYSTEM: "on"
-
     # For testing only - set WATCHER_CONFIG json for each device through the RESIN API
     env_file:
       - dw_secrets.env
-
     volumes:
       - "/etc/orthanc:/etc/orthanc"
-    command: ["python3", "apps/cli/DIANA-watcher.py", "--env", "DIANA_WATCHER_CONFIG"]
+
+    command: ["git pull", "&&", "python3", "apps/cli/DIANA-watcher.py", "--env", "DIANA_WATCHER_CONFIG"]

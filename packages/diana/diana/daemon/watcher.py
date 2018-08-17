@@ -1,5 +1,5 @@
 """
-Subclassed Watcher implementing a number of common Diana workflows
+Subclassed Watcher implementing common DIANA workflows
 """
 
 import logging, zipfile, os

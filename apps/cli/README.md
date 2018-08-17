@@ -1,4 +1,4 @@
-DIANA CLI
+DIANA CLI Applications
 ================
 
 Derek Merck  
@@ -6,20 +6,31 @@ Derek Merck
 Rhode Island Hospital and Brown University  
 Providence, RI  
  
-## `check-it.py`
+## `DIANA-lookup.py`
 
 Wrapper command-line tool for Splunk query.
 
 ```
-> python3 check-it.py --query "index=dose_report" -e "-1d" -l now -i my_splunk -s secrets.yml
+> python3 DIANA-lookup.py --query "index=dose_report" -e "-1d" -l now -i my_splunk -s secrets.yml
 ```
 
 `secrets.yml` must have a section called "my_splunk" with keys suitable for creating
 an Splunk instance that can accept the query.
 
-## `clf_chest_pose.py`
 
-Classify patient to image orientation in a chest x-ray (use weights in `tests`).
+## `DIANA-star.py`
+
+Wrapper command-line tool to stand up a DIANA distributed worker node for pipeline data processing.
+
+
+## `DIANA-watcher.py`
+
+Wrapper command-line tool to stand up a DIANA watcher node.  Can be configured with environment vars for remote/embedded deployment.
+
+
+## `halibut.py`
+
+Wrapper for Halibut machine learning module (use weights in `tests`).
 
 
 ## `dcm2im.py`
@@ -44,10 +55,10 @@ $ python3 index-it.py -l /my_path -r my_redis -s secrets.yml restore --an abcxyz
 `secrets.yml` must have a section called "my_redis" with keys suitable for creating
 a Redis instance.
 
-No python3 on a system that needs reindexed?  Docker to the rescue...
+No python3 on a system that needs re-indexed?  Docker to the rescue...
 
 ```
-$ docker run -v /orthanc/db:/orthanc/db -it derekmerck/diana-worker /bin/bash
+$ docker run -v /orthanc/db:/orthanc/db -it derekmerck/diana /bin/bash
 # scp server:/secrets.yml .
 # python3 apps/cli/index-it.py -l /orthanc/db -r redis -s secrets.yml index -w orthanc
 ```

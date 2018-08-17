@@ -132,17 +132,14 @@ def prerender(config_file):
 
     pages = {'index': render_from_template('templates', 'index.md.j2', **config)}
 
-    for network in config['trials']:
-        for _, _trials in network.items():
-            for _trial in _trials:
-                for _, trial in _trial.items():
+    for trial in config['trials']:
 
-                    trial['domain'] = config['domain']
-                    pages['upload_'+trial['study_id']] = \
-                        render_from_template('templates', 'upload.md.j2',
-                                             trial_base_port = config['trial_base_port'],
-                                             **trial)
-                    # pages['stats_'+trial['study_id']] = render_from_template('templates', 'stats.md.j2', **trial)
+        trial['domain'] = config['domain']
+        pages['upload_'+trial['study_id']] = \
+            render_from_template('templates', 'upload.md.j2',
+                                 trial_base_port = config['trial_base_port'],
+                                 **trial)
+        # pages['stats_'+trial['study_id']] = render_from_template('templates', 'stats.md.j2', **trial)
 
     return config, pages
 

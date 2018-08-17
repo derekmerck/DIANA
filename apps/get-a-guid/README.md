@@ -1,7 +1,4 @@
-
-
-
-Get-a-GUID
+Get-a-GUID Web App
 ================
 
 Overview

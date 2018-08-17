@@ -1,4 +1,5 @@
-# DIANA Front-End Service for Trialists
+DIANA Trialists Front-End Web App
+=================================
 
 Derek Merck <derek_merck@brown.edu>  
 Brown University and Rhode Island Hospital  
@@ -45,7 +46,7 @@ See <../examples/central_imaging/trials.yml> for a configuration reference.
 
 ## GUIDMint Integration
 
-The DianaFE app can host helper apps, including `get-a-guid` from GUIDMint.  This can be used as a cardinal study ID server.
+The Trialist app can host helper apps, including `get-a-guid` from GUIDMint.  This can be used as a cardinal study ID server.
 
 ```bash
 $ curl 'http://localhost:5000/guid/pseudonym/pseudo_id?name=MERCK^DEREK&gender=M&age=10'

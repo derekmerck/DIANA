@@ -2,14 +2,11 @@
 
 {{ preamble }}
 
-{%- for network in trials %}
-{%- for _network, _trials in network.items() -%}
 ---
-### {{ _network }}
-  {%- for _trial in _trials %}
-  {%- for _, trial in _trial.items() %}
+
+{%- for trial in trials %}
   
-#### {{ trial.full_name }}{% if trial.short_name %} ({{ trial.short_name }}){% endif %}
+### {{ trial.full_name }}{% if trial.short_name %} ({{ trial.short_name }}){% endif %}
 
    {{ trial.desc }}
   
@@ -25,10 +22,8 @@
    {% endif -%}
    * [Imaging review]({{ trial.study_id }}/images)
     
-  {%- endfor %}
-  {%- endfor %}
-{% endfor %}
-{% endfor %}
+{%- endfor %}
+
 ---
 
 {{ postamble }}
