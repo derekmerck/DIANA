@@ -2,6 +2,12 @@
 
 # Notes -- could also run trialist, snappass, guidmint apps as dokku apps
 
+# TODO: Add upload button -> /data dir
+# TODO: Add user credentials to protect upload
+# TODO: Check FTP works
+# TODO: Check watcher moves data from file -> queue -> archive w anonymization
+# TODO: Install ssl role
+
 ################################
 # Setup databases
 ################################
@@ -40,6 +46,7 @@
   tags: internet
 
   vars:
+    public_host_name: "dev"  # 'www' for prod
     common_name:      "central-imaging.com"
     service_password: "passw0rd!"
     data_dir:         "/data"
@@ -87,11 +94,26 @@
     - name: httpd
       role: nginx-docker
       nginx_upstreams:        "{{ upstreams }}"
-      nginx_www_host:         "www.{{ common_name }}"
+      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"  # should be 'www' for prod
 
+      # Run unsecured to install certs, then secure
       nginx_secured:          False
-      nginx_secured_cert_dir: /opt/certificates
+      nginx_secured_cert_dir: /opt/certs
 
+    - role: secured
+      secured_cert_type:   "selfsigned"
+      secured_common_name: "{{ common_name }}"
+      secured_host_name:   "{{ public_host_name }}.{{ common_name }}"
+      secured_admin_email: derek.merck@gmail.com
+      secured_org_name:    Central-Imaging
+
+    - name: httpd
+      role: nginx-docker
+      nginx_upstreams:        "{{ upstreams }}"
+      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"  # should be 'www' for prod
+      # Run unsecured to install certs, then secure
+      nginx_secured:          True
+      nginx_secured_cert_dir: /opt/certs
 
     - name: ftpd
       role: pureftpd-docker
@@ -139,8 +161,8 @@
       vars:
         qorth_base_name: "{{ trial.study_id }}"
         qorth_destination:
-          orthanc_docker_image: jodogne/orthanc
-          orthanc_pg_backend: False
+          orthanc_docker_image: jodogne/orthanc-plugins
+          orthanc_pg_backend: True
           orthanc_use_data_container: False
           orthanc_password:  "{{ service_password }}"
           orthanc_ports:
