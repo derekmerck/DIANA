@@ -40,7 +40,7 @@
   tags: internet
 
   vars:
-    public_host:      "central-imaging.com"
+    common_name:      "central-imaging.com"
     service_password: "passw0rd!"
     data_dir:         "/data"
     config_dir:       "/config"
@@ -86,16 +86,18 @@
 
     - name: httpd
       role: nginx-docker
-      nginx_public_host:     "http.{{ public_host }}"
-      nginx_secure_host:     "https.{{ public_host }}"
-      nginx_upstreams:  "{{ upstreams }}"
+      nginx_upstreams:        "{{ upstreams }}"
+      nginx_www_host:         "www.{{ common_name }}"
+
+      nginx_secured:          False
+      nginx_secured_cert_dir: /opt/certificates
 
 
     - name: ftpd
       role: pureftpd-docker
       pftp_use_data_container: False
       pftp_data_dir:         "{{ data_dir }}/ftp"
-      pftp_public_host:      "ftp.{{ public_host }}"
+      pftp_public_host:      "ftp.{{ common_name }}"
       pftp_service_password: "{{ service_password }}"
 
 # TODO: certbot

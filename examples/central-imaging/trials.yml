@@ -73,7 +73,7 @@ trials:
     active: True
     port_offset: 110
 
-  - full_name:  BOO Treatment Trial
+  - full_name:  Brain Oxygen Optimization in Severe Traumatic Brain Injury Trial
     short_name: BOOST
     study_id:   boost
     pis:
