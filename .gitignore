@@ -11,6 +11,8 @@ _secrets/*
 .vagrant/*
 ignore/*
 
+themes.rst
+
 
 __pycache__/
 build/
@@ -50,3 +52,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+/docs/source/themes.rst
