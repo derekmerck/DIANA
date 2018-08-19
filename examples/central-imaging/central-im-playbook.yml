@@ -1,4 +1,5 @@
 ---
+# $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b --skip-tags skip
 
 # Notes -- could also run trialist, snappass, guidmint apps as dokku apps
 
@@ -25,7 +26,6 @@
       role: splunk-docker
       splunk_password: "{{ service_password }}"
       splunk_use_data_container: False
-      splunk_data_dir: "{{ data_dir }}/splunk"
 
     # Pre-req service for DIANA-Watcher and Snappass
     - name: Redis
@@ -55,7 +55,7 @@
 
   pre_tasks:
 
-    # CREATE UPSTREAMS FOR NGINX
+    # Create upstreams for nginx
     - set_fact:
         config: "{{ lookup('file', trial_config, split_lines=False) | from_yaml }}"
     - set_fact:
@@ -69,7 +69,6 @@
       with_list: "{{ trials }}"
       loop_control:
         loop_var: trial
-
     - debug:
         msg: "{{ upstreams }}"
 
@@ -78,7 +77,7 @@
    # Installing this also links in the examples directory in config
     - name: front end
       role: diana-docker
-      diana_container_name: DIANA-trialist
+      diana_container_name: diana-trialist
       diana_workdir: /usr/share/source/diana/apps/trialist
       diana_command: "bash -c 'git pull && pip install -r requirements.txt && DIANA_TRIALIST_CONFIG=/usr/share/source/diana/examples/central-imaging/trials.yml python3 trialist.py'"
       diana_ports:
@@ -86,45 +85,49 @@
 
     - name: snappass
       role: snappass-docker
-      snappass_port:           5001
+      snappass_port:          5001
       snappass_redis_container_name:  redis
       snappass_redis_password: "{{ service_password }}"
-      snappass_redis_db:       3
-
-    - name: httpd
-      role: nginx-docker
-      nginx_upstreams:        "{{ upstreams }}"
-      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"  # should be 'www' for prod
-
-      # Run unsecured to install certs, then secure
-      nginx_secured:          False
-      nginx_secured_cert_dir: /opt/certs
-
-    - role: secured
-      secured_cert_type:   "selfsigned"
-      secured_common_name: "{{ common_name }}"
-      secured_host_name:   "{{ public_host_name }}.{{ common_name }}"
-      secured_admin_email: derek.merck@gmail.com
-      secured_org_name:    Central-Imaging
-
-    - name: httpd
-      role: nginx-docker
-      nginx_upstreams:        "{{ upstreams }}"
-      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"  # should be 'www' for prod
-      # Run unsecured to install certs, then secure
-      nginx_secured:          True
-      nginx_secured_cert_dir: /opt/certs
+      snappass_redis_db:      3
 
     - name: ftpd
       role: pureftpd-docker
       pftp_use_data_container: False
-      pftp_data_dir:         "{{ data_dir }}/ftp"
-      pftp_public_host:      "ftp.{{ common_name }}"
+      pftp_host_name:        "{{ public_host_name }}.{{ common_name }}"
       pftp_service_password: "{{ service_password }}"
 
-# TODO: certbot
-#    - name: certbot
-#      role: certbot <----??
+# First run only to bring up a secured nginx service
+#    - role: secured
+#      tags: secured
+#      secured_cert_type:      "selfsigned"
+#      secured_common_name:    "{{ common_name }}"
+#      secured_host_name:      "{{ public_host_name }}.{{ common_name }}"
+#      secured_admin_email:    "derek.merck@gmail.com"
+#      secured_org_name:       "Central Medical Imaging Registry"
+
+    - name: httpd
+      role: nginx-docker
+      tags: secured
+      nginx_upstreams:        "{{ upstreams }}"
+      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
+      nginx_secured:          True
+
+    - role: secured
+      tags: skip
+      secured_cert_type:      "certbot"
+      secured_common_name:    "{{ common_name }}"
+      secured_host_name:      "{{ public_host_name }}.{{ common_name }}"
+      secured_admin_email:    "derek.merck@gmail.com"
+      secured_org_name:       "Central Medical Imaging Registry"
+
+  post_tasks:
+
+    # Run unsecured/self-signed to install certs, then bounce to secure
+    # TODO: only when certbot-secured step is "changed"
+    - docker_container:
+        name: nginx
+        state: started
+        restart: yes
 
 
 ################################
@@ -139,7 +142,6 @@
     service_password: "passw0rd!"
     data_dir:         "/data"
     config_dir:       "/config"
-#    trial_config:     "{{ config_dir }}/diana/examples/central-imaging/trails.yml"
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
   tasks:
@@ -149,11 +151,6 @@
     - set_fact:
         trials: "{{ config.trials }}"
         trial_base_port: "{{ config.trial_base_port }}"
-
-#    - debug:
-#        msg: "{{ trial_base_port|int + item.port_offset|int + 1 }}"
-#      with_list: "{{ trials }}"
-
 
     - name: "Add queued orthancs for {{ trial.full_name }}"
       include_role:
