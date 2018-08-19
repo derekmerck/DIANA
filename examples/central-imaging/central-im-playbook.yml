@@ -7,7 +7,6 @@
 # TODO: Add user credentials to protect upload
 # TODO: Check FTP works
 # TODO: Check watcher moves data from file -> queue -> archive w anonymization
-# TODO: Install ssl role
 
 ################################
 # Setup databases
