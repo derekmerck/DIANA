@@ -3,10 +3,6 @@
 
 # Notes -- could also run trialist, snappass, guidmint apps as dokku apps
 
-# TODO: Add upload button -> /data dir
-# TODO: Add user credentials to protect upload
-# TODO: Check FTP works
-# TODO: Check watcher moves data from file -> queue -> archive w anonymization
 
 ################################
 # Setup databases
@@ -16,7 +12,7 @@
   tags: databases
 
   vars:
-    service_password: "passw0rd!"
+    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
     data_dir:         "/data"
     config_dir:       "/config"
 
@@ -25,16 +21,19 @@
       role: splunk-docker
       splunk_password: "{{ service_password }}"
       splunk_use_data_container: False
+      # TODO: Setup splunk to auto-generate indices and tokens
+      # TODO: Setup spunk to auto-add plugins
+      # TODO: Setup splunk to recieve docker logs and fix docker engine to use splunk as default logger
 
     # Pre-req service for DIANA-Watcher and Snappass
     - name: Redis
       role: redis-docker
       password: "{{ service_password }}"
-      # TODO: Add a data container or bind mount
+      # TODO: Redis: Add a data container or bind mount
 
     - name: Postgres
       role: matic-insurance.docker-postgres
-      # TODO: Add a data container or a bind mount option, fix pg10 to use encrypted pw
+      # TODO: Postgres: Add a data container or a bind mount option, fix pg10 to use encrypted pw
 
 
 ################################
@@ -45,11 +44,12 @@
   tags: internet
 
   vars:
-    public_host_name: "dev"  # 'www' for prod
-    common_name:      "central-imaging.com"
-    service_password: "passw0rd!"
+    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
     data_dir:         "/data"
     config_dir:       "/config"
+
+    common_name:      "central-imaging.com"
+    public_host_name: "{{  hostvars[inventory_hostname]['public_host_name'] | default('www') }}"
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
   pre_tasks:
@@ -73,7 +73,6 @@
 
   roles:
 
-   # Installing this also links in the examples directory in config
     - name: front end
       role: diana-docker
       diana_container_name: diana-trialist
@@ -81,6 +80,8 @@
       diana_command: "bash -c 'git pull && pip install -r requirements.txt && DIANA_TRIALIST_CONFIG=/usr/share/source/diana/examples/central-imaging/trials.yml python3 trialist.py'"
       diana_ports:
         - "5000:5000"
+    # TODO: Trialist: Add upload button -> /data dir
+    # TODO: Trialist: Add user credentials to protect upload
 
     - name: snappass
       role: snappass-docker
@@ -94,6 +95,7 @@
       pftp_use_data_container: False
       pftp_host_name:        "{{ public_host_name }}.{{ common_name }}"
       pftp_service_password: "{{ service_password }}"
+      # TODO: FTP: Check works
 
 # First run only to bring up a secured nginx service
 #    - role: secured
@@ -122,11 +124,11 @@
   post_tasks:
 
     # Run unsecured/self-signed to install certs, then bounce to secure
-    # TODO: only when certbot-secured step is "changed"
     - docker_container:
         name: nginx
         state: started
         restart: yes
+    # TODO: Secured: Restart nginx only when certbot-secured step changes certs
 
 
 ################################
@@ -138,9 +140,10 @@
   tags: trials
 
   vars:
-    service_password: "passw0rd!"
+    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
     data_dir:         "/data"
     config_dir:       "/config"
+
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
   tasks:
@@ -177,7 +180,7 @@
 
 
 ################################
-# Setup a DIANA-Workers (if needed)
+# Setup a diana-workers (if needed)
 ################################
 
 - name: Setup handlers
@@ -185,7 +188,7 @@
   tags: handlers
 
   vars:
-    service_password: "passw0rd!"
+    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
     data_dir:         "/data"
     config_dir:       "/config"
 
@@ -194,6 +197,7 @@
       role: diana-docker
       diana_container_name: diana-watcher
       diana_command: "python3 apps/cli/watcher.py {{ config_dir }}/diana/routes"
-
-      # TODO: when diana/routes is not empty
+      # TODO: Watcher: Check that it moves data from file -> queue -> archive w anonymization
+      # TODO: Watcher: when diana/routes is not empty
+      # TODO: Watcher: Bind to orthanc/config dir to force DEST updates
 

@@ -25,7 +25,7 @@ services:
       INITSYSTEM: "on"
     # For testing only - set WATCHER_CONFIG json for each device through the RESIN API
     env_file:
-      - dw_secrets.env
+      - secret-diana-watcher.env
     volumes:
       - "/etc/orthanc:/etc/orthanc"
 

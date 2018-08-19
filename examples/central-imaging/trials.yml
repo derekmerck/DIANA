@@ -1,7 +1,8 @@
-# Configuration docs for `diana-trialist`
+# Configuration for `diana-trialist`
 ---
+
 ############################
-# Trial info document
+# Trialist Info
 ############################
 
 title:   Central Imaging
@@ -37,10 +38,11 @@ credentials:
   - 744db2dcceeaa07f9c10a350be1bfafe  # hb
   - 63d26d25975513450adcd3e1d4b57bd8  # p3
 
+############################
+# Trial info array
+############################
+
 trials:
-############################
-# Trial info keys
-############################
 
   - full_name: Christianson Syndrome
     study_id:  christianson
