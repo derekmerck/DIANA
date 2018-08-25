@@ -6,26 +6,38 @@ Derek Merck
 Rhode Island Hospital and Brown University  
 Providence, RI  
  
-## `DIANA-lookup.py`
+## `diana-lookup.py`
 
-Wrapper command-line tool for Splunk query.
+Wrapper command-line tool for a _Splunk_ query.
 
 ```
-> python3 DIANA-lookup.py --query "index=dose_report" -e "-1d" -l now -i my_splunk -s secrets.yml
+> python3 diana-lookup.py --query "index=dose_report" -e "-1d" -l now -i my_splunk -s secrets.yml
 ```
 
 `secrets.yml` must have a section called "my_splunk" with keys suitable for creating
 an Splunk instance that can accept the query.
 
 
-## `DIANA-star.py`
+## `diana-pull.py`
+
+Wrapper command-line tool for an _Orthanc Proxy_ retrieve from modality.
+
+```
+> python3 pull-it.py -accession XYZ -series "thin * brain -p my_proxy -d my_pacs -s secrets.yml
+```
+
+`secrets.yml` must have a section called "my_proxy" with keys suitable for creating
+an Orthanc instance that knows about the remote "my_pacs".
+
+
+## `diana-star.py`
 
 Wrapper command-line tool to stand up a DIANA distributed worker node for pipeline data processing.
 
 
-## `DIANA-watcher.py`
+## `diana-watcher.py`
 
-Wrapper command-line tool to stand up a DIANA watcher node.  Can be configured with environment vars for remote/embedded deployment.
+Wrapper command-line tool to stand up a DIANA watcher daemon.  Can be configured with environment vars for remote/embedded deployment, a yml/json routing file, or a directory of python routes.
 
 
 ## `halibut.py`
@@ -74,17 +86,6 @@ Wrapper to configure and run a DoseReportHarvester daemon.
 $ python3 dose-monitor -q "gepacs" -j "dose_reports"
 ```
 
-
-## `pull-it.py`
-
-Wrapper command-line tool for Orthanc proxy retrieve from modality.
-
-```
-> python3 pull-it.py -accession XYZ -series "thin * brain -p my_proxy -d my_pacs -s secrets.yml
-```
-
-`secrets.yml` must have a section called "my_proxy" with keys suitable for creating
-an Orthanc instance that knows about the remote "my_pacs".
 
 
 License

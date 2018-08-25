@@ -4,3 +4,5 @@ from .smart_encode import SmartJSONEncoder
 from .dtinterval import DatetimeInterval
 from .dtinterval2 import DatetimeInterval as DatetimeInterval2
 from .observable import Event, ObservableMixin, Watcher
+
+from .import_tricks import merge_dicts_by_glob

@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from diana.daemon import DianaWatcher, DianaEventType
 from diana.daemon.factory import factory
-
+from diana.utils import merge_dicts_by_glob
 
 config_yml = \
 """
@@ -72,10 +72,12 @@ def parse_args():
 
     p = ArgumentParser(prog="DIANA-Watcher")
     group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument("-d", "--dir", default=None,
+                       help="Routing directory with python modules")
     group.add_argument("-c", "--config", default=None,
-                       help="Config file containing config dict" )
+                       help="Config file containing single-route indexer config dict as json or yaml" )
     group.add_argument("-e", "--env", default=None,
-                       help="Environment var containing json config dict")
+                       help="Environment var containing single-route indexer json config dict")
     p.add_argument("-t", "--testfire",
                    help="Test fire an event and exit", action="store_true")
     p.add_argument("-g", "--genconf",
@@ -93,46 +95,53 @@ if __name__ == "__main__":
     logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
     opts = {
-        "testfire": True
+        "dir": "/Users/derek/dev/DIANA/tests/test_routing"
     }
+
+    # config = yaml.load(config_yml)
 
     # opts = parse_args()
 
-    if opts.get('env'):
-        config_json = os.environ.get('env')
-        config = json.loads(config_json)
-    elif opts.get('config'):
-        fp = opts.get('config')
-        with open(fp) as f:
-            if fp.endswith('.json'):
-                config = json.load(f)
-            elif fp.endswith('.yml') or fp.endswith('.yaml'):
-                config = yaml.safe_load(f)
-            else:
-                raise TypeError("Unknown conf file type")
+    routes = {}
 
-    config = yaml.load(config_yml)
+    if opts.get('env') or opts.get('config'):
 
-    if opts.get('genconf'):
-        print( json.dumps(config, separators=[',',':']) )
-        exit()
+        if opts.get('env'):
+            config_json = os.environ.get('env')
+            config = json.loads(config_json)
+        elif opts.get('config'):
+            fp = opts.get('config')
+            with open(fp) as f:
+                if fp.endswith('.json'):
+                    config = json.load(f)
+                elif fp.endswith('.yml') or fp.endswith('.yaml'):
+                    config = yaml.safe_load(f)
+                else:
+                    raise TypeError("Unknown conf file type")
 
-    source = factory( **config['source']['pattern'] )
+        if opts.get('genconf'):
+            # dump sources, dests, and force config
+            print(json.dumps(config, separators=[',', ':']))
+            exit()
 
-    if config.get('force_config'):
-        update_config(**config.get('force_config'))
+        source = factory(**config['source']['pattern'])
+        dest = factory(**config['dest']['pattern'])
 
+        # Do not do a deep index (no pull), just anonymize results by line and put in index
+        routes[(source, DianaEventType.NEW_MATCH)]: \
+                partial(DianaWatcher.index_by_proxy, dest=dest,
+                                                retrieve=False,
+                                                anonymize=True)
 
-    dest = factory( **config['dest']['pattern'] )
+    if opts.get('dir'):
+        expr = os.path.join(opts.get('dir'), "*.py")
+        routes = merge_dicts_by_glob( expr, 'routing')
+        # logging.debug(routes)
+
     watcher = DianaWatcher()
+    watcher.routes = routes
 
-    # Do not do a deep index (no pull), just anonymize results by line and put in index
-    watcher.routes = {
-        (source, DianaEventType.NEW_MATCH):
-            partial(watcher.index_by_proxy, dest=dest,
-                                            retrieve=False,
-                                            anonymize=True)
-        }
+    logging.debug( watcher.routes )
 
     if opts.get('testfire'):
 

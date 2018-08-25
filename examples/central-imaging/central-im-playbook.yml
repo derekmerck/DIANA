@@ -1,7 +1,7 @@
 ---
 # $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b --skip-tags skip
 
-# Notes -- could also run trialist, snappass, guidmint apps as dokku apps
+# Notes -- could also run trialist, snappass, guidmint apps as dokku apps for easy update
 
 
 ################################

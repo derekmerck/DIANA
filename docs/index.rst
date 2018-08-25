@@ -8,6 +8,10 @@ DICOM Analytics and Archive (DIANA)
 
 .. important:: Documentation is in an inconsistent state and is being caught up.
 
+.. include:: source/diana.rst
+   :start-after: Overview
+   :end-before: Installation
+
 Components
 -------------------
 
