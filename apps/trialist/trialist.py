@@ -10,8 +10,6 @@ from jinja2 import FileSystemLoader, Environment
 # from bokeh.embed import components
 # from splunklib import client
 
-ALLOWED_EXTENSIONS = (['dcm', 'zip'])
-
 # In case DIANA is being run from folders
 # sys.path.append('../')
 # from ../get-a-guid import guid_api
@@ -21,7 +19,8 @@ __version__ = "0.2.1"
 app = Flask(__name__)
 # app.register_blueprint(guid_bp, url_prefix="/guid")
 app.config['SESSION_TYPE'] = 'filesystem'
-app.secret_key = 'super secret key'
+# Use a random secret key, we don't need to keep client info across runs
+app.secret_key = os.urandom(24)
 auth = HTTPBasicAuth()
 
 logger = logging.getLogger('Trialist')
@@ -51,6 +50,7 @@ def render_md(content, template='strapdown.html.j2', **kwargs):
     return render_template(template, **vars)
 
 
+ALLOWED_EXTENSIONS = (['dcm', 'zip'])
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
