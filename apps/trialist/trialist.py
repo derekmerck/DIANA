@@ -2,7 +2,7 @@ import os, logging
 from hashlib import md5
 import markdown
 import yaml
-from flask import Flask, render_template, Markup, abort, Blueprint, flash, request, redirect
+from flask import Flask, render_template, Markup, abort, Blueprint, flash, request, redirect, url_for
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.utils import secure_filename
 from jinja2 import FileSystemLoader, Environment
@@ -75,29 +75,35 @@ def upload_file(study_id):
 
     # logger.warning("Upload folder: {}".format(app.config['UPLOAD_FOLDER']))
 
-    redir_url = request.base_url.split("/")[:-2] + [study_id, "upload"]
-    redir_url = "/".join( redir_url )
-    logger.warning( redir_url )
+    upload_url = url_for('render_upload', study_id=study_id)
+
+    # redir_url = request.base_url.split("/")[:-2] + [study_id, "upload"]
+    # redir_url = "/".join( redir_url )
+    logger.warning( upload_url )
 
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part submitted')
-            return redirect(redir_url)
+            flash('Could not upload - No file part in submission')
+            return redirect(upload_url)
         file = request.files['file']
         if file.filename == '':
-            flash('No selected file')
-            return redirect(redir_url)
+            flash('Could not upload - No selected file')
+            return redirect(upload_url)
         if not allowed_file(file.filename):
-            flash('Not an allowed filer extension (.zip, .dcm)')
-            return redirect(redir_url)
+            flash('Could not upload - Not an allowed filer extension (.zip, .dcm)')
+            return redirect(upload_url)
         if file:
-            os.makedirs(os.path.join( app.config['UPLOAD_FOLDER'], study_id ), exist_ok=True )
-            file.save(os.path.join( app.config['UPLOAD_FOLDER'], study_id, secure_filename(file.filename)) )
-            flash('File uploaded')
-            return redirect(redir_url)
+            try:
+                os.makedirs(os.path.join( app.config['UPLOAD_FOLDER'], study_id ), exist_ok=True )
+                file.save(os.path.join( app.config['UPLOAD_FOLDER'], study_id, secure_filename(file.filename)) )
+                flash('File uploaded')
+            except PermissionError:
+                flash('Could not upload - Permission denied')
 
-    return redirect(redir_url)
+            return redirect(upload_url)
+
+    return redirect(upload_url)
 
 # @app.route('/<study_id>/stats')
 # def render_stats(study_id):

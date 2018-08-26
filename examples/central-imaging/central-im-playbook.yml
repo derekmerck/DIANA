@@ -122,7 +122,8 @@
       diana_command: >
         bash -c 'git pull &&
         pip install -r requirements.txt &&
-        gunicorn -w 4 -b 0.0.0.0:5000 trialist:app'
+        python3 trialist.py'
+#        gunicorn -w 4 -b 0.0.0.0:5000 trialist:app'
       diana_ports:
         - "5000:5000"
     # TODO: Trialist: Add user credentials to protect upload

@@ -15,7 +15,7 @@ Ann Arbor, MI
 ```
   
 - **Web Portal Upload** Collect your image data files onto a workstation.  Creating a single `.zip` archive is usually easier than selecting individual `.dcm` images. Click the `Choose Files` button below and select the `zip` or `dcm` files to submit, and then click `Submit`.
-  <form action = "http://localhost:5000/{{study_id}}/uploader" method = "POST" enctype = "multipart/form-data">
+  <form action = "uploader" method = "POST" enctype = "multipart/form-data">
     <input type = "file" name = "file" multiple />
     <input type = "submit" />
   </form>
