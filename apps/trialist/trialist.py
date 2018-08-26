@@ -75,25 +75,29 @@ def upload_file(study_id):
 
     # logger.warning("Upload folder: {}".format(app.config['UPLOAD_FOLDER']))
 
+    redir_url = request.base_url.split("/")[:-2] + [study_id, "upload"]
+    redir_url = "/".join( redir_url )
+    logger.warning( redir_url )
+
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part submitted')
-            return redirect('/{}/upload'.format(study_id))
+            return redirect(redir_url)
         file = request.files['file']
         if file.filename == '':
             flash('No selected file')
-            return redirect('/{}/upload'.format(study_id))
+            return redirect(redir_url)
         if not allowed_file(file.filename):
             flash('Not an allowed filer extension (.zip, .dcm)')
-            return redirect('/{}/upload'.format(study_id))
+            return redirect(redir_url)
         if file:
             os.makedirs(os.path.join( app.config['UPLOAD_FOLDER'], study_id ), exist_ok=True )
             file.save(os.path.join( app.config['UPLOAD_FOLDER'], study_id, secure_filename(file.filename)) )
             flash('File uploaded')
-            redirect('/{}/upload'.format(study_id))
+            redirect(redir_url)
 
-    return redirect('/{}/upload'.format(study_id))
+    return redirect(redir_url)
 
 # @app.route('/<study_id>/stats')
 # def render_stats(study_id):
