@@ -1,6 +1,7 @@
 ---
+
 # $ ansible-playbook -i test_inv.yml central-im-playbook.yml -b --skip-tags skip -t databases
-# $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b --skip-tags skip
+# $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b --skip-tags secured
 
 # Notes -- could also run trialist, snappass, guidmint apps as dokku apps for easy update
 
@@ -61,10 +62,8 @@
       # TODO: Redis: Add a data container or bind mount option
 
     # Pre-req service for large Orthanc databases
-    # This role has to match the config expected by `queued_orthancs` _exactly_ or that
-    #   role will recreate its preferred config (which is persistent via bind by default)
-    # If it does match, the postgres container can be discarded and recreated without loss
-    #   of data
+    # If this role doesn't match the config expected by the orthanc role w pg backend,
+    #  orthanc will re-create with preferred configuration
     # Create orthanc service user (default for orthanc_pg_user)
     - name: Postgres
       role: postgres-docker
@@ -78,7 +77,7 @@
 ################################
 
 - hosts: servers
-  tags: internet
+  tags:  frontend
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
@@ -135,7 +134,7 @@
       pftp_use_data_container: False
       pftp_host_name:        "{{ public_host_name }}.{{ common_name }}"
       pftp_service_password: "{{ service_password }}"
-      # TODO: FTP: Check works
+      # TODO: FTP: Check that this works
 
 # First run only to bring up a secured nginx service
 #    - role: secured
@@ -148,28 +147,26 @@
 
     - name: httpd
       role: nginx-docker
-      tags: secured
+      tags: unsecured
       nginx_upstreams:        "{{ upstreams }}"
       nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
       nginx_secured:          False
 
     - role: secured
-      tags: skip
+      tags: secured
       secured_cert_type:      "certbot"
       secured_common_name:    "{{ common_name }}"
       secured_host_name:      "{{ public_host_name }}.{{ common_name }}"
       secured_admin_email:    "derek.merck@gmail.com"
       secured_org_name:       "Central Medical Imaging Registry"
 
-  post_tasks: []
-
     # Run unsecured/self-signed to install certs, then bounce to secure
-    # - docker_container:
-    #    name: nginx
-    #    state: started
-    #    restart: yes
-    # TODO: Secured: Restart nginx only when certbot-secured step changes certs
-
+    - name: Secured nginx
+      role: nginx-docker
+      tags: secured
+      nginx_upstreams:        "{{ upstreams }}"
+      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
+      nginx_secured:          True
 
 ################################
 # Setup trails based on trials.yml
