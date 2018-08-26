@@ -13,8 +13,8 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
 
   roles:
     - name: Splunk
@@ -46,8 +46,8 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
 
     # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
     logger:           "splunk"
@@ -61,8 +61,16 @@
       # TODO: Redis: Add a data container or bind mount option
 
     # Pre-req service for large Orthanc databases
+    # This role has to match the config expected by `queued_orthancs` _exactly_ or that
+    #   role will recreate its preferred config (which is persistent via bind by default)
+    # If it does match, the postgres container can be discarded and recreated without loss
+    #   of data
+    # Create orthanc service user (default for orthanc_pg_user)
     - name: Postgres
       role: postgres-docker
+      postgres_use_data_container: False
+      postgres_user: "orthanc"
+      postgres_password: "{{ service_password }}"
 
 
 ################################
@@ -74,8 +82,8 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
 
     # Usually set by log configurator
     logger:           "splunk"
@@ -173,8 +181,8 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
 
     # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
     logger:           "splunk"
@@ -224,8 +232,8 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
 
     # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
     logger:           "splunk"
