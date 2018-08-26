@@ -2,6 +2,7 @@ pyyaml
 flask
 Flask-HTTPAuth
 flask-restplus
+gunicorn
 markdown
 jinja2
 numpy
