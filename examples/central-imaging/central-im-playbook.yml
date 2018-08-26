@@ -116,10 +116,15 @@
       role: diana-docker
       diana_container_name: diana-trialist
       diana_workdir: /usr/share/source/diana/apps/trialist
-      diana_command: "bash -c 'git pull && pip install -r requirements.txt && DIANA_TRIALIST_CONFIG=/usr/share/source/diana/examples/central-imaging/trials.yml python3 trialist.py'"
+      diana_extra_env:
+        DIANA_TRIALIST_CONFIG: /usr/share/source/diana/examples/central-imaging/trials.yml
+      diana_bind_data_dir: True
+      diana_command: >
+        bash -c 'git pull &&
+        pip install -r requirements.txt &&
+        gunicorn -w 4 -b 0.0.0.0:5000 trialist:app'
       diana_ports:
         - "5000:5000"
-    # TODO: Trialist: Add upload button -> /data dir
     # TODO: Trialist: Add user credentials to protect upload
 
     - name: snappass

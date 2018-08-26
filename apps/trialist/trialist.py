@@ -95,7 +95,7 @@ def upload_file(study_id):
             os.makedirs(os.path.join( app.config['UPLOAD_FOLDER'], study_id ), exist_ok=True )
             file.save(os.path.join( app.config['UPLOAD_FOLDER'], study_id, secure_filename(file.filename)) )
             flash('File uploaded')
-            redirect(redir_url)
+            return redirect(redir_url)
 
     return redirect(redir_url)
 

@@ -30,7 +30,7 @@ apps:
 
 trial_base_port: 42000
 
-upload_base_dir: "/data/pftp/"
+upload_base_dir: "/data/uploads"
 
 # Default credentials for uploading
 credentials:
