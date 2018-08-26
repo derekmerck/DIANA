@@ -1,7 +1,40 @@
 ---
+# $ ansible-playbook -i test_inv.yml central-im-playbook.yml -b --skip-tags skip -t databases
 # $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b --skip-tags skip
 
 # Notes -- could also run trialist, snappass, guidmint apps as dokku apps for easy update
+
+################################
+# Setup indexer
+################################
+
+- hosts: indexer
+  tags: indexer
+
+  vars:
+    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+
+  roles:
+    - name: Splunk
+      role: splunk-docker
+      splunk_password: "{{ service_password }}"
+      splunk_use_data_container: False
+      splunk_extra_indices: ['logging', 'dicom', 'remotes']
+      splunk_extra_toks:
+        logging_tok:
+          desc: Splunk logging service token
+          index: logging
+        remotes_tok:
+          desc: Splunk remote monitoring service token
+          index: remotes
+
+    - name: Docker-logging
+      role: splunk-docker-logging
+      splunk_logging_token: "{{ splunk_toks.logging_tok | default( hostvars[inventory_hostname]['splunk_logging_tok'] ) }}"
+    # TODO: Should just look the token up when needed, maybe add it if not there
+    # TODO: Sometimes need to manually turn on the hec receiver between steps to enable logging?
 
 
 ################################
@@ -13,27 +46,23 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "/data"
-    config_dir:       "/config"
+    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+
+    # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
+    logger:           "splunk"
 
   roles:
-    - name: Splunk
-      role: splunk-docker
-      splunk_password: "{{ service_password }}"
-      splunk_use_data_container: False
-      # TODO: Setup splunk to auto-generate indices and tokens
-      # TODO: Setup spunk to auto-add plugins
-      # TODO: Setup splunk to recieve docker logs and fix docker engine to use splunk as default logger
 
     # Pre-req service for DIANA-Watcher and Snappass
     - name: Redis
       role: redis-docker
       password: "{{ service_password }}"
-      # TODO: Redis: Add a data container or bind mount
+      # TODO: Redis: Add a data container or bind mount option
 
+    # Pre-req service for large Orthanc databases
     - name: Postgres
-      role: matic-insurance.docker-postgres
-      # TODO: Postgres: Add a data container or a bind mount option, fix pg10 to use encrypted pw
+      role: postgres-docker
 
 
 ################################
@@ -45,8 +74,11 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "/data"
-    config_dir:       "/config"
+    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+
+    # Usually set by log configurator
+    logger:           "splunk"
 
     common_name:      "central-imaging.com"
     public_host_name: "{{  hostvars[inventory_hostname]['public_host_name'] | default('www') }}"
@@ -111,7 +143,7 @@
       tags: secured
       nginx_upstreams:        "{{ upstreams }}"
       nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
-      nginx_secured:          True
+      nginx_secured:          False
 
     - role: secured
       tags: skip
@@ -121,13 +153,13 @@
       secured_admin_email:    "derek.merck@gmail.com"
       secured_org_name:       "Central Medical Imaging Registry"
 
-  post_tasks:
+  post_tasks: []
 
     # Run unsecured/self-signed to install certs, then bounce to secure
-    - docker_container:
-        name: nginx
-        state: started
-        restart: yes
+    # - docker_container:
+    #    name: nginx
+    #    state: started
+    #    restart: yes
     # TODO: Secured: Restart nginx only when certbot-secured step changes certs
 
 
@@ -141,8 +173,11 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "/data"
-    config_dir:       "/config"
+    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+
+    # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
+    logger:           "splunk"
 
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
@@ -189,8 +224,11 @@
 
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "/data"
-    config_dir:       "/config"
+    data_dir:         "{{  hostvars[inventory_hostname]['service_password'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['service_password'] | default('/config') }}"
+
+    # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
+    logger:           "splunk"
 
   roles:
     - name: diana

@@ -10,9 +10,13 @@ all:
       ansible_user: vagrant
       ansible_ssh_private_key_file: "~/dev/ansible/.vagrant/machines/default/virtualbox/private_key"
 
-      public_host_name: "dev"
+      public_host_name: "vagrant"
 
   children:
+
+    indexer:
+      hosts:
+        vagrant:
 
     databases:
       hosts:
@@ -24,5 +28,6 @@ all:
 
 
   vars:
-    service_password: passw0rd!
-
+    service_password: "passw0rd!"
+    config_dir:       "/config"
+    data_dir:         "/data"
