@@ -1,30 +1,29 @@
-import os
-import sys
-import logging
-import csv
+import os, logging
 from hashlib import md5
-import dateutil.parser
 import markdown
 import yaml
-from flask import Flask, render_template, Markup, abort, Blueprint
+from flask import Flask, render_template, Markup, abort, Blueprint, flash, request, redirect
 from flask_httpauth import HTTPBasicAuth
+from werkzeug.utils import secure_filename
 from jinja2 import FileSystemLoader, Environment
-from bokeh.plotting import figure, output_file, show
-from bokeh.embed import components
-from splunklib import client
+# from bokeh.plotting import figure, output_file, show
+# from bokeh.embed import components
+# from splunklib import client
+
+ALLOWED_EXTENSIONS = (['dcm', 'zip'])
 
 # In case DIANA is being run from folders
 # sys.path.append('../')
 # from ../get-a-guid import guid_api
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 app = Flask(__name__)
 # app.register_blueprint(guid_bp, url_prefix="/guid")
-
+app.config['SESSION_TYPE'] = 'filesystem'
+app.secret_key = 'super secret key'
 auth = HTTPBasicAuth()
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger('Trialist')
 
 # Super simple password check
@@ -52,6 +51,11 @@ def render_md(content, template='strapdown.html.j2', **kwargs):
     return render_template(template, **vars)
 
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 @app.route('/')
 def render_index():
     return render_md(pages['index'])
@@ -65,7 +69,32 @@ def render_upload(study_id):
     else:
         return render_md(pages['upload_' + study_id])
 
-#
+
+@app.route('/<study_id>/uploader', methods=['GET', 'POST'])
+def upload_file(study_id):
+
+    # logger.warning("Upload folder: {}".format(app.config['UPLOAD_FOLDER']))
+
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part submitted')
+            return redirect('/{}/upload'.format(study_id))
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect('/{}/upload'.format(study_id))
+        if not allowed_file(file.filename):
+            flash('Not an allowed filer extension (.zip, .dcm)')
+            return redirect('/{}/upload'.format(study_id))
+        if file:
+            os.makedirs(os.path.join( app.config['UPLOAD_FOLDER'], study_id ), exist_ok=True )
+            file.save(os.path.join( app.config['UPLOAD_FOLDER'], study_id, secure_filename(file.filename)) )
+            flash('File uploaded')
+            redirect('/{}/upload'.format(study_id))
+
+    return redirect('/{}/upload'.format(study_id))
+
 # @app.route('/<study_id>/stats')
 # def render_stats(study_id):
 #     if 'stats_'+study_id not in pages.keys():
@@ -166,10 +195,13 @@ def prerender(config_file):
 config_file = os.environ['DIANA_TRIALIST_CONFIG']
 config, pages = prerender(config_file)
 
+app.config['UPLOAD_FOLDER'] = config.get('upload_base_dir')
+
 md_logger = logging.getLogger("MARKDOWN")
 md_logger.setLevel(logging.WARNING)
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     logger.debug('Starting up DIANA Trialist server app')
     app.run(host="0.0.0.0")
 

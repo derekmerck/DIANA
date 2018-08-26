@@ -30,6 +30,8 @@ apps:
 
 trial_base_port: 42000
 
+upload_base_dir: "/data/pftp/"
+
 # Default credentials for uploading
 credentials:
   salt: "central-imaging"
@@ -51,6 +53,11 @@ trials:
       Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
     active: True
     port_offset: 200
+    mailto: |-
+      Prof. Eric Morrow
+      Christianson Syndrome Study
+      Brown University
+      Providence, RI
 
   - full_name: Progesterone for Treatment of Traumatic Brain Injury Clinical Trial
     short_name: ProTECT III
@@ -74,6 +81,7 @@ trials:
       By markedly increasing oxygen (O2) delivery to the traumatized brain, hyperbaric oxygen (HBO2) can reverse the lack of O2 that precipitates cellular energy failure and subsequent brain cell death.  The primary aim of this trial is to select the combination of HB02 treatment parameters that is most likely to improve the outcomes of patients with severe TBI.  This trial is supported and sponsored by the SIREN-NETT Network which is funded by the National Institutes of Neurologic Disease and Stroke.
     active: True
     port_offset: 110
+    mailto: SIREN
 
   - full_name:  Brain Oxygen Optimization in Severe Traumatic Brain Injury Trial
     short_name: BOOST
@@ -85,4 +93,5 @@ trials:
     url:
     active: True
     port_offset: 120
+    mailto: SIREN
 

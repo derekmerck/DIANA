@@ -5,13 +5,21 @@ There are several methods available for submitting a trial subject's imaging stu
 - **CD/DVD Delivery** Request a disk at your file room and have it shipped.
 
 ```
+{% if mailto=="SIREN" -%}
 SIREN/{{ short_name }} Clinical Coordination
 University of Michigan Hospital
 Ann Arbor, MI
+{%- else -%}
+{{ mailto }}
+{%- endif %}
 ```
   
-- **Web Portal Upload** _Coming_ Collect your image data files onto a workstation and create a single .zip archive. Click the "Upload" button below and select the archive for upload.
-
+- **Web Portal Upload** Collect your image data files onto a workstation.  Creating a single `.zip` archive is usually easier than selecting individual `.dcm` images. Click the `Choose Files` button below and select the `zip` or `dcm` files to submit, and then click `Submit`.
+  <form action = "http://localhost:5000/{{study_id}}/uploader" method = "POST" enctype = "multipart/form-data">
+    <input type = "file" name = "file" multiple />
+    <input type = "submit" />
+  </form>
+      
 - **FTP Upload** _Coming_ Collect your image data files onto a workstation as files or create a single zip archive.  Then, use an ftp client (like [Cyberduck][], or [WinSCP Portable][] if you cannot install applications) to log into the [ftp server][ftpd] and upload the zip archive.
 
 - **LifeImage** _Coming_ If your site participates in the LifeIMAGE network, you can send data directly from your PACS via a LifeIMAGE connection. From the LifeIMAGE directory, navigate to the `Rhode Island Hospital` destination and select the `SIREN-{{ short_name }}` service
