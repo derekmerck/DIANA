@@ -2,6 +2,7 @@
 Reads dixel meta and reports from or writes to a csv file
 """
 
+import random
 from csv import DictReader, DictWriter
 from typing import Union, Mapping
 from dateutil import parser as dtparser
@@ -103,8 +104,8 @@ class MetaCache(Pattern):
         self.cache[self.did(meta)] = meta
 
     def load(self, fp: str=None, level=DicomLevel.STUDIES, keymap: Mapping=None):
-        self.logger.debug("loading {}".format(os.path.split(fp)[-1]))
         fp = fp or self.location
+        self.logger.debug("loading {}".format(os.path.split(fp)[-1]))
 
         def remap_keys(item):
             ret = {}
@@ -183,6 +184,13 @@ class MetaCache(Pattern):
                             w[kk] = vv
 
                 writer.writerow(w)
+
+    def select_random(self, remove=True):
+        key = random.choice(tuple(self.cache.keys()))
+        dixel = self.get(key)
+        if remove:
+            self.remove(key)
+        return dixel
 
     def __len__(self):
         return len(self.cache.keys())

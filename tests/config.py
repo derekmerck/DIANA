@@ -9,7 +9,7 @@ def dev():
 def prod():
     os.environ['DIANA_BROKER']="redis://:D1anA!@rad_research:6379/1"
     os.environ['DIANA_RESULT']="redis://:D1anA!@rad_research:6379/2"
-    service_cfg = "secrets/lifespan_services.yml"
+    service_cfg = "_secrets/lifespan_services.yml"
     return service_cfg
 
 def set_services():

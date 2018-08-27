@@ -22,8 +22,9 @@ from ..utils import Pattern
 class Porter(object):
     source = attr.ib( type=Orthanc )
     proxy_domain = attr.ib( type=str )
-    dest = attr.ib( type=Pattern )
+    dest = attr.ib( type=Pattern, default=None )
     explode = attr.ib( default=None )
+    peer_dest = attr.ib( default=None, type=str )
     # anonymize = attr.ib( default=True )
 
     def run2(self, dixels: MetaCache):
@@ -34,11 +35,11 @@ class Porter(object):
                 self.move_item(e)
                 self.source.remove(e)
 
-    def get_item(self, d: Dixel) -> Dixel:
-        raise NotImplementedError
-
-    def move_item(self, d: Dixel) -> Dixel:
-        raise NotImplementedError
+    # def get_item(self, d: Dixel) -> Dixel:
+    #     raise NotImplementedError
+    #
+    # def move_item(self, d: Dixel) -> Dixel:
+    #     raise NotImplementedError
 
     # Original Proxy+FileHandler
     def run(self, dixels: MetaCache):
@@ -92,9 +93,12 @@ class ProxyGetMixin(object):
             return
 
         # Check and see if file already exists:
-        if self.dest.check(d):  # , fn_from="ShamAccession", explode=self.explode):
-            logging.debug("Skipping {} - already exists".format(d.meta["ShamAccession"]))
-            return
+        try:
+            if self.dest.check(d):  # , fn_from="ShamAccession", explode=self.explode):
+                logging.debug("Skipping {} - already exists".format(d.meta["ShamAccession"]))
+                return
+        except AttributeError:
+            logging.warning("Skipping dest check")
 
         if not self.source.check(d):
             # Need to retrieve it

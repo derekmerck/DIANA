@@ -244,6 +244,8 @@ class Orthanc(Pattern):
             # self.logger.debug(result)
             return item.update(result.pop())
 
+        self.logger.warning("No results returned")
+
 
     def find(self, q: Mapping, level: DicomLevel, domain: str, retrieve: bool=False):
 
