@@ -42,10 +42,10 @@ class GuidMint(object):
     max_date_offset = attr.ib( default=DEFAULT_MAX_DATE_OFFSET )
     hash_prefix_length = attr.ib( default=DEFAULT_HASH_PREFIX_LENGTH )
     logger = attr.ib( factory=logging.getLogger )
-    fernet_key = attr.ib( default=None, convert=Fernet )
+    fernet_key = attr.ib( factory=Fernet.generate_key )
 
     def hash(self, value):
-        return sha256(value.encode('utf-8'))
+        return sha256(value.encode('utf-8')).digest()
 
     def encrypt(self, value):
         if self.fernet_key:

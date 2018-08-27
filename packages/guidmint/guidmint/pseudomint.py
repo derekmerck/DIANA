@@ -95,11 +95,10 @@ class PseudoMint(GuidMint):
         value.sort()
         value = "".join(value)
 
-        candidate = b32encode( self.scramble(value) )
-        while not re.match(b"^[A-Z]{3}", candidate):
-            candidate = b32encode( self.scramble(value) )
-
-        candidate = candidate[:self.hash_prefix_length].decode().strip("=")
+        candidate = b32encode( self.hash(value) ).decode('utf8')
+        while not re.match(u"^[A-Z]{3}", candidate ):
+            candidate = b32encode( self.hash(candidate) ).decode('utf8')
+        candidate = candidate[:self.hash_prefix_length].strip("=")
         return candidate
 
     def pseudonym(self, guid, gender=None):
