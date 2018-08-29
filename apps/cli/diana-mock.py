@@ -4,10 +4,11 @@
 # Simulate a real-time DICOM source generator
 #
 # $ dicom-mock -s _secrets/lifespan_services.yml scanner -d mock -m CT -r 60
+# $ dicom-mock -S DIANA_SECRETS scanner -d mock -m CT -r 60
 #
 # Where secrets include an Orthanc destination named "mock"
 
-import random, time, logging
+import random, time, logging, os, json
 from datetime import datetime, timedelta
 from argparse import ArgumentParser
 import yaml
@@ -19,6 +20,7 @@ def parse_args():
 
     p = ArgumentParser(prog="DIANA-Mock")
     p.add_argument("-s", "--secrets",       default="secrets.yml")
+    p.add_argument("-S", "--secrets_env")
 
     subs = p.add_subparsers(dest="command")
 
@@ -75,9 +77,16 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     opts = parse_args()
 
-    secrets_fn = opts.secrets
-    with open(secrets_fn, 'r') as f:
-        secrets = yaml.load(f)
+
+    if opts.secrets_env:
+        json_str = os.environ.get(opts.secrets_env)
+        logging.debug(json_str)
+        secrets = yaml.load( json_str )
+
+    elif opts.secrets:
+        secrets_fn = opts.secrets
+        with open(secrets_fn, 'r') as f:
+            secrets = yaml.load(f)
 
     if opts.command == "scanner":
 
