@@ -17,18 +17,18 @@ Components
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    source/diana
    source/cli
-   source/diana-xarch
-   source/diana-docker
    source/reDIANA
    source/halibut
    source/guidmint
    source/get-a-guid
    source/trialist
+   ansible
+   docker
 
 
 
