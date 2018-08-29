@@ -28,7 +28,7 @@ from diana.daemon import FileIndexer
 
 def parse_args(args=None):
 
-    p = ArgumentParser("index-it")
+    p = ArgumentParser("DIANA-Indexer")
     p.add_argument("-l", "--location",      default="")
     p.add_argument("-r", "--redis_service", default="redis")
     p.add_argument("-s", "--secrets",       default="secrets.yml")

@@ -18,7 +18,7 @@ from diana.utils.dicom import DicomLevel
 
 def parse_args():
 
-    parser = ArgumentParser("pull-it")
+    parser = ArgumentParser("DIANA-Pull")
     parser.add_argument("-a", "--accession", required=True)
     parser.add_argument("-s", "--secrets", default="./secrets.yml")
 

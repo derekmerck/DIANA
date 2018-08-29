@@ -18,7 +18,7 @@ from diana.utils import DatetimeInterval
 
 
 def parse_args():
-    p = ArgumentParser("check-it")
+    p = ArgumentParser("DIANA-lookup")
     p.add_argument("-q", "--query",    required=True)
     p.add_argument("-e", "--earliest", default="-1d")
     p.add_argument("-l", "--latest",   default="now")
