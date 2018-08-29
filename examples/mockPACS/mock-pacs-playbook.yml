@@ -1,0 +1,39 @@
+---
+
+# $ ansible-playbook -i test_inv.yml mock-pacs-playbook.yml -b
+# $ ansible-playbook -i ../../_secrets/lifespan_inv.yml mock-pacs-playbook.yml -b --ask-sudo-pass --skip-tags deps
+
+################################
+# DIANA mockPACS
+################################
+
+- hosts: mock
+  tags:  receiver
+
+  vars:
+    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
+    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
+    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
+
+  roles:
+
+    - name: MockPACS
+      role: orthanc-docker
+      orthanc_container_name: mock
+      orthanc_user:     mock
+      orthanc_password: mock
+      orthanc_api_port: 2408
+      orthanc_max_pts:  50
+
+    - name: MockCTScanner0
+      role: diana-docker
+      diana_container_name: diana-mock
+      diana_command: >
+        bash -c 'git pull &&
+        pip install -r requirements.txt &&
+        pip install -e packages/diana &&
+        python3 apps/cli/diana-mock.py -S DIANA_SERVICES scanner -d mock -r 30'
+      diana_extra_env:
+        DIANA_SERVICES: "{{ {'mock': {'host': dockerhost_ip, 'port': 2408, 'user': 'mock', 'password': 'mock' } } | tojson | safe }}"
+
+
