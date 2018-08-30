@@ -61,7 +61,8 @@ class ObservableMixin(object):
 
                 toc = datetime.now()
                 if toc-tic < timedelta(seconds=self.polling_interval):
-                    time.sleep((toc-tic).seconds)
+                    # self.logger.debug("Sleeping {} secs".format(self.polling_interval - (toc-tic).seconds))
+                    time.sleep(self.polling_interval - (toc-tic).seconds)
 
         p = Process(target=poll)
         p.start()
@@ -79,6 +80,9 @@ class Watcher(object):
     @logger.default
     def get_logger(self):
         return logging.getLogger(__name__)
+
+    def add_routes(self, route: dict):
+        self.routes.update(route)
 
     def log_event(self, event):
         self.logger.debug(event)

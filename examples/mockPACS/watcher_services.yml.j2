@@ -1,0 +1,25 @@
+---
+# Service definitions for mockPACS monitor
+
+orthanc_proxy:
+  # Always on same device
+  host: "{{ dockerhost_ip }}"
+  port: 8999
+  password: "{{ service_password }}"
+  domains:
+    pacs: DIANASVC
+  query_domain: pacs
+  query_level: DicomLevel.STUDIES
+  query_dict:
+    ModalitiesInStudy: ""
+    StudyDescription: ""
+  query_discovery_period: 300
+  polling_interval: 120
+
+splunk:
+  # May be anywhere
+  host: "{{ hostvars[ groups['indexer'][0] ]['ansible_host'] }}"
+  default_index: remotes
+  default_token: remotes_tok
+  hec_tokens:
+    remotes_tok: "1b67778c-0b1d-4df9-8142-5c726e74b053"

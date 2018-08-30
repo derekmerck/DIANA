@@ -27,8 +27,9 @@ class DianaEventType(Enum):
 @attr.s
 class DianaWatcher(Watcher):
 
-    def move(self, event, dest, remove=False):
-        self.logger.debug("Moving item")
+    @classmethod
+    def move(cls, event, dest, remove=False):
+        cls.logger.debug("Moving item")
         item = event.event_data
         source = event.event_source
 
@@ -38,10 +39,11 @@ class DianaWatcher(Watcher):
                 source.remove(item)
             return dest.put(item)
         except DicomFormatError as e:
-            self.logger.error(e)
+            cls.logger.error(e)
 
     # TODO: Annotate with "anonymized_from" meta for alerts
-    def anonymize_and_move(self, event, dest, remove=False):
+    @classmethod
+    def anonymize_and_move(cls, event, dest, remove=False):
         oid = event.event_data
         source = event.event_source
 
@@ -53,14 +55,16 @@ class DianaWatcher(Watcher):
         item = dest.put(item)
         return item
 
-    def index(self, event, dest):
+    @classmethod
+    def index(cls, event, dest):
         item = event.event_data
         source = event.event_source
 
         item = source.get(item, view="tags")
         return dest.put(item)
 
-    def index_by_proxy(self, event, dest,
+    @classmethod
+    def index_by_proxy(cls, event, dest,
                        anonymize=False,
                        retrieve=False,
                        token=None,
@@ -69,6 +73,8 @@ class DianaWatcher(Watcher):
         item = event.event_data  # This should be a Dixel if a proxied return
         source = event.event_source
 
+        # self.logger.debug("Received event with {} from {}".format(item, source))
+
         if retrieve:
             item = source.find(item, retrieve=True)
             item = source.get(item, view="tags")
@@ -76,18 +82,18 @@ class DianaWatcher(Watcher):
 
         if anonymize:
 
-            self.logger.debug(item)
-
+            cls.logger.debug(item)
             item.meta['AccessionNumber'] = md5(item.meta['AccessionNumber'].encode('UTF8')).hexdigest()
             item.meta['PatientID']       = md5(item.meta['PatientID'].encode('UTF8')).hexdigest()
             item.meta['StudyInstanceUID']= DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)
 
         return dest.put(item, token=token, index=index, host=event.event_source.location)
 
-    def unpack_and_put(self, event, dest, remove=False):
+    @classmethod
+    def unpack_and_put(cls, event, dest, remove=False):
         item_fp = event.event_data
 
-        self.logger.debug("Unzipping {}".format(item_fp))
+        cls.logger.debug("Unzipping {}".format(item_fp))
 
         try:
             with zipfile.ZipFile(item_fp) as z:
@@ -95,13 +101,13 @@ class DianaWatcher(Watcher):
                     if not os.path.isdir(filename):
                         # read the file
                         with z.open(filename) as f:
-                            self.logger.debug("Uploading {}".format(filename))
+                            cls.logger.debug("Uploading {}".format(filename))
                             item = Dixel(file=f)
                             dest.send(item)
             if remove:
                 os.remove(item_fp)
         except zipfile.BadZipFile as e:
-            self.logger.error(e)
+            cls.logger.error(e)
 
 
 
@@ -153,13 +159,20 @@ class ObservableOrthancProxy(ObservableMixin, Orthanc):
 
     @dt_interval.default
     def set_dt_interval(self):
-        return DatetimeInterval(timedelta(seconds=self.query_discovery_period))
+        return DatetimeInterval(timedelta(seconds=-self.query_discovery_period))
 
     def changes(self):
         q = {}
+
+        if False:
+            # Deep review loop
+            next(self.dt_interval)
+        else:
+            # Always use current as latest in dt inverval
+            self.dt_interval = self.set_dt_interval()
+
         d, t0 = dicom_strftime2(self.dt_interval.earliest)
         _, t1 = dicom_strftime2(self.dt_interval.latest)
-        next( self.dt_interval )
         q['StudyDate'] = d
         q['StudyTime'] = "{}-{}".format(t0, t1)
         q.update( self.query_dict )
@@ -228,14 +241,7 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
         observer.start()
 
 
-if __name__ == "__main__":
-
-    from diana.utils import Event
-
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
+def test_anon_queue_routing(watcher:DianaWatcher):
 
     dcm_file =        ObservableDicomFile( location="/Users/derek/Desktop/dcm" )
     orthanc_queue =   ObservableOrthanc( password="passw0rd!" )
@@ -255,8 +261,6 @@ if __name__ == "__main__":
 
     splunk = Splunk()
 
-    watcher = DianaWatcher()
-    from functools import partial
     watcher.routes = {
         (dcm_file,      DianaEventType.INSTANCE_ADDED): partial(watcher.move,
                                                                 dest=orthanc_queue, remove=True),
@@ -273,4 +277,81 @@ if __name__ == "__main__":
 
     watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
 
+
+def test_proxied_indexer_route():
+    """
+    Use with examples/mockPACS configuration
+
+    # proxy must know about PACS modality and how it is named by PACS
+    # pacs must know about proxy name/addr and have permissions
+    """
+
+    # These are just complex service definitions (set w --service -source -dest)
+    orthanc = ObservableOrthancProxy(
+                        host="trusty64",
+                        port=8999,
+                        password="passw0rd!",
+                        domains={"mock": "WATCHER"},
+                        query_domain="mock",
+                        query_level=DicomLevel.STUDIES,
+                        query_dict={'ModalitiesInStudy': "",
+                                    'StudyDescription': ""},
+                        query_discovery_period=300,  # Check last 5 mins
+                        polling_interval=120)  # Every 2 mins
+
+    splunk = Splunk(    host="trusty64",
+                        default_index="remotes",
+                        default_token="remotes_tok",
+                        hec_tokens={"remotes_tok": "1b67778c-0b1d-4df9-8142-5c726e74b053"})
+
+    return set_proxied_indexer_route(orthanc, splunk)
+
+
+def set_uploading_route(source, dest):
+    pass
+
+
+def set_queuing_and_anonymization_route(source, dest):
+    pass
+
+
+def set_proxied_indexer_route(source, dest):
+    # Common routing option -- set with -r "proxied_index"
+
+    # Cast to objects
+    if type(source) == dict:
+        source = ObservableOrthancProxy(**source)
+    if type(dest) == dict:
+        dest = Splunk(**dest)
+
+    from functools import partial
+    routes = {
+        (source, DianaEventType.NEW_MATCH): partial(DianaWatcher.index_by_proxy,
+                                                    dest=dest )
+    }
+
+    return routes
+
+
+if __name__ == "__main__":
+
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
+
+    # Create watcher
+    watcher = DianaWatcher()
+
+    # Set with --routing "proxied_indexer"
+    routes = test_proxied_indexer_route()
+
+    # Merge routes by whatever mechanism
+    watcher.add_routes(routes)
     watcher.run()
+
+
+
+
+
+

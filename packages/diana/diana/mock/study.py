@@ -77,6 +77,14 @@ class MockInstance(Dixel):
         file_meta.MediaStorageSOPInstanceUID = "1.2.3"
         file_meta.ImplementationClassUID = "1.2.3.4"
 
+        # Wants all of these to be legit:
+        #   * (0002,0000) FileMetaInformationGroupLength, UL, 4
+        #   * (0002,0001) FileMetaInformationVersion, OB, 2
+        # X * (0002,0002) MediaStorageSOPClassUID, UI, N
+        # X * (0002,0003) MediaStorageSOPInstanceUID, UI, N
+        #   * (0002,0010) TransferSyntaxUID, UI, N
+        # X * (0002,0012) ImplementationClassUID, UI, N
+
         ds = pydicom.FileDataset(fn, self.pydicom_dataset(),
                                  file_meta=file_meta, preamble=b"\0" * 128)
 

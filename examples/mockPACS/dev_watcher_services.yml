@@ -1,0 +1,23 @@
+---
+# Service definitions for mockPACS monitor
+
+orthanc_proxy:
+  host: trusty64
+  port: 8999
+  password: "passw0rd!"
+  domains:
+    pacs: DIANASVC
+  query_domain: pacs
+  query_level: DicomLevel.STUDIES
+  query_dict:
+    'ModalitiesInStudy': ""
+    'StudyDescription': ""
+  query_discovery_period: 300
+  polling_interval: 120
+
+splunk:
+  host: trusty64
+  default_index: remotes
+  default_token: remotes_tok
+  hec_tokens:
+    remotes_tok: "1b67778c-0b1d-4df9-8142-5c726e74b053"

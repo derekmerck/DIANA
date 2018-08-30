@@ -10,6 +10,7 @@ from functools import partial
 from argparse import ArgumentParser
 from datetime import datetime
 from diana.daemon import DianaWatcher, DianaEventType
+from diana.daemon.watcher import set_proxied_indexer_route
 from diana.daemon.factory import factory
 from diana.utils import merge_dicts_by_glob
 
@@ -72,17 +73,26 @@ def parse_args():
 
     p = ArgumentParser(prog="DIANA-Watcher")
     group = p.add_mutually_exclusive_group(required=True)
+
+    group.add_argument("-s", "--services",       default="services.yml",
+                   help="Service configuration yaml file")
+    group.add_argument("-S", "--services_env",
+                   help="Service configuration environment var in yml format")
+
     group.add_argument("-d", "--dir", default=None,
                        help="Routing directory with python modules")
     group.add_argument("-c", "--config", default=None,
                        help="Config file containing single-route indexer config dict as json or yaml" )
-    group.add_argument("-e", "--env", default=None,
+    group.add_argument("-C", "--config_env", default=None,
                        help="Environment var containing single-route indexer json config dict")
     p.add_argument("-t", "--testfire",
                    help="Test fire an event and exit", action="store_true")
     p.add_argument("-g", "--genconf",
                    help="Generate a conf string from current configuration and exit",
                    action="store_true")
+
+    p.add_argument("-r", "--route", default=None, nargs=3,
+                   help="Single route configuration by name (route type, source svc, dest svc)")
 
     return p.parse_args()
 
@@ -95,8 +105,38 @@ if __name__ == "__main__":
     logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
     opts = {
-        "dir": "/Users/derek/dev/DIANA/tests/test_routing"
+        "services": "/Users/derek/dev/DIANA/examples/mockPACS/dev_watcher_services.yml",
+        "route": ['proxied_index', 'orthanc_proxy', 'splunk']
     }
+
+    watcher = DianaWatcher()
+
+    services = {}
+    if opts.get('services'):
+        with open( opts.get('services') ) as f:
+            services = yaml.safe_load(f)
+    elif opts.get('services_env'):
+        services = yaml.safe_load( os.environ.get(opts.get('services_env')))
+
+    if opts.get('route'):
+        if not services:
+            raise EnvironmentError("Simple 'route' option requires a service definition")
+        # Single route by name
+        route_name, source_name, dest_name = opts.get('route')
+
+        if route_name == "proxied_index":
+            source_kwargs = services.get(source_name)
+            dest_kwargs = services.get(dest_name)
+            route = set_proxied_indexer_route(source_kwargs, dest_kwargs)
+            watcher.add_routes(route)
+
+    watcher.run()
+
+    exit()
+
+
+
+
 
     # config = yaml.load(config_yml)
 
@@ -106,9 +146,9 @@ if __name__ == "__main__":
 
     if opts.get('env') or opts.get('config'):
 
-        if opts.get('env'):
-            config_json = os.environ.get('env')
-            config = json.loads(config_json)
+        if opts.get('config_env'):
+            config_json = os.environ.get(opts.get('config_env'))
+            config = yaml.load(config_json)
         elif opts.get('config'):
             fp = opts.get('config')
             with open(fp) as f:

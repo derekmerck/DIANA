@@ -19,8 +19,10 @@ from diana.mock import MockStudy
 def parse_args():
 
     p = ArgumentParser(prog="DIANA-Mock")
-    p.add_argument("-s", "--secrets",       default="secrets.yml")
-    p.add_argument("-S", "--secrets_env")
+    p.add_argument("-s", "--secrets",       default="secrets.yml",
+                   help="Service configuration yaml file")
+    p.add_argument("-S", "--secrets_env",
+                   help="Service configuration env var (yml format)")
 
     subs = p.add_subparsers(dest="command")
 
