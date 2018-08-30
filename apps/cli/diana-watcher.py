@@ -94,20 +94,25 @@ def parse_args():
     p.add_argument("-r", "--route", default=None, nargs=3,
                    help="Single route configuration by name (route type, source svc, dest svc)")
 
-    return p.parse_args()
+    return vars( p.parse_args() )
 
 
 if __name__ == "__main__":
 
+    # Reduce junk output
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
-    opts = {
-        "services": "/Users/derek/dev/DIANA/examples/mockPACS/dev_watcher_services.yml",
-        "route": ['proxied_index', 'orthanc_proxy', 'splunk']
-    }
+    # opts = {
+    #     "services": "/Users/derek/dev/DIANA/examples/mockPACS/dev_watcher_services.yml",
+    #     "route": ['proxied_index', 'orthanc_proxy', 'splunk']
+    # }
+
+    opts = parse_args()
+
+    # logging.debug(opts)
 
     watcher = DianaWatcher()
 
@@ -119,16 +124,20 @@ if __name__ == "__main__":
         services = yaml.safe_load( os.environ.get(opts.get('services_env')))
 
     if opts.get('route'):
-        if not services:
-            raise EnvironmentError("Simple 'route' option requires a service definition")
         # Single route by name
+
+        if not services:
+            raise EnvironmentError("Simple single 'route' option requires a service definition (-sS)")
         route_name, source_name, dest_name = opts.get('route')
+        # logging.debug(route_name)
 
         if route_name == "proxied_index":
             source_kwargs = services.get(source_name)
             dest_kwargs = services.get(dest_name)
             route = set_proxied_indexer_route(source_kwargs, dest_kwargs)
             watcher.add_routes(route)
+        else:
+            raise ValueError('No loader for {}'.format(route_name))
 
     watcher.run()
 
