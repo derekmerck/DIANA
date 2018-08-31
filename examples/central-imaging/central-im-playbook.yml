@@ -35,7 +35,7 @@
       role: splunk-docker-logging
       splunk_logging_token: "{{ splunk_toks.logging_tok | default( hostvars[inventory_hostname]['splunk_logging_tok'] ) }}"
     # TODO: Should just look the token up when needed, maybe add it if not there
-    # TODO: Sometimes need to manually turn on the hec receiver between steps to enable logging?
+    # TODO: Shouldn't have to manually turn on the hec receiver between steps to enable logging?
 
 
 ################################

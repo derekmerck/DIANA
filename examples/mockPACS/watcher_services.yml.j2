@@ -16,7 +16,7 @@ orthanc_proxy:
   query_discovery_period: 300
   polling_interval: 120
 
-  config_fp: "/resources/orthanc.json"
+  config_fp: "/resources/dw-proxy/orthanc.json"
   extra_modalities:
     - name: pacs
       aet:  MOCK
@@ -29,4 +29,4 @@ splunk:
   default_index: remotes
   default_token: remotes_tok
   hec_tokens:
-    remotes_tok: "1b67778c-0b1d-4df9-8142-5c726e74b053"
+    remotes_tok: "{{ remotes_tok }}"

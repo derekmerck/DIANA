@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
     services = {}
     if opts.get('services_config'):
-        with open( opts.get('services') ) as f:
+        with open( opts.get('services_config') ) as f:
             services.update( yaml.safe_load(f) )
     if opts.get('services_env'):
         services.update( yaml.safe_load( os.environ.get(opts.get('services_env'))) )
