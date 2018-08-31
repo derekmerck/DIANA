@@ -143,9 +143,9 @@ if __name__ == "__main__":
 
     # Reduce junk output
     logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger("requests").setLevel(logging.WARNING)
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
+    # logging.getLogger("requests").setLevel(logging.WARNING)
+    # logging.getLogger("urllib3").setLevel(logging.WARNING)
+    # logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
     opts = parse_args()
 
