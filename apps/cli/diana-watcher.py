@@ -160,7 +160,7 @@ if __name__ == "__main__":
     watcher = DianaWatcher()
 
     services = {}
-    if opts.get('services'):
+    if opts.get('services_config'):
         with open( opts.get('services') ) as f:
             services.update( yaml.safe_load(f) )
     if opts.get('services_env'):
