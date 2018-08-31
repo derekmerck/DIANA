@@ -211,9 +211,9 @@ class OrthancReconfigurator():
             with open(self.fp, 'w') as f:
                 f.write(new_content)
 
-            if self.gateway:
-                self.logger.debug("Bouncing service")
-                self.gateway.reset()
+            # if self.gateway:
+            #     self.logger.debug("Bouncing service")
+            #     self.gateway.reset()
         else:
             self.logger.debug("No changes made")
 

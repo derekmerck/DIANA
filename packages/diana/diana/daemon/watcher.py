@@ -395,9 +395,3 @@ if __name__ == "__main__":
     # Merge routes by whatever mechanism
     watcher.add_routes(routes)
     watcher.run()
-
-
-
-
-
-

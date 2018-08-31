@@ -59,7 +59,7 @@
 
     remotes_tok:      "c6bf0374-216b-4b4a-bbcf-3366dde3072f"
 
-  # TODO: Won't have this for std image, have to configure it via -S services env var
+  # TODO: We won't have service config available for std image, will have to configure it manually through -S env
   pre_tasks:
 
   - name: Get dockerhost
@@ -71,7 +71,11 @@
       dockerhost_ip:    "{{ dockerhost_response.stdout }}"
     when: dockerhost_ip is not defined
 
-    # TODO: Won't have this for std image, have to configure it manually through env
+  - name: Ensure config dir
+    file:
+      name: /config/diana-watcher
+      state: directory
+
   - name: Copy service config
     template:
       src: watcher_services.yml.j2
@@ -87,15 +91,15 @@
     orthanc_aet: "DIANASVC"
 
     # TODO: Won't have this for std image, have to configure it manually through reconf func
-    orthanc_modalities:
-      pacs: '{{ ["MOCK", dockerhost_ip, 2424] }}'
+    # orthanc_modalities:
+    #   pacs: '{{ ["MOCK", dockerhost_ip, 2424] }}'
 
   - name: DIANA-Watcher
     role: diana-docker
     diana_container_name: diana-watcher
     diana_resources_dir: "{{ config_dir }}"
     # Can replace -s by -S env variable for reDIANA
-    diana_command1: >
+    diana_command: >
       bash -c 'git pull &&
       pip install -r requirements.txt &&
       pip install -e packages/diana &&
