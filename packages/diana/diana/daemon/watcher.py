@@ -6,6 +6,7 @@ import logging, zipfile, os
 from enum import Enum, auto
 from datetime import timedelta
 from hashlib import md5
+from functools import partial
 import attr
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
@@ -304,18 +305,63 @@ def test_proxied_indexer_route():
                         default_token="remotes_tok",
                         hec_tokens={"remotes_tok": "1b67778c-0b1d-4df9-8142-5c726e74b053"})
 
-    return set_proxied_indexer_route(orthanc, splunk)
+    return set_proxied_index_route(orthanc, splunk)
 
 
-def set_uploading_route(source, dest):
-    pass
+def set_upload_files_route(source, dest) -> dict:
+    # Common routing option -- set with -r "upload_files"
 
 
-def set_queuing_and_anonymization_route(source, dest):
-    pass
+    # Cast to objects
+    if type(source) == dict:
+        source = DicomFile(**source)
+    if type(dest) == dict:
+        dest = Orthanc(**dest)
+
+    routes = {
+        (source,      DianaEventType.INSTANCE_ADDED): partial(DianaWatcher.move,
+                                                                dest=dest, remove=True),
+        (source,      DianaEventType.STUDY_ADDED):    partial(DianaWatcher.unpack_and_put,
+                                                                dest=dest, remove=True)
+    }
+    return routes
 
 
-def set_proxied_indexer_route(source, dest):
+def set_anon_and_forward_route(source, dest) -> dict:
+    # Common routing option -- set with -r "anon_and_forward"
+
+
+    # Cast to objects
+    if type(source) == dict:
+        source = Orthanc(**source)
+    if type(dest) == dict:
+        dest = Orthanc(**dest)
+
+    routes = {
+        (source,  DianaEventType.INSTANCE_ADDED): partial(DianaWatcher.anonymize_and_move,
+                                                            dest=dest, remove=True)
+    }
+
+    return routes
+
+def set_index_tags_route(source, dest) -> dict:
+    # Common routing option -- set with -r "index_tags"
+
+    # Cast to objects
+    if type(source) == dict:
+        source = ObservableOrthancProxy(**source)
+    if type(dest) == dict:
+        dest = Splunk(**dest)
+
+    routes = {
+        (source, DianaEventType.NEW_SERIES): partial(DianaWatcher.index,
+                                                    dest=dest )
+    }
+
+    return routes
+
+
+def set_proxied_index_route(source, dest) -> dict:
     # Common routing option -- set with -r "proxied_index"
 
     # Cast to objects
@@ -324,10 +370,10 @@ def set_proxied_indexer_route(source, dest):
     if type(dest) == dict:
         dest = Splunk(**dest)
 
-    from functools import partial
     routes = {
         (source, DianaEventType.NEW_MATCH): partial(DianaWatcher.index_by_proxy,
-                                                    dest=dest )
+                                                    dest=dest,
+                                                    anonymize=True)
     }
 
     return routes

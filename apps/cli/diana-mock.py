@@ -64,7 +64,7 @@ class MockScanner(object):
             s = self.gen_study()
 
             for d in s.dixels():
-                logging.debug(d)
+                # logging.debug(d)
                 d.gen_file()
                 dest.put( d )
 

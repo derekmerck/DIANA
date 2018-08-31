@@ -1,7 +1,10 @@
 # Diana-agnostic API for orthanc, no endpoint or dixel dependencies
 
-import attr
+
+import json, logging, re
 from typing import Mapping
+from jsmin import jsmin
+import attr
 from .requester import Requester
 from diana.utils.dicom.dicom_level import DicomLevel
 
@@ -148,6 +151,84 @@ class Orthanc(Requester):
     def statistics(self):
         return self.get("statistics")
 
+    def reset(self):
+        return self.post("tools/reset")
+
     def changes(self, current=0, limit=10):
         params = { 'since': current, 'limit': limit }
         return self.get("changes", params=params)
+
+@attr.s
+class OrthancReconfigurator():
+    # Sometimes you just have to rewrite the Orthanc configuration after its already setup
+    fp = attr.ib("/etc/orthanc/orthanc.json")
+    gateway = attr.ib(type=Orthanc, default=None)
+
+    logger = attr.ib(init=False)
+
+    @logger.default
+    def get_logger(self):
+        return logging.getLogger(__name__)
+
+    def update(self, new_conf):
+        changed = False
+
+        self.logger.debug("Attempting to update orthanc config {}".format(self.fp))
+
+        with open(self.fp) as f:
+
+            content = f.read()
+            # logging.debug(content)
+
+            for key, value in new_conf.items():
+                pattern = r"\"{key}\" : (\{{.*?\}})".format(key=key)
+                # self.logger.debug(pattern)
+                match = re.search(pattern, content, re.DOTALL )
+
+                section_str = match.group(1)
+                self.logger.debug("Found {}".format(section_str))
+
+                # Strip comments
+                minified = jsmin(section_str)
+                # self.logger.debug(minified)
+
+                section =  json.loads( minified )
+                # self.logger.debug(section)
+                new_section = {**section, **value}
+
+                if section != new_section:
+                    changed=True
+
+                    new_section_str = "\"{key}\" : {data}".format(
+                        key=key,
+                        data=json.dumps(new_section)
+                    )
+                    new_content = re.sub(pattern, new_section_str, content, flags=re.DOTALL)
+                    self.logger.debug(new_content)
+
+        if changed:
+            self.logger.debug("Found changes, rewriting config")
+            with open(self.fp, 'w') as f:
+                f.write(new_content)
+
+            if self.gateway:
+                self.logger.debug("Bouncing service")
+                self.gateway.reset()
+        else:
+            self.logger.debug("No changes made")
+
+    def add_user(self, username, password):
+        new_config = {
+            'RegisteredUsers':
+                { username: password }
+        }
+        self.update( new_config )
+
+    def add_modality(self, name, aet, addr, port):
+        new_config = {
+            'DicomModalities': {
+                name: [ aet, addr, int(port) ]
+        }}
+        self.update( new_config )
+
+

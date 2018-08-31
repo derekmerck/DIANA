@@ -86,6 +86,16 @@ class Orthanc(Pattern):
         return gateway.Orthanc(host=self.host, port=self.port, path=self.path,
                                user=self.user, password=self.password)
 
+    config_fp = attr.ib( default="/etc/orthanc/orthanc.json" )
+    extra_modalities = attr.ib( default=[] )
+    extra_users = attr.ib( default=[] )
+
+    def __attrs_post_init__(self):
+         for m in self.extra_modalities:
+             self.add_modality(**m)
+         for u in self.extra_users:
+             self.add_user(**u)
+
     @property
     def location(self):
         return self.gateway._url()
@@ -298,8 +308,8 @@ class Orthanc(Pattern):
     def info(self):
         return self.gateway.statistics()
 
-    def info(self):
-        return self.gateway.post('reset')
+    def reset(self):
+        return self.gateway.reset()
 
     @property
     def instances(self):
@@ -319,6 +329,16 @@ class Orthanc(Pattern):
         oids = self.gateway.get("studies")
         for oid in oids:
             yield Dixel(meta={'oid': oid}, level=DicomLevel.STUDIES)
+
+    def add_user(self, username, password, config_fp=None):
+        config_fp = config_fp or self.config_fp
+        reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
+        reconfigurator.add_user(username, password)
+
+    def add_modality(self, name, aet, addr, port, config_fp=None):
+        config_fp = config_fp or self.config_fp
+        reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
+        reconfigurator.add_modality(name, aet, addr, port)
 
 #
 # @attr.s

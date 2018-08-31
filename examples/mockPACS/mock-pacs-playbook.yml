@@ -25,9 +25,9 @@
       orthanc_api_port: 2408
       orthanc_dicom_port: 2424
       orthanc_max_pts:  50
-      orthanc_aet: "MOCK"
+      orthanc_aet:     "MOCK"
 
-      # TODO: Watcher AET/ip/port must be added to PACS manually by site-adminsitrator
+      # NOTE: Watcher AET/ip/port must be added to PACS manually by site-adminsitrator
       orthanc_modalities:
         dianasvc: '{{ ["DIANASVC", dockerhost_ip, 8998] }}'
 
@@ -69,6 +69,7 @@
       dockerhost_ip:    "{{ dockerhost_response.stdout }}"
     when: dockerhost_ip is not defined
 
+    # TODO: Won't have this for std image, have to configure it manually through env
   - name: Copy service config
     template:
       src: watcher_services.yml.j2
@@ -83,13 +84,14 @@
     orthanc_dicom_port: 8998
     orthanc_aet: "DIANASVC"
 
-    # TODO: Won't have this for std image, have to configure it manually somehow
+    # TODO: Won't have this for std image, have to configure it manually through reconf func
     orthanc_modalities:
       pacs: '{{ ["MOCK", dockerhost_ip, 2424] }}'
 
   - name: DIANA-Watcher
     role: diana-docker
     diana_container_name: diana-watcher
+    diana_resources_dir: "{{ config_dir }}/dw-proxy"
     # Can replace -s by -S env variable for reDIANA
     diana_command: >
       bash -c 'git pull &&

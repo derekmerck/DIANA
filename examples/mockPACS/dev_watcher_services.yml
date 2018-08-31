@@ -14,6 +14,12 @@ orthanc_proxy:
     'StudyDescription': ""
   query_discovery_period: 300
   polling_interval: 120
+  config_fp: "/resources/orthanc.json"
+  extra_modalities:
+    - name: pacs
+      aet:  MOCK
+      addr: trusty64
+      port: 2424
 
 splunk:
   host: trusty64
