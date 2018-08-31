@@ -30,7 +30,7 @@ class DianaWatcher(Watcher):
 
     @classmethod
     def move(cls, event, dest, remove=False):
-        cls.logger.debug("Moving item")
+        logging.debug("Moving item")
         item = event.event_data
         source = event.event_source
 
@@ -40,7 +40,7 @@ class DianaWatcher(Watcher):
                 source.remove(item)
             return dest.put(item)
         except DicomFormatError as e:
-            cls.logger.error(e)
+            logging.error(e)
 
     # TODO: Annotate with "anonymized_from" meta for alerts
     @classmethod
@@ -83,7 +83,7 @@ class DianaWatcher(Watcher):
 
         if anonymize:
 
-            cls.logger.debug(item)
+            logging.debug(item)
             item.meta['AccessionNumber'] = md5(item.meta['AccessionNumber'].encode('UTF8')).hexdigest()
             item.meta['PatientID']       = md5(item.meta['PatientID'].encode('UTF8')).hexdigest()
             item.meta['StudyInstanceUID']= DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)
@@ -94,7 +94,7 @@ class DianaWatcher(Watcher):
     def unpack_and_put(cls, event, dest, remove=False):
         item_fp = event.event_data
 
-        cls.logger.debug("Unzipping {}".format(item_fp))
+        logging.debug("Unzipping {}".format(item_fp))
 
         try:
             with zipfile.ZipFile(item_fp) as z:
@@ -102,13 +102,13 @@ class DianaWatcher(Watcher):
                     if not os.path.isdir(filename):
                         # read the file
                         with z.open(filename) as f:
-                            cls.logger.debug("Uploading {}".format(filename))
+                            logging.debug("Uploading {}".format(filename))
                             item = Dixel(file=f)
                             dest.send(item)
             if remove:
                 os.remove(item_fp)
         except zipfile.BadZipFile as e:
-            cls.logger.error(e)
+            logging.error(e)
 
 
 
@@ -276,7 +276,7 @@ def test_anon_queue_routing(watcher:DianaWatcher):
         (orthanc_proxy, DianaEventType.ALERT):          logging.warning
     }
 
-    watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
+    # watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
 
 
 def test_proxied_indexer_route():
