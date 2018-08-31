@@ -1,7 +1,7 @@
 # Diana-agnostic API for orthanc, no endpoint or dixel dependencies
 
 
-import json, logging, re
+import json, logging, re, time
 from typing import Mapping
 from jsmin import jsmin
 import attr
@@ -213,6 +213,8 @@ class OrthancReconfigurator():
             if self.gateway:
                 self.logger.debug("Bouncing service")
                 self.gateway.reset()
+                # Give it a few seconds to come back
+                time.sleep(3.0)
         else:
             self.logger.debug("No changes made")
 

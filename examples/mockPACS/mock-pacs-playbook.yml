@@ -91,8 +91,8 @@
     orthanc_aet: "DIANASVC"
 
     # TODO: Won't have this for std image, have to configure it manually through reconf func
-    # orthanc_modalities:
-    #   pacs: '{{ ["MOCK", dockerhost_ip, 2424] }}'
+    orthanc_modalities:
+      pacs: '{{ ["MOCK", dockerhost_ip, 2424] }}'
 
   - name: DIANA-Watcher
     role: diana-docker
