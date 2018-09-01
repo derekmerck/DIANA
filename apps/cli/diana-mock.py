@@ -15,26 +15,23 @@ import yaml
 import attr
 from diana.apis import Orthanc
 from diana.mock import MockStudy
+from utils.arg_utils import *
 
 def parse_args():
 
     p = ArgumentParser(prog="DIANA-Mock")
-    p.add_argument("-s", "--secrets",       default="secrets.yml",
-                   help="Service configuration yaml file")
-    p.add_argument("-S", "--secrets_env",
-                   help="Service configuration env var (yml format)")
-
-    subs = p.add_subparsers(dest="command")
-
-    r = subs.add_parser("scanner")
-    r.add_argument("-n", "--name",           default="Mock scanner")
-    r.add_argument("-m", "--modality",       default="CT", choices=["CT", "MR", "CR"]),
-    r.add_argument("-r", "--rate",           default="10",
+    p.add_argument("-n", "--name",           default="Mock scanner")
+    p.add_argument("-m", "--modality",       default="CT", choices=["CT", "MR", "CR"]),
+    p.add_argument("-r", "--rate",           default="10",
                                              help="Average generation rate in studies/hour")
+    p.add_argument("-d", "--destination",    default="Destination service")
 
-    r.add_argument("-d", "--destination",    default="Destination service")
+    add_service_opts(p)
+    opts = vars( p.parse_args() )
+    opts['services'] = get_services(opts)
+    if opts['dump']:
+        dump_service_config(opts)
 
-    opts = p.parse_args()
     return opts
 
 @attr.s
@@ -78,23 +75,10 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
     opts = parse_args()
+    services = opts['services']
 
-
-    if opts.secrets_env:
-        json_str = os.environ.get(opts.secrets_env)
-        logging.debug(json_str)
-        secrets = yaml.load( json_str )
-
-    elif opts.secrets:
-        secrets_fn = opts.secrets
-        with open(secrets_fn, 'r') as f:
-            secrets = yaml.load(f)
-
-    if opts.command == "scanner":
-
-        D = Orthanc(**secrets[opts.destination])
-        M = MockScanner(name = opts.name,
-                        modality = opts.modality,
-                        rate = opts.rate)
-
-        M.run(dest=D)
+    D = Orthanc(**services[opts.get('destination')])
+    M = MockScanner(name = opts.get('name'),
+                    modality = opts.get('modality'),
+                    rate = opts.get('rate'))
+    M.run(dest=D)

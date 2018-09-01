@@ -15,6 +15,8 @@ from diana.daemon.watcher import set_proxied_index_route, set_upload_files_route
 from diana.daemon.factory import factory
 from diana.utils import merge_dicts_by_glob
 
+from utils.arg_utils import *
+
 #config_yml = \
 """
 # DIANA-Watcher config
@@ -115,10 +117,10 @@ def parse_args():
 
     p = ArgumentParser(prog="DIANA-Watcher")
 
-    p.add_argument("-s", "--services_config",
-                   help="Service configuration yaml file")
-    p.add_argument("-S", "--services_env",
-                   help="Service configuration environment var in yaml format")
+    # p.add_argument("-s", "--services_config",
+    #                help="Service configuration yaml file")
+    # p.add_argument("-S", "--services_env",
+    #                help="Service configuration environment var in yaml format")
 
     p.add_argument("-r", "--route", nargs=3,
                    help="Single route configuration as 3-tuple 'route source dest'")
@@ -132,11 +134,17 @@ def parse_args():
     # p.add_argument("-U", "--updates_env",
     #                help="Updates environment var for an available config file in yaml format")
 
-    p.add_argument("-d", "--dump",
-                   help="Dump yaml and json strings for the current configuration and exit",
-                   action="store_true")
+    # p.add_argument("-d", "--dump",
+    #                help="Dump yaml and json strings for the current configuration and exit",
+    #                action="store_true")
 
-    return vars( p.parse_args() )
+    add_service_opts(p)
+    opts = vars( p.parse_args() )
+    opts['services'] = get_services(opts)
+    if opts['dump']:
+        dump_service_config(opts)
+
+    return opts
 
 
 if __name__ == "__main__":
@@ -159,12 +167,14 @@ if __name__ == "__main__":
 
     watcher = DianaWatcher()
 
-    services = {}
-    if opts.get('services_config'):
-        with open( opts.get('services_config') ) as f:
-            services.update( yaml.safe_load(f) )
-    if opts.get('services_env'):
-        services.update( yaml.safe_load( os.environ.get(opts.get('services_env'))) )
+    services = opts.get('services')
+
+    # services = {}
+    # if opts.get('services_config'):
+    #     with open( opts.get('services_config') ) as f:
+    #         services.update( yaml.safe_load(f) )
+    # if opts.get('services_env'):
+    #     services.update( yaml.safe_load( os.environ.get(opts.get('services_env'))) )
 
     # updates = []
     # if opts.get('updates'):
@@ -182,13 +192,13 @@ if __name__ == "__main__":
     # if updates:
     #     do_updates(updates)
 
-    if opts.get('dump'):
-        # dump services for use as env
-        print("YAML:")
-        print(services)
-        print("JSON:")
-        print(json.dumps(services, separators=[',', ':']))
-        exit()
+    # if opts.get('dump'):
+    #     # dump services for use as env
+    #     print("YAML:")
+    #     print(services)
+    #     print("JSON:")
+    #     print(json.dumps(services, separators=[',', ':']))
+    #     exit()
 
     routes = {}
     if opts.get('route'):
