@@ -218,10 +218,10 @@ class OrthancReconfigurator():
         else:
             self.logger.debug("No changes made")
 
-    def add_user(self, username, password):
+    def add_user(self, name, password):
         new_config = {
             'RegisteredUsers':
-                { username: password }
+                { name: password }
         }
         self.update( new_config )
 

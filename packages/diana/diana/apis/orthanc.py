@@ -330,10 +330,10 @@ class Orthanc(Pattern):
         for oid in oids:
             yield Dixel(meta={'oid': oid}, level=DicomLevel.STUDIES)
 
-    def add_user(self, username, password, config_fp=None):
+    def add_user(self, name, password, config_fp=None):
         config_fp = config_fp or self.config_fp
         reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
-        reconfigurator.add_user(username, password)
+        reconfigurator.add_user(name, password)
 
     def add_modality(self, name, aet, host, port, config_fp=None):
         config_fp = config_fp or self.config_fp
