@@ -12,6 +12,11 @@
 - hosts: indexer
   tags: indexer
 
+  # TODO: Share security certs with splunk, if available
+  # ?? Always setup a self-signed first
+  #    Add splunk w self-signed
+  #    Add nginx w self-signed and get CA
+
   vars:
     service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
     data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"

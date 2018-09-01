@@ -215,70 +215,70 @@ if __name__ == "__main__":
 
     watcher.add_routes(routes)
     watcher.run()
-
-    exit()
-
-
-
-
-
-    # config = yaml.load(config_yml)
-
-    # opts = parse_args()
-
-    routes = {}
-
-    if opts.get('env') or opts.get('config'):
-
-        if opts.get('config_env'):
-            config_json = os.environ.get(opts.get('config_env'))
-            config = yaml.load(config_json)
-        elif opts.get('config'):
-            fp = opts.get('config')
-            with open(fp) as f:
-                if fp.endswith('.json'):
-                    config = json.load(f)
-                elif fp.endswith('.yml') or fp.endswith('.yaml'):
-                    config = yaml.safe_load(f)
-                else:
-                    raise TypeError("Unknown conf file type")
-
-        source = factory(**config['source']['pattern'])
-        dest = factory(**config['dest']['pattern'])
-
-        # Do not do a deep index (no pull), just anonymize results by line and put in index
-        routes[(source, DianaEventType.NEW_MATCH)]: \
-                partial(DianaWatcher.index_by_proxy, dest=dest,
-                                                retrieve=False,
-                                                anonymize=True)
-
-    if opts.get('dir'):
-        expr = os.path.join(opts.get('dir'), "*.py")
-        routes = merge_dicts_by_glob( expr, 'routing')
-        # logging.debug(routes)
-
-    watcher = DianaWatcher()
-    watcher.routes = routes
-
-    logging.debug( watcher.routes )
-
-    if opts.get('testfire'):
-
-        from diana.apis import Dixel
-        from diana.utils.dicom import DicomUIDMint, SuffixStyle
-        from diana.utils import Event
-
-        watcher.fire(Event(DianaEventType.NEW_MATCH,
-                           Dixel(meta={
-                                "AccessionNumber": "TEST-FIRE",
-                                "PatientID": "My Subject",
-                                "StudyDateTime": datetime.now(),
-                                'StudyDescription': "My Study",
-                                'StudyInstanceUID': DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)},
-                                 ),
-                           event_source=source))
-
-    else:
-        watcher.run()
+    #
+    # exit()
+    #
+    #
+    #
+    #
+    #
+    # # config = yaml.load(config_yml)
+    #
+    # # opts = parse_args()
+    #
+    # routes = {}
+    #
+    # if opts.get('env') or opts.get('config'):
+    #
+    #     if opts.get('config_env'):
+    #         config_json = os.environ.get(opts.get('config_env'))
+    #         config = yaml.load(config_json)
+    #     elif opts.get('config'):
+    #         fp = opts.get('config')
+    #         with open(fp) as f:
+    #             if fp.endswith('.json'):
+    #                 config = json.load(f)
+    #             elif fp.endswith('.yml') or fp.endswith('.yaml'):
+    #                 config = yaml.safe_load(f)
+    #             else:
+    #                 raise TypeError("Unknown conf file type")
+    #
+    #     source = factory(**config['source']['pattern'])
+    #     dest = factory(**config['dest']['pattern'])
+    #
+    #     # Do not do a deep index (no pull), just anonymize results by line and put in index
+    #     routes[(source, DianaEventType.NEW_MATCH)]: \
+    #             partial(DianaWatcher.index_by_proxy, dest=dest,
+    #                                             retrieve=False,
+    #                                             anonymize=True)
+    #
+    # if opts.get('dir'):
+    #     expr = os.path.join(opts.get('dir'), "*.py")
+    #     routes = merge_dicts_by_glob( expr, 'routing')
+    #     # logging.debug(routes)
+    #
+    # watcher = DianaWatcher()
+    # watcher.routes = routes
+    #
+    # logging.debug( watcher.routes )
+    #
+    # if opts.get('testfire'):
+    #
+    #     from diana.apis import Dixel
+    #     from diana.utils.dicom import DicomUIDMint, SuffixStyle
+    #     from diana.utils import Event
+    #
+    #     watcher.fire(Event(DianaEventType.NEW_MATCH,
+    #                        Dixel(meta={
+    #                             "AccessionNumber": "TEST-FIRE",
+    #                             "PatientID": "My Subject",
+    #                             "StudyDateTime": datetime.now(),
+    #                             'StudyDescription': "My Study",
+    #                             'StudyInstanceUID': DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)},
+    #                              ),
+    #                        event_source=source))
+    #
+    # else:
+    #     watcher.run()
 
 
