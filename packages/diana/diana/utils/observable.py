@@ -21,7 +21,7 @@ import attr
 @attr.s
 class Event(object):
     event_type = attr.ib( type=Enum )
-    event_data: Any = attr.ib()
+    event_data = attr.ib()
     event_source = attr.ib( default=None )  # Cannot pass these through mp queue, have to addend them later
     event_count = attr.ib( type=int, default=None )
     event_uid = attr.ib( init=False, factory=uuid.uuid4 )
