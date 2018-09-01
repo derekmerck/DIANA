@@ -220,11 +220,13 @@ class MockStudy(Dixel):
 
     @institution.default
     def set_institution(self):
-        return random.choices(list(INSTITUTIONS.keys()), INSTITUTIONS.values())[0]
+        return random.choice(list(INSTITUTIONS.keys()))
+        # return random.choices(list(INSTITUTIONS.keys()), INSTITUTIONS.values())[0]
 
     @modality.default
     def set_modality(self):
-        return random.choices(list(MODALITIES.keys()), MODALITIES.values() )[0]
+        return random.choice(list(MODALITIES.keys()))
+        # return random.choices(list(INSTITUTIONS.keys()), INSTITUTIONS.values())[0]
 
     @station_name.default
     def set_station_name(self):
@@ -247,8 +249,8 @@ class MockStudy(Dixel):
 
     @study_desc.default
     def set_study_desc(self):
-        contrast = random.choices(list(CONTRAST.keys()), CONTRAST.values())[0]
-        body_part = random.choices(list(BODY_PART.keys()), BODY_PART.values())[0]
+        contrast = random.choice(list(CONTRAST.keys()))
+        body_part = random.choice(list(BODY_PART.keys()))
         return "{} {} {}".format(self.modality, contrast, body_part)
 
     @stuid.default
@@ -296,7 +298,7 @@ class MockPatient(object):
 
     @guid.default
     def set_guid(self):
-        return mint.mint_guid(''.join(random.choices(string.ascii_uppercase + string.digits, k=16)))
+        return mint.mint_guid(''.join(random.sample(string.ascii_uppercase + string.digits, k=16)))
 
     @dob.default
     def set_dob(self):
