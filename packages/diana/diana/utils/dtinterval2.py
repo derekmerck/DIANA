@@ -12,8 +12,11 @@ def convert_timedelta(value):
 
 @attr.s
 class DatetimeInterval(object):
-    begin: Union[datetime, timedelta, None] = attr.ib(convert=convert_timedelta)
-    end: Union[datetime, timedelta, None] = attr.ib(convert=convert_timedelta)
+    # begin: Union[datetime, timedelta, None] = attr.ib(convert=convert_timedelta)
+    # end: Union[datetime, timedelta, None] = attr.ib(convert=convert_timedelta)
+
+    begin = attr.ib(convert=convert_timedelta)
+    end = attr.ib(convert=convert_timedelta)
 
     @begin.default
     @end.default
