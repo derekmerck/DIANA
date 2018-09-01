@@ -335,10 +335,10 @@ class Orthanc(Pattern):
         reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
         reconfigurator.add_user(username, password)
 
-    def add_modality(self, name, aet, addr, port, config_fp=None):
+    def add_modality(self, name, aet, host, port, config_fp=None):
         config_fp = config_fp or self.config_fp
         reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
-        reconfigurator.add_modality(name, aet, addr, port)
+        reconfigurator.add_modality(name, aet, host, port)
 
 #
 # @attr.s

@@ -225,10 +225,10 @@ class OrthancReconfigurator():
         }
         self.update( new_config )
 
-    def add_modality(self, name, aet, addr, port):
+    def add_modality(self, name, aet, host, port):
         new_config = {
             'DicomModalities': {
-                name: [ aet, addr, int(port) ]
+                name: [ aet, host, int(port) ]
         }}
         self.update( new_config )
 
