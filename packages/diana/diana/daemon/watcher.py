@@ -3,7 +3,7 @@ Subclassed Watcher implementing common DIANA workflows
 """
 
 import logging, zipfile, os
-from enum import Enum, auto
+from enum import Enum
 from datetime import timedelta
 from hashlib import md5
 from functools import partial
@@ -18,11 +18,11 @@ from diana.utils.dicom import DicomUIDMint, SuffixStyle, DicomLevel
 
 class DianaEventType(Enum):
 
-    INSTANCE_ADDED = auto()  # dcm file or orthanc instance
-    SERIES_ADDED = auto()    # orthanc series
-    STUDY_ADDED = auto()     # zip file or orthanc study
-    NEW_MATCH = auto()       # Dose report or other queried item match
-    ALERT = auto()           # mention item in warning log
+    INSTANCE_ADDED = "instance_added"  # dcm file or orthanc instance
+    SERIES_ADDED = "series_added"    # orthanc series
+    STUDY_ADDED = "study_added"     # zip file or orthanc study
+    NEW_MATCH =  "new_match"     # Dose report or other queried item match
+    ALERT = "alert"           # mention item in warning log
 
 
 @attr.s

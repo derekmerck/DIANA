@@ -11,7 +11,7 @@ Generic Multi-processing Event Routing Framework
 # TODO: something similar but "reviewable" for historical data pulls
 
 import logging, uuid, time
-from enum import Enum, auto
+from enum import Enum
 from typing import Any, Tuple, List
 from multiprocessing import Process, Queue
 from datetime import datetime, timedelta
@@ -117,9 +117,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     class EventType(Enum):
-        ADDED = auto()
-        CHANGED = auto()
-        REMOVED = auto()
+        ADDED = 1
+        CHANGED = 2
+        REMOVED = 3
 
     @attr.s(hash=False)
     class MockObserver(ObservableMixin):
