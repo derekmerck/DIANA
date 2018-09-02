@@ -10,37 +10,19 @@
 ################################
 
 - hosts: indexer
-  tags: indexer
-
-  # TODO: Share security certs with splunk, if available
-  # ?? Always setup a self-signed first
-  #    Add splunk w self-signed
-  #    Add nginx w self-signed and get CA
-
-  vars:
-    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
+  tags:  indexer
 
   roles:
-    - name: Splunk
-      role: splunk-docker
-      splunk_password: "{{ service_password }}"
-      splunk_use_data_container: False
-      splunk_extra_indices: ['logging', 'dicom', 'remotes']
-      splunk_extra_toks:
-        logging_tok:
-          desc: Splunk logging service token
-          index: logging
-        remotes_tok:
-          desc: Splunk remote monitoring service token
-          index: remotes
 
-    - name: Docker-logging
-      role: splunk-docker-logging
-      splunk_logging_token: "{{ splunk_toks.logging_tok | default( hostvars[inventory_hostname]['splunk_logging_tok'] ) }}"
-    # TODO: Should just look the token up when needed, maybe add it if not there
-    # TODO: Shouldn't have to manually turn on the hec receiver between steps to enable logging?
+    - name: Splunk
+      role: indexer
+      # Ensure certs are up to date
+      secured_cert_type: "certbot"
+      secured_cb_standalone: True
+      secured_cb_staging:    True
+
+      splunk_indices: [logging, remotes, dicom]
+      # Standard values for any tokens shoudl be set in inventory
 
 
 ################################
@@ -51,12 +33,8 @@
   tags: databases
 
   vars:
-    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
-
-    # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
     logger:           "splunk"
+    logging_opts:     "host: {{ indexer }}, token: {{ indexer.logging_tok }}, etc.."
 
   roles:
 

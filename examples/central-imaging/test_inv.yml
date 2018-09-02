@@ -17,6 +17,18 @@ all:
       hosts:
         vagrant:
 
+      vars:
+        splunk_indices: [logging, remotes, dicom]
+        splunk_hec_tokens:
+          logging_tok:
+            desc:  Splunk logging service token
+            index: logging
+            value: 5db5a04e-4ad3-4dfb-92f3-bfd0720a759d
+          remotes_tok:
+            desc:  Splunk remote monitoring service token
+            index: remotes
+            value: f12390eb-99b8-44fa-8a5c-0e83d8acd9d1
+
     databases:
       hosts:
         vagrant:
@@ -34,3 +46,4 @@ all:
     service_password: "passw0rd!"
     config_dir:       "/config"
     data_dir:         "/data"
+    common_name:      "diana"

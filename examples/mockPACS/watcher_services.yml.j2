@@ -25,8 +25,9 @@ orthanc_proxy:
 
 splunk:
   # May be anywhere
-  host: "{{ hostvars[ groups['indexer'][0] ]['ansible_host'] }}"
+  host: "dev.central-imaging.com"
   default_index: remotes
   default_token: remotes_tok
+  hec_protocol: https
   hec_tokens:
     remotes_tok: "{{ remotes_tok }}"
