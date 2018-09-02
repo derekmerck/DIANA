@@ -19,10 +19,10 @@ from diana.utils.dicom import DicomUIDMint, SuffixStyle, DicomLevel
 class DianaEventType(Enum):
 
     INSTANCE_ADDED = "instance_added"  # dcm file or orthanc instance
-    SERIES_ADDED = "series_added"    # orthanc series
-    STUDY_ADDED = "study_added"     # zip file or orthanc study
-    NEW_MATCH =  "new_match"     # Dose report or other queried item match
-    ALERT = "alert"           # mention item in warning log
+    SERIES_ADDED = "series_added"      # orthanc series
+    STUDY_ADDED = "study_added"        # zip file or orthanc study
+    NEW_MATCH =  "new_match"           # Dose report or other queried item match
+    ALERT = "alert"                    # mention item in warning log
 
 
 @attr.s
@@ -329,7 +329,6 @@ def set_upload_files_route(source, dest) -> dict:
 
 def set_anon_and_forward_route(source, dest) -> dict:
     # Common routing option -- set with -r "anon_and_forward"
-
 
     # Cast to objects
     if type(source) == dict:

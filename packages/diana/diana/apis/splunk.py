@@ -91,8 +91,10 @@ class Splunk(Pattern):
         # self.logger.debug(index)
         # self.logger.debug(_token)
 
+        _host = "{}@{}".format(host, self.hostname)
+
         # at $time $event was reported by $host for $index with credentials $auth
-        self.gateway.put_event( timestamp=timestamp, event=event, host=host, index=index, token=_token )
+        self.gateway.put_event( timestamp=timestamp, event=event, host=_host, index=index, token=_token )
 
         # Real auth description
         # headers = {'Authorization': 'Splunk {0}'.format(self.hec_tok[hec])}

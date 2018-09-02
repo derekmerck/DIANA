@@ -1,17 +1,21 @@
-import uuid, logging
+import uuid, logging, socket
 import attr
 import inspect
-from pprint import pprint
 
 
 @attr.s(cmp=False, hash=None)
 class Pattern(object):
     uid = attr.ib(factory=uuid.uuid4)
     logger = attr.ib(init=False)
+    hostname = attr.ib(init=False)
 
     @logger.default
     def get_logger(self):
         return logging.getLogger(__name__)
+
+    @hostname.default
+    def get_hostname(self):
+        return socket.gethostname()
 
     def __hash__(self):
         return hash(self.uid)
