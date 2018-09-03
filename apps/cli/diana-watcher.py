@@ -42,7 +42,7 @@ def get_route(name, src, dest):
     return route
 
 
-def parse_args(args):
+def parse_args():
 
     def add_routing_opts(p):
         p.add_argument("-r", "--route", nargs=3,
@@ -89,7 +89,7 @@ def parse_args(args):
     p = ArgumentParser(prog="DIANA-Watcher")
     add_service_opts(p)
     add_routing_opts(p)
-    opts = vars( p.parse_args(args) )
+    opts = vars( p.parse_args() )
     opts['services'] = get_services(opts)
     opts['routes']   = get_routes(opts)
     if opts['dump']:
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     # logging.getLogger("urllib3").setLevel(logging.WARNING)
     # logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
-    opts = parse_args(['--services_dir', "/Users/derek/Desktop/services", "--routes_dir", "/Users/derek/Desktop/routes"])
+    # opts = parse_args(['--services_dir', "/Users/derek/Desktop/services", "--routes_dir", "/Users/derek/Desktop/routes"])
 
     # opts = {
     #     "services": "/Users/derek/dev/DIANA/examples/mockPACS/dev_watcher_services.yml",
@@ -117,6 +117,7 @@ if __name__ == "__main__":
     # }
     # logging.debug(opts)
 
+    opts = parse_args()
     watcher = DianaWatcher()
 
     services = opts.get('services')
