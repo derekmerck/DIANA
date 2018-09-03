@@ -314,7 +314,7 @@ def set_upload_files_route(source, dest) -> dict:
 
     # Cast to objects
     if type(source) == dict:
-        source = DicomFile(**source)
+        source = ObservableDicomFile(**source)
     if type(dest) == dict:
         dest = Orthanc(**dest)
 
@@ -353,7 +353,7 @@ def set_index_tags_route(source, dest) -> dict:
         dest = Splunk(**dest)
 
     routes = {
-        (source, DianaEventType.NEW_SERIES): partial(DianaWatcher.index,
+        (source, DianaEventType.NEW_MATCH): partial(DianaWatcher.index,
                                                     dest=dest )
     }
 
