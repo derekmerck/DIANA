@@ -332,7 +332,7 @@ def set_anon_and_forward_route(source, dest) -> dict:
 
     # Cast to objects
     if type(source) == dict:
-        source = Orthanc(**source)
+        source = ObservableOrthanc(**source)
     if type(dest) == dict:
         dest = Orthanc(**dest)
 
@@ -348,7 +348,7 @@ def set_index_tags_route(source, dest) -> dict:
 
     # Cast to objects
     if type(source) == dict:
-        source = ObservableOrthancProxy(**source)
+        source = ObservableOrthanc(**source)
     if type(dest) == dict:
         dest = Splunk(**dest)
 
