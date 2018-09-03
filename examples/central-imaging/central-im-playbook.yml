@@ -14,34 +14,45 @@
 
   roles:
 
+    # indexer role includes a cert stage; (shutdown nginx and) ensure certs are up to date
     - name: Splunk
       role: indexer
-      # Ensure certs are up to date
-      secured_cert_type: "certbot"
+      # If using certbot
       secured_cb_standalone: True
-      secured_cb_staging:    True
+      secured_cb_staging:    False
 
       splunk_indices: [logging, remotes, dicom]
-      # Standard values for any tokens shoudl be set in inventory
+      # Persistent values for tokens should be set in inventory
+
+  # TODO: Don't secure if you don't have a _FQDN_
+  post_tasks:
+    - name: Add selfsigned certs to trusted
+      include: install_certs_play.yml
+      vars:
+        certs_loc: secrets/crt
+      when: cert_type == 'selfsigned'
 
 
 ################################
-# Setup databases
+# Setup backend
 ################################
 
 - hosts: databases
   tags: databases
 
   vars:
-    logger:           "splunk"
-    logging_opts:     "host: {{ indexer }}, token: {{ indexer.logging_tok }}, etc.."
+    logger:           "json-file"
+# splunk doesn't work with self signed certs
+#    log_opts:
+#      "splunk-token": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.value }}'
+#      "splunk-index": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.index }}'
+#      "splunk-url":   'https://{{ hostvars[groups["indexer"][0]].public_host_name }}.{{ common_name }}:8088'
 
   roles:
 
     # Pre-req service for DIANA-Watcher and Snappass
     - name: Redis
       role: redis-docker
-      password: "{{ service_password }}"
       # TODO: Redis: Add a data container or bind mount option
 
     # Pre-req service for large Orthanc databases
@@ -56,22 +67,13 @@
 
 
 ################################
-# Setup internet services
+# Setup front-end user services
 ################################
 
 - hosts: servers
   tags:  frontend
 
   vars:
-    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
-
-    # Usually set by log configurator
-    logger:           "splunk"
-
-    common_name:      "central-imaging.com"
-    public_host_name: "{{  hostvars[inventory_hostname]['public_host_name'] | default('www') }}"
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
   pre_tasks:
@@ -97,26 +99,28 @@
 
     - name: front end
       role: diana-docker
+      diana_docker_tag: amd64  # TODO: problem with manifesting latest (new interface?)
       diana_container_name: diana-trialist
-      diana_workdir: /usr/share/source/diana/apps/trialist
+      diana_workdir: /opt/diana/apps/trialist
       diana_extra_env:
-        DIANA_TRIALIST_CONFIG: /usr/share/source/diana/examples/central-imaging/trials.yml
+        DIANA_TRIALIST_CONFIG: /opt/diana/examples/central-imaging/trials.yml
       diana_bind_data_dir: True
       diana_command: >
-        bash -c 'git pull &&
-        pip install -r requirements.txt &&
-        python3 trialist.py'
+        bash -c 'git pull
+        && pip install -r requirements.txt
+        && pip install -e packages/guidmint packages/diana
+        && python3 trialist.py'
 #        gunicorn -w 4 -b 0.0.0.0:5000 trialist:app'
+    # TODO: Trialist: use gunicorn instead
       diana_ports:
         - "5000:5000"
     # TODO: Trialist: Add user credentials to protect upload
 
     - name: snappass
       role: snappass-docker
-      snappass_port:          5001
+      snappass_port: 5001
       snappass_redis_container_name:  redis
-      snappass_redis_password: "{{ service_password }}"
-      snappass_redis_db:      3
+      snappass_redis_db: 3
 
     - name: ftpd
       role: pureftpd-docker
@@ -125,37 +129,22 @@
       pftp_service_password: "{{ service_password }}"
       # TODO: FTP: Check that this works
 
-# First run only to bring up a secured nginx service
+    - name: httpd
+      role: nginx-docker
+      nginx_upstreams:        "{{ upstreams }}"
+      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
+      nginx_secured:          True
+
+# Update certs as required (once a month or so)
 #    - role: secured
 #      tags: secured
-#      secured_cert_type:      "selfsigned"
+#      secured_cert_type:      "certbot"
+#      secured_cb_standalone:  False  # Use webroot
 #      secured_common_name:    "{{ common_name }}"
 #      secured_host_name:      "{{ public_host_name }}.{{ common_name }}"
 #      secured_admin_email:    "derek.merck@gmail.com"
 #      secured_org_name:       "Central Medical Imaging Registry"
 
-    - name: httpd
-      role: nginx-docker
-      tags: unsecured
-      nginx_upstreams:        "{{ upstreams }}"
-      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
-      nginx_secured:          False
-
-    - role: secured
-      tags: secured
-      secured_cert_type:      "certbot"
-      secured_common_name:    "{{ common_name }}"
-      secured_host_name:      "{{ public_host_name }}.{{ common_name }}"
-      secured_admin_email:    "derek.merck@gmail.com"
-      secured_org_name:       "Central Medical Imaging Registry"
-
-    # Run unsecured/self-signed to install certs, then bounce to secure
-    - name: Secured nginx
-      role: nginx-docker
-      tags: secured
-      nginx_upstreams:        "{{ upstreams }}"
-      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
-      nginx_secured:          True
 
 ################################
 # Setup trails based on trials.yml
@@ -166,14 +155,14 @@
   tags: trials
 
   vars:
-    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
-
-    # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
-    logger:           "splunk"
-
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
+
+    # indexer_host:        '{{ hostvars[groups["indexer"][0]].public_host_name }}.{{ common_name }}'
+    indexer_host:        '{{ hostvars[groups["indexer"][0]].ansible_host }}'
+    indexer_protocol:    'http'
+    indexer_port:        8088
+    indexer_dicom_tok:   '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.dicom_tok.value }}'
+
 
   tasks:
 
@@ -217,19 +206,23 @@
   tags: handlers
 
   vars:
-    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
+    logger:           "json-file"
+#    log_opts:
+#      "splunk-token": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.value }}'
+#      "splunk-index": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.index }}'
+#      "splunk-url":   'https://{{ hostvars[groups["indexer"][0]].public_host_name }}.{{ common_name }}:8088'
 
-    # Usually set by log configurator, assumes splunk routing info is set in `daemon.json`
-    logger:           "splunk"
-
+  # TODO: Diana-Watcher: Check that it moves data from file -> queue -> archive w anonymization
   roles:
     - name: diana
       role: diana-docker
+      diana_docker_tag: amd64  # TODO: Diana-Docker: problem with manifesting latest (new interface?)
       diana_container_name: diana-watcher
-      diana_command: "python3 apps/cli/watcher.py {{ config_dir }}/diana/routes"
-      # TODO: Watcher: Check that it moves data from file -> queue -> archive w anonymization
-      # TODO: Watcher: when diana/routes is not empty
-      # TODO: Watcher: Bind to orthanc/config dir to force DEST updates
+      diana_resources_dir: "/{{ config_dir }}/routing"
+      diana_command: >
+        bash -c 'git pull
+        && pip install -r requirements.txt
+        && pip install -e packages/guidmint packages/diana
+        && python3 apps/cli/diana-watcher.py --services_dir /resources/services --routes_dir /resources/routes'
+
 

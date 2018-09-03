@@ -28,6 +28,10 @@ all:
             desc:  Splunk remote monitoring service token
             index: remotes
             value: f12390eb-99b8-44fa-8a5c-0e83d8acd9d1
+          dicom_tok:
+            desc:  Splunk logging service token
+            index: dicom
+            value: 650dc627-c4ff-4faa-b7f5-b77b813de619
 
     databases:
       hosts:
@@ -46,4 +50,5 @@ all:
     service_password: "passw0rd!"
     config_dir:       "/config"
     data_dir:         "/data"
+    cert_type:        "selfsigned"
     common_name:      "diana"
