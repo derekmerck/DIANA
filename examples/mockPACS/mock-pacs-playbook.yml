@@ -1,7 +1,7 @@
 ---
 
 # $ ansible-playbook -i test_inv.yml mock-pacs-playbook.yml -b
-# $ ansible-playbook -i ../../_secrets/lifespan_inv.yml mock-pacs-playbook.yml -b --ask-sudo-pass --skip-tags deps
+# $ ansible-playbook -i ../../_secrets/lifespan_inv.yml mock-pacs-playbook.yml -b --skip-tags deps
 
 ################################
 # Setup DIANA mockPACS
@@ -9,11 +9,6 @@
 
 - hosts: mock
   tags:  receiver
-
-  vars:
-    service_password: "{{  hostvars[inventory_hostname]['service_password'] | default('passw0rd') }}"
-    data_dir:         "{{  hostvars[inventory_hostname]['data_dir'] | default('/data') }}"
-    config_dir:       "{{  hostvars[inventory_hostname]['config_dir'] | default('/config') }}"
 
   roles:
 
@@ -27,19 +22,15 @@
       orthanc_max_pts:  50
       orthanc_aet:     "MOCK"
 
-      # NOTE: Watcher AET/ip/port must be added to PACS manually by site-adminsitrator
-      orthanc_modalities:
-        dianasvc: '{{ ["DIANASVC", dockerhost_ip, 8998] }}'
-
-
     - name: MockCTScanner0
       role: diana-docker
       diana_container_name: diana-mock
+      diana_docker_tag: amd64  # TODO: Diana-Docker: problem with manifesting latest (new interface?)
       diana_command: >
-        bash -c 'git pull &&
-        pip install -r requirements.txt &&
-        pip install -e packages/diana &&
-        python3 apps/cli/diana-mock.py -S DIANA_SERVICES scanner -d mock -r 30'
+        bash -c 'git pull
+        && pip install -r requirements.txt
+        && pip install -e packages/guidmint packages/diana
+        && python3 apps/cli/diana-mock.py -S DIANA_SERVICES -d mock -r 30'
       diana_extra_env:
         DIANA_SERVICES: "{{ {'mock': {'host': dockerhost_ip, 'port': 2408, 'user': 'mock', 'password': 'mock' } } | tojson | safe }}"
 
@@ -90,7 +81,7 @@
     orthanc_dicom_port: 8998
     orthanc_aet: "DIANASVC"
 
-    # TODO: Won't have this for std image, have to configure it manually through reconf func
+    # NOTE: Can set this up through service configuration
     # orthanc_modalities:
     #   pacs: '{{ ["MOCK", dockerhost_ip, 2424] }}'
 
@@ -104,4 +95,3 @@
       pip install -r requirements.txt &&
       pip install -e packages/diana &&
       python3 apps/cli/diana-watcher.py -s /config/services.yml -r proxied_index orthanc_proxy splunk'
-

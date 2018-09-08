@@ -5,7 +5,4 @@ flask-restplus
 gunicorn
 markdown
 jinja2
-numpy
-bokeh
 python-dateutil
-splunk-sdk

@@ -30,7 +30,8 @@ def parse_args():
     opts = vars( p.parse_args() )
     opts['services'] = get_services(opts)
     if opts['dump']:
-        dump_service_config(opts)
+        dump_config(opts, 'services')
+        exit()
 
     return opts
 

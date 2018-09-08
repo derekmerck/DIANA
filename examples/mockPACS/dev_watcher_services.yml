@@ -1,5 +1,5 @@
 ---
-# Service definitions for mockPACS monitor
+# Sample service definitions for mockPACS monitor
 
 orthanc_proxy:
   host: trusty64

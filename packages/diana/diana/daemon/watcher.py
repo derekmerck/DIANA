@@ -84,6 +84,7 @@ class DianaWatcher(Watcher):
         if anonymize:
 
             logging.debug(item)
+            # TODO: Should jitter datetime if it is important
             item.meta['AccessionNumber'] = md5(item.meta['AccessionNumber'].encode('UTF8')).hexdigest()
             item.meta['PatientID']       = md5(item.meta['PatientID'].encode('UTF8')).hexdigest()
             item.meta['StudyInstanceUID']= DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)
