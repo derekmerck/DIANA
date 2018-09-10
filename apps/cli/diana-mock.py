@@ -68,6 +68,8 @@ class MockScanner(object):
 
             ave_delay  = 60*60/self.rate
             this_delay = random.gauss(ave_delay, ave_delay*0.3)
+            if this_delay < 0.1:
+                this_delay = 0.1
             logging.info("Waiting {} secs".format(this_delay))
             time.sleep( this_delay )
 
