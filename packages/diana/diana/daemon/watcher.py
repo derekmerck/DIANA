@@ -248,41 +248,42 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
         observer.start()
 
 
-def test_anon_queue_routing(watcher:DianaWatcher):
-
-    dcm_file =        ObservableDicomFile( location="/Users/derek/Desktop/dcm" )
-    orthanc_queue =   ObservableOrthanc( password="passw0rd!" )
-
-    logging.debug(orthanc_queue)
-    logging.debug( orthanc_queue.info() )
-
-    orthanc_archive = ObservableOrthanc( port=8043, password="passw0rd!")
-
-    find_dose_reports = {
-        'level': DicomLevel.SERIES,
-        'StudyDateTimeInterval': (timedelta(minutes=-15),),
-        'Modality': "SR",
-        'SeriesDescription': "*DOSE*"
-    }
-    orthanc_proxy =   ObservableOrthancProxy( port=8044, domain="gepacs", changes_query=find_dose_reports )
-
-    splunk = Splunk()
-
-    watcher.routes = {
-        (dcm_file,      DianaEventType.INSTANCE_ADDED): partial(watcher.move,
-                                                                dest=orthanc_queue, remove=True),
-        (dcm_file,      DianaEventType.STUDY_ADDED):    partial(watcher.unpack_and_put,
-                                                                dest=orthanc_queue, remove=True),
-        (orthanc_queue, DianaEventType.INSTANCE_ADDED): partial(watcher.anonymize_and_move,
-                                                                dest=orthanc_archive, remove=True),
-        # (orthanc_archive, DianaEventType.STUDY_ADDED):  partial(watcher.index,
-        #                                                         dest=splunk),
-        # (orthanc_proxy, DianaEventType.NEW_MATCH):      partial(watcher.index_by_proxy,
-        #                                                         dest=splunk),
-        (orthanc_proxy, DianaEventType.ALERT):          logging.warning
-    }
-
-    # watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
+# def test_anon_queue_routing(watcher:DianaWatcher):
+#     logging.debug("Setting up anon queue route")
+#
+#     dcm_file =        ObservableDicomFile( location="/Users/derek/Desktop/dcm" )
+#     orthanc_queue =   ObservableOrthanc( password="passw0rd!" )
+#
+#     logging.debug(orthanc_queue)
+#     logging.debug( orthanc_queue.info() )
+#
+#     orthanc_archive = ObservableOrthanc( port=8043, password="passw0rd!")
+#
+#     find_dose_reports = {
+#         'level': DicomLevel.SERIES,
+#         'StudyDateTimeInterval': (timedelta(minutes=-15),),
+#         'Modality': "SR",
+#         'SeriesDescription': "*DOSE*"
+#     }
+#     orthanc_proxy =   ObservableOrthancProxy( port=8044, domain="gepacs", changes_query=find_dose_reports )
+#
+#     splunk = Splunk()
+#
+#     watcher.routes = {
+#         (dcm_file,      DianaEventType.INSTANCE_ADDED): partial(watcher.move,
+#                                                                 dest=orthanc_queue, remove=True),
+#         (dcm_file,      DianaEventType.STUDY_ADDED):    partial(watcher.unpack_and_put,
+#                                                                 dest=orthanc_queue, remove=True),
+#         (orthanc_queue, DianaEventType.INSTANCE_ADDED): partial(watcher.anonymize_and_move,
+#                                                                 dest=orthanc_archive, remove=True),
+#         # (orthanc_archive, DianaEventType.STUDY_ADDED):  partial(watcher.index,
+#         #                                                         dest=splunk),
+#         # (orthanc_proxy, DianaEventType.NEW_MATCH):      partial(watcher.index_by_proxy,
+#         #                                                         dest=splunk),
+#         (orthanc_proxy, DianaEventType.ALERT):          logging.warning
+#     }
+#
+#     # watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
 
 
 def test_proxied_indexer_route():
@@ -316,6 +317,7 @@ def test_proxied_indexer_route():
 
 def set_upload_files_route(source, dest) -> dict:
     # Common routing option -- set with -r "upload_files"
+    logging.debug("Setting up upload files route")
 
 
     # Cast to objects
@@ -334,7 +336,7 @@ def set_upload_files_route(source, dest) -> dict:
 
 
 def set_anon_and_forward_route(source, dest) -> dict:
-    # Common routing option -- set with -r "anon_and_forward"
+    logging.debug("Setting up anon and forward route")
 
     # Cast to objects
     if type(source) == dict:
@@ -350,7 +352,7 @@ def set_anon_and_forward_route(source, dest) -> dict:
     return routes
 
 def set_index_tags_route(source, dest) -> dict:
-    # Common routing option -- set with -r "index_tags"
+    logging.debug("Setting up index tags route")
 
     # Cast to objects
     if type(source) == dict:
@@ -367,7 +369,7 @@ def set_index_tags_route(source, dest) -> dict:
 
 
 def set_proxied_index_route(source, dest) -> dict:
-    # Common routing option -- set with -r "proxied_index"
+    logging.debug("Setting up proxied index route")
 
     # Cast to objects
     if type(source) == dict:
