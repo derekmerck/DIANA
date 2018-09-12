@@ -134,7 +134,7 @@ class ObservableOrthanc(ObservableMixin, Orthanc):
                     event_queue.append((DianaEventType.SERIES_ADDED, oid))
                 elif change['ChangeType'] == 'NewStudy':
                     oid = change['ID']
-                    event_queue.append((DianaEventType.STUEDY_ADDED, oid))
+                    event_queue.append((DianaEventType.STUDY_ADDED, oid))
             self.current_change = r['Last']
             done = r['Done']
 
