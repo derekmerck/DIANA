@@ -104,18 +104,9 @@ if __name__ == "__main__":
 
     # Reduce junk output
     logging.basicConfig(level=logging.DEBUG)
-    # logging.getLogger("requests").setLevel(logging.WARNING)
-    # logging.getLogger("urllib3").setLevel(logging.WARNING)
-    # logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
-
-    # opts = parse_args(['--services_dir', "/Users/derek/Desktop/services", "--routes_dir", "/Users/derek/Desktop/routes"])
-
-    # opts = {
-    #     "services": "/Users/derek/dev/DIANA/examples/mockPACS/dev_watcher_services.yml",
-    #     "route": ['proxied_index', 'orthanc_proxy', 'splunk'],
-    #     "dump": False
-    # }
-    # logging.debug(opts)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
     opts = parse_args()
     watcher = DianaWatcher()

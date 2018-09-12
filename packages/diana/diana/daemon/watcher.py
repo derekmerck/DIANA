@@ -58,10 +58,9 @@ class DianaWatcher(Watcher):
 
     @classmethod
     def index(cls, event, dest):
-        item = event.event_data
+        oid = event.event_data
         source = event.event_source
-
-        item = source.get(item, view="tags")
+        item = source.get(oid, level=DicomLevel.SERIES, view="tags")
         return dest.put(item)
 
     @classmethod
@@ -130,6 +129,12 @@ class ObservableOrthanc(ObservableMixin, Orthanc):
                 if change['ChangeType'] == 'NewInstance':
                     oid = change['ID']
                     event_queue.append( (DianaEventType.INSTANCE_ADDED, oid) )
+                elif change['ChangeType'] == 'NewSeries':
+                    oid = change['ID']
+                    event_queue.append((DianaEventType.SERIES_ADDED, oid))
+                elif change['ChangeType'] == 'NewStudy':
+                    oid = change['ID']
+                    event_queue.append((DianaEventType.STUEDY_ADDED, oid))
             self.current_change = r['Last']
             done = r['Done']
 
@@ -354,7 +359,7 @@ def set_index_tags_route(source, dest) -> dict:
         dest = Splunk(**dest)
 
     routes = {
-        (source, DianaEventType.NEW_MATCH): partial(DianaWatcher.index,
+        (source, DianaEventType.SERIES_ADDED): partial(DianaWatcher.index,
                                                     dest=dest )
     }
 
