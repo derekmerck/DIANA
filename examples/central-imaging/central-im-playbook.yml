@@ -1,36 +1,47 @@
 ---
+# central-imaging.com config
+# Derek Merck
+# Summer 2018
+#
+# For a local setup
+# $ ansible-playbook -i test_inv.yml central-im-playbook.yml --skip-tags deps -t databases
+#
+# For remote setup
+# $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b -t databases
 
-# $ ansible-playbook -i test_inv.yml central-im-playbook.yml -b --skip-tags skip -t databases
-# $ ansible-playbook -i ../../_secrets/do_inv.yml central-im-playbook.yml -b --skip-tags secured
+# TODO: Trialist, Snappass, GuidMint: apps could be configured as dokku apps for easy update
 
-# Notes -- could also run trialist, snappass, guidmint apps as dokku apps for easy update
+################################
+# Setup security
+################################
+
+- hosts: all
+  tags:  secured
+
+  roles:
+
+    - name: Setup ssl certificates for host
+      role: secured
+      secured_cb_staging: False
+      secured_cb_force:   True
+
 
 ################################
 # Setup indexer
 ################################
 
-- hosts: indexer
-  tags:  indexer
+- hosts: indexers
+  tags:  indexers
 
   roles:
 
-    # indexer role includes a cert stage; (shutdown nginx and) ensure certs are up to date
-    - name: Splunk
-      role: indexer
-      # If using certbot
-      secured_cb_standalone: True
-      secured_cb_staging:    False
-
+    - name: Setup Splunk
+      role: splunk-docker
+      splunk_use_data_container: False
+      splunk_secured: True
+      splunk_hec_enabled: True
       splunk_indices: [logging, remotes, dicom]
-      # Persistent values for tokens should be set in inventory
-
-  # TODO: Don't secure if you don't have a _FQDN_
-#  post_tasks:
-#    - name: Add selfsigned certs to trusted
-#      include: install_certs_play.yml
-#      vars:
-#        certs_loc: secrets/crt
-#      when: cert_type == 'selfsigned'
+      # Persistent values for splunk_hec_tokens should be set in inventory
 
 
 ################################
@@ -40,30 +51,30 @@
 - hosts: databases
   tags: databases
 
-  vars:
-    logger:           "json-file"
-# splunk doesn't work with self signed certs
-#    log_opts:
-#      "splunk-token": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.value }}'
-#      "splunk-index": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.index }}'
-#      "splunk-url":   'https://{{ hostvars[groups["indexer"][0]].public_host_name }}.{{ common_name }}:8088'
+  pre_tasks:
+    - name: Setup splunk docker logging
+      include_role:
+        name: splunk-docker
+        tasks_from: docker_logger_play
+      vars:
+        splunk_secured: True
 
   roles:
 
-    # Pre-req service for DIANA-Watcher and Snappass
-#    - name: Redis
-#      role: redis-docker
-#      # TODO: Redis: Add a data container or bind mount option
-
-    # Pre-req service for large Orthanc databases
+    # Postgres is a pre-req service for large Orthanc databases
     # If this role doesn't match the config expected by the orthanc role w pg backend,
-    #  orthanc will re-create with preferred configuration
-    # Create orthanc service user (default for orthanc_pg_user)
+    #  orthanc will re-create with preferred configuration (or --skip-tags deps)
     - name: Postgres
       role: postgres-docker
       postgres_use_data_container: False
+      # Have to include both options as a flag to create the user
       postgres_user: "orthanc"
       postgres_password: "{{ service_password }}"
+
+    # Redis is a pre-req service for distributed DIANA and Snappass
+#    - name: Redis
+#      role: redis-docker
+#      # TODO: Redis: Add a data container or bind mount option
 
 
 ################################
@@ -78,10 +89,12 @@
 
   pre_tasks:
 
-#    - include: copy_certbot_certs_play.yml
-#      vars:
-#        secured_cert_dir: "{{ config_dir }}/certs"
-#        secured_host_name: "{{ public_host_name }}.{{ common_name }}"
+    - name: Setup splunk docker logging
+      include_role:
+        name: splunk-docker
+        tasks_from: docker_logger_play
+      vars:
+        splunk_secured: True
 
     # Create upstreams for nginx
     - set_fact:
@@ -102,14 +115,19 @@
 
   roles:
 
+    - name: httpd
+      role: nginx-docker
+      nginx_upstreams:        "{{ upstreams }}"
+      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
+      nginx_secured:          True
+
     - name: front end
       role: diana-docker
-      diana_docker_tag: arm64v8  # TODO: problem with manifesting latest (new interface?)
+      diana_docker_tag: "{{ arch_tag }}"  # TODO: problem with manifesting latest
       diana_container_name: diana-trialist
       diana_workdir: /opt/diana/apps/trialist
       diana_extra_env:
         DIANA_TRIALIST_CONFIG: /opt/diana/examples/central-imaging/trials.yml
-      diana_bind_data_dir: True
       diana_command: >
         bash -c 'git pull
         && pip install -r ../../requirements.txt
@@ -136,22 +154,6 @@
 #      pftp_service_password: "{{ service_password }}"
 #      # TODO: FTP: Check that this works
 
-    - name: httpd
-      role: nginx-docker
-      nginx_upstreams:        "{{ upstreams }}"
-      nginx_host_name:        "{{ public_host_name }}.{{ common_name }}"
-      nginx_secured:          True
-
-# Update certs as required (once a month or so)
-#    - role: secured
-#      tags: secured
-#      secured_cert_type:      "certbot"
-#      secured_cb_standalone:  False  # Use webroot
-#      secured_common_name:    "{{ common_name }}"
-#      secured_host_name:      "{{ public_host_name }}.{{ common_name }}"
-#      secured_admin_email:    "derek.merck@gmail.com"
-#      secured_org_name:       "Central Medical Imaging Registry"
-
 
 ################################
 # Setup trails based on trials.yml
@@ -164,12 +166,20 @@
   vars:
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
 
-    indexer_host:        '{{ hostvars[groups["indexer"][0]].public_host_name }}.{{ common_name }}'
-    # indexer_host:        '{{ hostvars[groups["indexer"][0]].ansible_host }}'
+    indexer_host:        '{{ hostvars[groups["indexers"][0]].public_host_name }}.{{ common_name }}'
+    # indexer_host:        '{{ hostvars[groups["indexers"][0]].ansible_host }}'
     indexer_protocol:    'https'
     indexer_port:        8088
-    indexer_dicom_tok:   '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.dicom_tok.value }}'
+    indexer_dicom_tok:   '{{ hostvars[groups["indexers"][0]].splunk_hec_tokens.dicom_tok.value }}'
 
+  pre_tasks:
+
+    - name: Setup splunk docker logging
+      include_role:
+        name: splunk-docker
+        tasks_from: docker_logger_play
+      vars:
+        splunk_secured: True
 
   tasks:
 
@@ -185,9 +195,9 @@
       vars:
         qorth_base_name: "{{ trial.study_id }}"
         qorth_destination:
-          # orthanc_docker_image: jodogne/orthanc-plugins
-          orthanc_docker_image: derekmerck/orthanc
-          orthanc_docker_image_tag: or132-arm64v8
+          orthanc_docker_image: jodogne/orthanc-plugins
+          # orthanc_docker_image: derekmerck/orthanc
+          # orthanc_docker_image_tag: "or132-{{ arch_tag }}"  # TODO: problem with manifesting latest
           orthanc_pg_backend: True
           orthanc_use_data_container: False
           orthanc_ports:
@@ -195,8 +205,9 @@
             api:   "{{ trial_base_port|int + trial.port_offset|int + 3 }}"
 
         qorth_queue:
-          orthanc_docker_image: derekmerck/orthanc
-          orthanc_docker_image_tag: or132-arm64v8
+          orthanc_docker_image: jodogne/orthanc
+          # orthanc_docker_image: derekmerck/orthanc
+          # orthanc_docker_image_tag: "or132-{{ arch_tag }}"  # TODO: problem with manifesting latest
           orthanc_ports:
             dicom: "{{ trial_base_port|int + trial.port_offset|int + 0 }}"
             api:   "{{ trial_base_port|int + trial.port_offset|int + 1 }}"
@@ -204,6 +215,9 @@
       with_list: "{{ trials }}"
       loop_control:
         loop_var: trial
+
+# TODO: Confirm Watcher works
+# TODO: Add osimis viewer for each trial
 
 
 ################################
@@ -214,18 +228,20 @@
   hosts: servers
   tags: handlers
 
-  vars:
-    logger:           "json-file"
-#    log_opts:
-#      "splunk-token": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.value }}'
-#      "splunk-index": '{{ hostvars[groups["indexer"][0]].splunk_hec_tokens.logging_tok.index }}'
-#      "splunk-url":   'https://{{ hostvars[groups["indexer"][0]].public_host_name }}.{{ common_name }}:8088'
+  pre_tasks:
+
+    - name: Setup splunk docker logging
+      include_role:
+        name: splunk-docker
+        tasks_from: docker_logger_play
+      vars:
+        splunk_secured: True
 
   # TODO: Diana-Watcher: Check that it moves data from file -> queue -> archive w anonymization
   roles:
     - name: diana
       role: diana-docker
-      diana_docker_tag: amd64  # TODO: Diana-Docker: problem with manifesting latest (new interface?)
+      diana_docker_tag: "{{ arch_tag }}"  # TODO: problem with manifesting latest
       diana_container_name: diana-watcher
       diana_resources_dir: "/{{ config_dir }}/routing"
       diana_data_dir: "/data/ftp"
