@@ -30,9 +30,9 @@ class DianaWatcher(Watcher):
 
     @classmethod
     def move(cls, event, dest, remove=False):
-        logging.debug("Moving item")
         item = event.event_data
         source = event.event_source
+        logging.debug("Moving {}".format(item))
 
         try:
             item = source.get(item, view="file")
@@ -49,18 +49,20 @@ class DianaWatcher(Watcher):
         source = event.event_source
 
         item = source.get(oid, level=DicomLevel.INSTANCES)  # Get tags
-        # if item.meta.get('AnonymizedFrom'):
-        #     source.remove(item)
-        item = source.anonymize(item, remove=remove)
-        # item = source.get(item, view="file")
-        item = dest.put(item)
-        return item
+        item = source.anonymize(item, remove=remove)        # Returns dixel with file
+
+        logging.debug("Anonymizing and moving {}".format(item))
+
+        return dest.put(item)
 
     @classmethod
-    def index(cls, event, dest):
+    def index_series(cls, event, dest):
         oid = event.event_data
         source = event.event_source
         item = source.get(oid, level=DicomLevel.SERIES, view="tags")
+
+        logging.debug("Indexing {}".format(item))
+
         return dest.put(item)
 
     @classmethod
@@ -118,21 +120,18 @@ class ObservableOrthanc(ObservableMixin, Orthanc):
 
     def changes(self):
         event_queue = []
-
-        current = 0
         done = False
 
         while not done:
             r = self.gateway.changes(current=self.current_change)
             for change in r['Changes']:
-                # We are only interested interested in the arrival of new instances
                 if change['ChangeType'] == 'NewInstance':
                     oid = change['ID']
                     event_queue.append( (DianaEventType.INSTANCE_ADDED, oid) )
-                elif change['ChangeType'] == 'NewSeries':
+                elif change['ChangeType'] == 'StableSeries':
                     oid = change['ID']
                     event_queue.append((DianaEventType.SERIES_ADDED, oid))
-                elif change['ChangeType'] == 'NewStudy':
+                elif change['ChangeType'] == 'StableStudy':
                     oid = change['ID']
                     event_queue.append((DianaEventType.STUDY_ADDED, oid))
             self.current_change = r['Last']

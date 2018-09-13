@@ -73,6 +73,7 @@ class MockInstance(Dixel):
         # print("Setting file meta information...")
         # Populate required values for file meta information
         file_meta = pydicom.Dataset()
+        file_meta.FileMetaInformationGroupLength = 60 # Will be rewritten but must exist
         file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'  # CT
         file_meta.MediaStorageSOPInstanceUID = "1.2.3"
         file_meta.ImplementationClassUID = "1.2.3.4"
@@ -90,7 +91,7 @@ class MockInstance(Dixel):
 
         # print(ds)
         with NamedTemporaryFile() as f:
-            ds.save_as(filename=f.name)
+            ds.save_as(filename=f.name, write_like_original=True)
             self.file = f.read()
             # print(self.file)
 
@@ -343,5 +344,9 @@ if __name__ == "__main__":
                     d.series.ser_num,
                     d.inst_num)
             write_file(os.path.join(data_dir, fn), d)
+
+            # D = pydicom.read_file(os.path.join(data_dir, fn))
+            # # logging.debug(D.file_meta.FileMetaInformationGroupLength)
+            # logging.debug(D.file_meta)
 
 
