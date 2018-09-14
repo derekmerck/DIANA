@@ -89,12 +89,15 @@ class Orthanc(Pattern):
     config_fp = attr.ib( default="/etc/orthanc/orthanc.json" )
     extra_modalities = attr.ib( default=[] )
     extra_users = attr.ib( default=[] )
+    change_aet = attr.ib( default=None )
 
     def __attrs_post_init__(self):
          for m in self.extra_modalities:
              self.add_modality(**m)
          for u in self.extra_users:
              self.add_user(**u)
+         if self.change_aet:
+             self.update_aet( self.change_aet )
 
     @property
     def location(self):
@@ -329,6 +332,11 @@ class Orthanc(Pattern):
         oids = self.gateway.get("studies")
         for oid in oids:
             yield Dixel(meta={'oid': oid}, level=DicomLevel.STUDIES)
+
+    def update_aet(self, aet, config_fp=None):
+        config_fp = config_fp or self.config_fp
+        reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
+        reconfigurator.change_aet(aet)
 
     def add_user(self, name, password, config_fp=None):
         config_fp = config_fp or self.config_fp

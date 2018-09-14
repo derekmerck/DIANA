@@ -226,7 +226,6 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
                 event_data = wd_event.src_path
                 event_type = None
 
-
                 if wd_event.event_type == "created" and event_data.endswith(".zip"):
                     self.logger.debug("Found a zipped archive")
                     event_type = DianaEventType.STUDY_ADDED

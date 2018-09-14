@@ -218,6 +218,10 @@ class OrthancReconfigurator():
         else:
             self.logger.debug("No changes made")
 
+    def update_aet(self, aet):
+        new_config = { 'DicomAet': aet }
+        self.update(new_config)
+
     def add_user(self, name, password):
         new_config = {
             'RegisteredUsers':

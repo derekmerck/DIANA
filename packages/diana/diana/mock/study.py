@@ -316,17 +316,6 @@ def write_file(fn, instance):
     with open(fn, 'wb') as f:
         f.write( instance.file )
 
-    # print("Setting file meta information...")
-    # # Populate required values for file meta information
-    # file_meta = pydicom.Dataset()
-    # file_meta.MediaStorageSOPClassUID = '1.2.840.10008.5.1.4.1.1.2'  # CT
-    # file_meta.MediaStorageSOPInstanceUID = "1.2.3"
-    # file_meta.ImplementationClassUID = "1.2.3.4"
-    #
-    # ds = pydicom.FileDataset(fn, instance.pydicom_dataset(),
-    #                         file_meta=file_meta, preamble=b"\0" * 128)
-    # ds.save_as(fn)
-
 
 if __name__ == "__main__":
 
@@ -346,7 +335,6 @@ if __name__ == "__main__":
             write_file(os.path.join(data_dir, fn), d)
 
             # D = pydicom.read_file(os.path.join(data_dir, fn))
-            # # logging.debug(D.file_meta.FileMetaInformationGroupLength)
             # logging.debug(D.file_meta)
 
 
