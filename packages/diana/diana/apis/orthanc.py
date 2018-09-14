@@ -336,7 +336,7 @@ class Orthanc(Pattern):
     def update_aet(self, aet, config_fp=None):
         config_fp = config_fp or self.config_fp
         reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
-        reconfigurator.change_aet(aet)
+        reconfigurator.update_aet(aet)
 
     def add_user(self, name, password, config_fp=None):
         config_fp = config_fp or self.config_fp
