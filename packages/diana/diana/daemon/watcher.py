@@ -2,7 +2,7 @@
 Subclassed Watcher implementing common DIANA workflows
 """
 
-import logging, zipfile, os
+import logging, zipfile, os, time
 from enum import Enum
 from datetime import timedelta
 from hashlib import md5
@@ -235,13 +235,26 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
                 if wd_event.event_type == "created" and event_data.endswith(".zip"):
                     self.logger.debug("Found a zipped archive")
                     event_type = DianaEventType.STUDY_ADDED
+                    sleep_time = 1.0
+
                 elif wd_event.event_type == "created":
                     self.logger.debug("Found a possible dcm instance")
                     event_type = DianaEventType.INSTANCE_ADDED
+                    sleep_time = 0.2
 
                 if event_type:
                     event = self.source.gen_event(event_type=event_type, event_data=event_data)
                     self.source.events.put(event)
+
+                    # Need to poll for a while until it's finished
+                    # Wait until at least 1 sec has gone by with no change
+                    size = os.stat(event_data).st_size
+                    prev_size = size - 1
+                    while size > prev_size:
+                        time.sleep(sleep_time)
+                        prev_size = size
+                        size = os.stat(event_data).st_size
+
 
                 self.logger.debug('Rejecting non-creation event {}'.format(wd_event))
 
