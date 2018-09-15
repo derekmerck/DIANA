@@ -66,6 +66,8 @@ class Splunk(Pattern):
 
     def put(self, item: Dixel, host: str, token: str, index: str=None ):
 
+        logging.debug("Putting in Splunk")
+
         if item.meta.get('InstanceCreationDateTime'):
             timestamp = item.meta.get('InstanceCreationDateTime')
         elif item.meta.get('StudyDateTime'):

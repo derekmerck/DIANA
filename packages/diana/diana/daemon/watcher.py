@@ -56,7 +56,9 @@ class DianaWatcher(Watcher):
         return dest.put(item)
 
     @classmethod
-    def index_series(cls, event, dest):
+    def index_series(cls, event, dest,
+                     token=None,
+                     index=None):
         oid = event.event_data
         source = event.event_source
         item = source.get(oid, level=DicomLevel.SERIES, view="tags")
@@ -64,7 +66,7 @@ class DianaWatcher(Watcher):
         logging.debug("Indexing {}".format(item))
         logging.debug("Dest: {}".format(dest))
 
-        return dest.put(item, host=event.event_source.location)
+        return dest.put(item, token=token, index=index, host=event.event_source.location)
 
     @classmethod
     def index_by_proxy(cls, event, dest,
