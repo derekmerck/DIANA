@@ -108,10 +108,10 @@ class DianaWatcher(Watcher):
                     # member.is_dir() for 3.6 only!
                     if not member.filename.endswith("/"):
                         # read the file
-                        with z.open(member) as f:
-                            logging.debug("Uploading {}".format(member))
-                            item = Dixel(file=f.read())
-                            dest.put(item)
+                        logging.debug("Uploading {}".format(member))
+                        f = z.read(member)
+                        item = Dixel(file=f)
+                        dest.put(item)
             if remove:
                 os.remove(item_fp)
         except zipfile.BadZipFile as e:
