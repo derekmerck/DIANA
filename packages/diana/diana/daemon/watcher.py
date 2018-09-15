@@ -62,7 +62,7 @@ class DianaWatcher(Watcher):
         item = source.get(oid, level=DicomLevel.SERIES, view="tags")
 
         logging.debug("Indexing {}".format(item))
-        logging.debug(dest)
+        logging.debug("Dest: {}".format(dest))
 
         return dest.put(item)
 
