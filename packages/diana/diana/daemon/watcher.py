@@ -104,7 +104,9 @@ class DianaWatcher(Watcher):
         try:
             with zipfile.ZipFile(item_fp) as z:
                 for member in z.infolist():
-                    if not member.is_dir():
+                    logging.debug(member)
+                    # member.is_dir() for 3.6 only!
+                    if not member.filename.endswith("/"):
                         # read the file
                         with z.open(member) as f:
                             logging.debug("Uploading {}".format(member))
