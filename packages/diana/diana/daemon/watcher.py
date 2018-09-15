@@ -135,7 +135,8 @@ class ObservableOrthanc(ObservableMixin, Orthanc):
                     oid = change['ID']
                     event_queue.append((DianaEventType.STUDY_ADDED, oid))
                 else:
-                    self.logger.debug("Found unhandled change type: {}".format( change['ChangeType']))
+                    pass
+                    # self.logger.debug("Found unhandled change type: {}".format( change['ChangeType']))
             self.current_change = r['Last']
             done = r['Done']
 

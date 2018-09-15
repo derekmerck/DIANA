@@ -86,10 +86,10 @@ class Splunk(Pattern):
         if not index:
             index=self.default_index
 
-        # self.logger.debug(timestamp)
-        # self.logger.debug(event)
-        # self.logger.debug(index)
-        # self.logger.debug(_token)
+        self.logger.debug(timestamp)
+        self.logger.debug(event)
+        self.logger.debug(index)
+        self.logger.debug(_token)
 
         _host = "{}@{}".format(host, self.hostname)
 
