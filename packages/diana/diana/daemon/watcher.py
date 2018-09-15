@@ -64,7 +64,7 @@ class DianaWatcher(Watcher):
         logging.debug("Indexing {}".format(item))
         logging.debug("Dest: {}".format(dest))
 
-        return dest.put(item)
+        return dest.put(item, host=event.event_source.location)
 
     @classmethod
     def index_by_proxy(cls, event, dest,
