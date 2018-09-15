@@ -109,7 +109,7 @@ class DianaWatcher(Watcher):
                         with z.open(filename) as f:
                             logging.debug("Uploading {}".format(filename))
                             item = Dixel(file=f)
-                            dest.send(item)
+                            dest.put(item)
             if remove:
                 os.remove(item_fp)
         except zipfile.BadZipFile as e:

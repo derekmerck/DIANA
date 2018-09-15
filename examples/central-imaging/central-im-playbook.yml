@@ -146,13 +146,13 @@
 #      snappass_redis_container_name:  redis
 #      snappass_redis_db: 3
 
-#    - name: ftpd
-#      role: pureftpd-docker
-#      pftp_use_data_container: False
-#      pftp_data_dir:         "/data/ftp"
-#      pftp_host_name:        "{{ public_host_name }}.{{ common_name }}"
-#      pftp_service_password: "{{ service_password }}"
-#      # TODO: FTP: Check that this works
+    - name: ftpd
+      role: pureftpd-docker
+      pftp_use_data_container: False
+      pftp_data_dir:         "/data/ftp"
+      pftp_host_name:        "{{ public_host_name }}.{{ common_name }}"
+      pftp_service_password: "{{ service_password }}"
+      # TODO: FTP: Check that this works
 
 
 ################################
