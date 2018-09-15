@@ -243,18 +243,18 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
                     sleep_time = 0.2
 
                 if event_type:
-                    event = self.source.gen_event(event_type=event_type, event_data=event_data)
-                    self.source.events.put(event)
 
                     # Need to poll for a while until it's finished
-                    # Wait until at least 1 sec has gone by with no change
                     size = os.stat(event_data).st_size
                     prev_size = size - 1
                     while size > prev_size:
-                        time.sleep(sleep_time)
+                        time.sleep(sleep_time)  # No change in this long
                         prev_size = size
                         size = os.stat(event_data).st_size
+                    self.logger.debug("Final file size: {}".format(size))
 
+                    event = self.source.gen_event(event_type=event_type, event_data=event_data)
+                    self.source.events.put(event)
 
                 self.logger.debug('Rejecting non-creation event {}'.format(wd_event))
 
