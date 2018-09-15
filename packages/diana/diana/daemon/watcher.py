@@ -134,14 +134,16 @@ class ObservableOrthanc(ObservableMixin, Orthanc):
                 elif change['ChangeType'] == 'StableStudy':
                     oid = change['ID']
                     event_queue.append((DianaEventType.STUDY_ADDED, oid))
+                else:
+                    self.logger.debug("Found unhandled change type: {}".format( change['ChangeType']))
             self.current_change = r['Last']
             done = r['Done']
 
         if event_queue:
-            self.logger.debug("Found {} Orthanc changes".format( len( event_queue )))
+            self.logger.debug("Found {} Orthanc changes for {}".format( len( event_queue ), self.location))
             return event_queue
 
-            # TODO: Unclear if we need to do this, or where we need to do this
+            # TODO: Unclear if we need to clear changes, or when we need to do this
             # source.clear("changes")
             # source.clear("exports")
 
@@ -359,7 +361,7 @@ def set_index_tags_route(source, dest) -> dict:
         dest = Splunk(**dest)
 
     routes = {
-        (source, DianaEventType.SERIES_ADDED): partial(DianaWatcher.index,
+        (source, DianaEventType.SERIES_ADDED): partial(DianaWatcher.index_series,
                                                     dest=dest )
     }
 

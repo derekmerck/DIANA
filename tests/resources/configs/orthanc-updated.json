@@ -1,0 +1,50 @@
+{
+  /**
+   * General configuration of Orthanc
+   **/
+
+  // The logical name of this instance of Orthanc. This one is
+  // displayed in Orthanc Explorer and at the URI "/system".
+  "Name" : "Baz",
+
+  // The DICOM Application Entity Title
+  "DicomAet" : "BAZ",
+
+  // Check whether the called AET corresponds to the AET of Orthanc
+  // during an incoming DICOM SCU request
+  "DicomCheckCalledAet" : false,
+
+  // The DICOM port
+  "DicomPort" : 11112,
+  
+  /**
+   * Security-related options for the HTTP server
+   **/
+
+  // Whether remote hosts can connect to the HTTP server
+  "RemoteAccessAllowed" : true,
+
+  // Whether or not SSL is enabled
+  "SslEnabled" : true,
+
+  // Path to the SSL certificate in the PEM format (meaningful only if
+  // SSL is enabled)
+  "SslCertificate" : "certificate.pem",
+
+  // Whether or not the password protection is enabled
+  "AuthenticationEnabled" : true,
+
+  // The list of the registered users. Because Orthanc uses HTTP
+  // Basic Authentication, the passwords are stored as plain text.
+  "RegisteredUsers" : {"orthanc": "password", "foo": "bar"},
+
+  /**
+   * Network topology
+   **/
+
+  // The list of the known DICOM modalities
+  // If port is quoted, it complains about not being an int, so use regex to remove "'s
+  "DicomModalities" : {"abc": ["ABC", "localhost", 9999], "spam": ["SPAM", "locahost", 9999]},
+
+
+}

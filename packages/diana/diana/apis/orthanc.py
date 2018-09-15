@@ -45,6 +45,7 @@ from requests import ConnectionError
 from ..utils import Pattern, gateway
 from ..utils.dicom import DicomLevel, dicom_clean_tags, dicom_strfdate, dicom_strpdate, dicom_strpdtime
 from .dixel import Dixel
+from diana.utils import update_json_file
 
 
 def apply_tag_map(map, meta):
@@ -87,17 +88,12 @@ class Orthanc(Pattern):
                                user=self.user, password=self.password)
 
     config_fp = attr.ib( default="/etc/orthanc/orthanc.json" )
-    extra_modalities = attr.ib( default=[] )
-    extra_users = attr.ib( default=[] )
-    change_aet = attr.ib( default=None )
+    new_config = attr.ib( factory=dict )
 
     def __attrs_post_init__(self):
-         for m in self.extra_modalities:
-             self.add_modality(**m)
-         for u in self.extra_users:
-             self.add_user(**u)
-         if self.change_aet:
-             self.update_aet( self.change_aet )
+        # Update config file if using a default image
+        if self.new_config:
+            update_json_file(self.config_fp, self.new_config)
 
     @property
     def location(self):
@@ -332,21 +328,6 @@ class Orthanc(Pattern):
         oids = self.gateway.get("studies")
         for oid in oids:
             yield Dixel(meta={'oid': oid}, level=DicomLevel.STUDIES)
-
-    def update_aet(self, aet, config_fp=None):
-        config_fp = config_fp or self.config_fp
-        reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
-        reconfigurator.update_aet(aet)
-
-    def add_user(self, name, password, config_fp=None):
-        config_fp = config_fp or self.config_fp
-        reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
-        reconfigurator.add_user(name, password)
-
-    def add_modality(self, name, aet, host, port, config_fp=None):
-        config_fp = config_fp or self.config_fp
-        reconfigurator = gateway.OrthancReconfigurator(fp=config_fp, gateway=self.gateway)
-        reconfigurator.add_modality(name, aet, host, port)
 
 #
 # @attr.s

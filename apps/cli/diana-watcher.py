@@ -5,16 +5,9 @@ Derek Merck, Summer 2018
 Can also reconfigure a local orthanc instance with a shared config file to add local destinations.
 """
 
-import os, logging, json, yaml
-from functools import partial
-from argparse import ArgumentParser
-from datetime import datetime
-from diana.daemon import DianaWatcher, DianaEventType
+from diana.daemon import DianaWatcher
 from diana.daemon.watcher import set_proxied_index_route, set_upload_files_route,\
                                  set_anon_and_forward_route, set_index_tags_route
-from diana.daemon.factory import factory
-from diana.utils import merge_dicts_by_glob
-
 from utils.arg_utils import *
 
 
