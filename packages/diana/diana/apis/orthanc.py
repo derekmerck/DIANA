@@ -136,7 +136,7 @@ class Orthanc(Pattern):
             result = dicom_clean_tags(result)
             item = Dixel(meta=result, level=level)
             if hasattr(self, 'get_metadata'):
-                item = self.get_metadata(item, fkey=self.fernet)
+                item = self.get_metadata(item)
             return item
         elif view == "file" or \
              view == "archive":
@@ -163,7 +163,7 @@ class Orthanc(Pattern):
             return result
 
         if hasattr(self, 'put_metadata'):
-            item = self.put_metadata(item, fkey=self.fernet)
+            item = self.put_metadata(item)
 
     # Handlers
 

@@ -155,10 +155,10 @@ def test_encoding():
     item = Dixel(meta=meta)
 
     fkey = Fernet.generate_key()
-    encode_data_sig(item, fkey)
+    item.encode_data_sig(fkey)
 
     assert( item.meta.get('DataSignature') != meta )
 
-    round_trip = decode_data_sig(item, fkey)
+    round_trip = item.decode_data_sig(fkey)
 
     assert( round_trip.items() <= meta.items() )
