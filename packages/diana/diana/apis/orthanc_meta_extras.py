@@ -125,6 +125,9 @@ def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
         except ConnectionError as e:
             self.logger.warning(e)
             result = None
+        except Exception as e:
+            self.logger.error(e)
+            result = None
         if result:
             item.meta[k] = result
     return item
