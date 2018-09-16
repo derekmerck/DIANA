@@ -4,7 +4,7 @@ from hashlib import md5
 from cryptography.fernet import Fernet
 from requests import ConnectionError
 from diana.apis import Orthanc, Dixel
-from diana.utils.dicom import dicom_patient_initials
+from diana.utils.dicom import dicom_patient_initials, DicomLevel
 from diana.utils import SmartJSONEncoder, stringify
 
 """
@@ -23,11 +23,11 @@ config:
 """
 
 SUPPORTED_METADATA = [
-    # Some core metadata of interest
-    "ReceptionDate",
-    "AnonymizedFrom",
-    "RemoteAet",
-    "CalledAet",
+    # # Some core metadata of interest
+    # "ReceptionDate",
+    # "AnonymizedFrom",
+    # "RemoteAet",
+    # "CalledAet",
 
     # User Configured
     "SubmittingSite",
@@ -79,14 +79,16 @@ def set_metadata(self: Dixel,
 
 
 def encode_data_sig(self: Dixel, fkey):
+    # Embedded data is adequate to create the study-level shams
     data = {
-        'PatientID': self.meta['PatientID'],
-        'PatientName': self.meta['PatientName'],
-        'PatientBirthDate': self.meta['PatientBirthDate'],
-        'AccessionNumber': self.meta['AccessionNumber'],
-        'StudyDescription': self.meta['StudyDescription'],
-        'StudyDateTime': self.meta['StudyDateTime'],
-        'Institution': self.meta['Institution']
+        'PatientID':        self.meta.get('PatientID')        or "Unknown",
+        'PatientName':      self.meta.get('PatientName')      or "Unknown",
+        'PatientBirthDate': self.meta.get('PatientBirthDate') or "Unknown",
+        'PatientSex':       self.meta.get('PatientSex')       or "U",
+        'AccessionNumber':  self.meta.get('AccessionNumber')  or "Unknown",
+        'StudyDescription': self.meta.get('StudyDescription') or "Unknown",
+        'StudyDateTime':    self.meta.get('StudyDateTime')    or "Unknown",
+        'Institution':      self.meta.get('Institution')      or "Unknown"
     }
 
     f = Fernet(fkey)
@@ -116,13 +118,17 @@ def put_metadata(self: Orthanc, item: Dixel):
         if item.meta.get( k ):
             self.gateway.put_metadata(item.oid(), item.level, k, stringify( item.meta.get( k ) ))
 
+    if item.level == DicomLevel.INSTANCES or item.level == DicomLevel.SERIES:
+        parent = self.get_parent(item)
+        parent.copy_metadata(item)
+        self.put_metadata(parent)
+
 
 # Read values from Orthanc and update dixel
 def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
     self.logger.debug("Checking for metadata keys")
 
     for k in SUPPORTED_METADATA:
-        self.logger.debug(k)
         try:
             result = self.gateway.get_metadata(item.oid(), item.level, k)
         except ConnectionError as e:

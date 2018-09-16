@@ -3,7 +3,7 @@ from typing import Union, Sequence
 import attr
 from diana.apis import Dixel
 from diana.utils import Pattern, gateway
-from diana.utils.dicom import DicomLevel
+from diana.utils.dicom import DicomLevel, dicom_strpdtime
 
 
 @attr.s
@@ -128,6 +128,9 @@ class DicomFile(Pattern):
                  'SeriesInstanceUID': dcm[0x0020, 0x000e].value,
                  'SOPInstanceUID': dcm[0x0008, 0x0018].value,
 
+                 'StudyDate':  dcm[0x0008,0x0020].value,
+                 'StudyTime': dcm[0x0008,0x0030].value,
+
                  'SeriesDescription': dcm[0x0008,0x103E].value,
                  'StudyDescription': dcm[0x0008,0x1030].value,
                  'InstanceNumber': dcm[0x0020,0x0013].value,
@@ -140,6 +143,8 @@ class DicomFile(Pattern):
                  'FileName': fn,
                  'FilePath': path,
                  'FullPath': fp }
+
+        _meta['StudyDateTime'] = dicom_strpdtime(_meta['StudyDate'] + _meta['StudyTime'])
 
         _pixels = None
         if view=="pixels":

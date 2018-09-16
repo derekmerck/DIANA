@@ -54,7 +54,6 @@ class Orthanc(Pattern):
     config_fp = attr.ib( default="/etc/orthanc/orthanc.json" )
     new_config = attr.ib( factory=dict )
 
-    fernet = attr.ib( default=None )
     inventory = attr.ib( init=False, factory=dict )
 
     def __attrs_post_init__(self):
@@ -86,7 +85,6 @@ class Orthanc(Pattern):
 
         if view=="instance_tags":
             result = self.get(oid, level, view="meta")
-
             oid = result['Instances'][0]
             view = "tags"
             level = DicomLevel.INSTANCES
@@ -290,7 +288,6 @@ class Orthanc(Pattern):
         for oid in oids:
             yield Dixel(meta={'oid': oid}, level=DicomLevel.INSTANCES)
 
-
     @property
     def series(self):
         oids = self.gateway.get("series")
@@ -302,6 +299,21 @@ class Orthanc(Pattern):
         oids = self.gateway.get("studies")
         for oid in oids:
             yield Dixel(meta={'oid': oid}, level=DicomLevel.STUDIES)
+
+
+    def get_parent(self, item: Dixel) -> Dixel:
+        result = self.get(item.oid(), item.level, view="meta")
+
+        if item.level == DicomLevel.INSTANCES:
+            oid = result['ParentSeries']
+            level = DicomLevel.SERIES
+        elif item.level == DicomLevel.SERIES:
+            oid = result['ParentStudy']
+            level = DicomLevel.STUDIES
+        else:
+            raise TypeError
+
+        return Dixel(meta={'oid': oid}, level=level)
 
 #
 # @attr.s

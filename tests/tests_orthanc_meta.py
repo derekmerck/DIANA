@@ -6,13 +6,14 @@ from diana.apis import Orthanc, orthanc_meta_extras, DicomFile, Dixel
 def test_encoding():
 
     meta = {
-        'PatientID': "123456",
-        'PatientName': "DOE^JOHN^B",
+        'PatientID':       "123456",
+        'PatientName':     "DOE^JOHN^B",
         'PatientBirthDate': (datetime.now() - timedelta(days=20*365)).isoformat(),
+        'PatientSex':      "M",
         'AccessionNumber': "ABCDEFG",
         'StudyDescription': "Medical imaging study",
-        'StudyDateTime': datetime.now().isoformat(),
-        'Institution': "Medical center"
+        'StudyDateTime':    datetime.now().isoformat(),
+        'Institution':      "Medical center"
     }
 
     item = Dixel(meta=meta)
@@ -47,12 +48,30 @@ def test_api():
     assert e.meta.get('SubmittingSite') == "MY_SITE"
     assert e.meta.get('PartialPatientID') == "7275"
 
+    fkey = Fernet.generate_key()
+    orthanc.clear()
+    d = DicomFile(location='resources/ab_ct').get('IM66', view='file')
+    logging.debug(d.meta)
+    d.set_metadata(submitting_site="MY_SITE", fkey=fkey)
+    orthanc.put(d)
+    e = orthanc.anonymize(d)
+
+    assert e.meta.get('SubmittingSite') == "MY_SITE"
+    assert e.meta.get('PartialPatientID') == "7275"
+
+    out = e.decode_data_sig(fkey)
+    assert out['PatientName'] == d.meta['PatientName']
+    assert out['PatientID'] == d.meta['PatientID']
+
 
 
 if __name__ == "__main__":
 
 
     logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("diana.utils.gateway.requester").setLevel(logging.WARNING)
 
     test_encoding()
     test_api()
