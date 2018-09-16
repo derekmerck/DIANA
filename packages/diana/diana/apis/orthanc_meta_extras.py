@@ -120,7 +120,7 @@ def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
     for k in SUPPORTED_METADATA:
         self.logger.debug(k)
         try:
-            result = self.gateway.put_metadata(item.oid, item.level, k)
+            result = self.gateway.get_metadata(item.oid, item.level, k)
             self.logger.debug(result)
         except ConnectionError as e:
             self.logger.warning(e)
