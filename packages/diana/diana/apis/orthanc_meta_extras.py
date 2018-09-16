@@ -114,6 +114,8 @@ def put_metadata(self: Orthanc, item: Dixel):
 
 # Read values from Orthanc and update dixel
 def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
+    self.logger.debug("Checking for metadata keys")
+    print("Checking for metadata keys")
 
     for k in SUPPORTED_METADATA:
         self.logger.debug(k)
