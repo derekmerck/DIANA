@@ -1,43 +1,5 @@
 # DICOM node or proxy
 
-
-"""
-Orthanc meta data:
-
-"UserMetadata" : {
-  "OriginSite"          : 8900,
-  "TrueStudyDate"       : 8901,
-  "PartialPatientName"  : 8902,
-  "PartialPatientID"    : 8903,
-  "ReceiptDateTime"     : 8904,
-  "DataSignature"       : 8905,
-  "KeySignature"        : 8906,
-  "SignatureVersion"    : 8907
-}
-
-
-
-stash:
-
-data = {
-    'PatientID':        "1234abcdefg",
-    'PatientName':      "MERCK^DEREK^L",
-    'PatientBirthDate': datetime.now().date(),
-    'AccessionNumber':  "abc1234567",
-    'StudyDescription': "blah blah",
-    'StudyDateTime':    datetime.now(),
-    'Institution':      "Some Hospital"
-}
-
-f = Fernet(key)
-token = f.encrypt(json.dumps(data))
-
-d.tags['DataSignature'] = token
-d.tags['KeySignature'] = md5(key)
-d.tags['SignatureVersion'] = diana.__version__
-
-"""
-
 import datetime
 from pprint import pformat
 from typing import Mapping, Callable, Union
@@ -62,13 +24,13 @@ def simple_sham_map(meta):
             'PatientID': meta['ShamID'],
             'PatientBirthDate': dicom_strfdate( meta['ShamDoB'] ) if isinstance(meta["ShamDoB"], datetime.date) else meta["ShamDoB"],
             'AccessionNumber': meta['ShamAccession'].hexdigest() if hasattr( meta["ShamAccession"], "hexdigest") else meta["ShamAccession"],
-            'StudyInstanceUID': meta['ShamStudyUID'],
+            'StudyStudyUID': meta['ShamStudyUID'],
+            'SeriesSeriesUID': meta['ShamSeriesUID'] or meta.get('SeriesInstanceUID'),
+            'SeriesInstanceUID': meta['ShamInstanceUID'] or meta.get('SeriesInstanceUID'),
         },
         'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription', 'StudyDate'],
         'Force': True
     }
-    if meta.get('ShamSeriesUID'):
-        map['Replace']['SeriesInstanceUID'] = meta.get('ShamSeriesUID')
 
     return map
 

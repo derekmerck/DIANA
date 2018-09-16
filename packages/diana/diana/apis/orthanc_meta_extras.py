@@ -52,6 +52,8 @@ def set_metadata(self: Dixel,
                  submission_date: datetime = None,
                  fkey = None):
 
+    self.logger.debug("Setting metadata")
+
     def get_end(item: str) -> str:
         if not item:
             return ""
@@ -70,6 +72,8 @@ def set_metadata(self: Dixel,
 
     if fkey:
         encode_data_sig(self, fkey)
+
+    self.logger.debug(self.meta)
 
     # Todo: This should also propogate metadata up to series/study level
 
