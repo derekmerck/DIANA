@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 from hashlib import md5
 from cryptography.fernet import Fernet
+from requests import ConnectionError
 from . import Orthanc, Dixel
 from diana.utils.dicom import dicom_patient_initials
 from diana.utils import SmartJSONEncoder
@@ -37,8 +38,7 @@ SUPPORTED_METADATA = [
     "PartialPatientID",
     "PartialAccessionNumber",
     "DataSignature",
-    "KeySignature",
-    "SignatureVersion"
+    "KeySignature"
 ]
 
 def copy_metadata(self: Dixel, other: Dixel):
@@ -117,8 +117,12 @@ def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
 
     for k in SUPPORTED_METADATA:
         self.logger.debug(k)
-        result = self.gateway.put_metadata(item.oid, item.level, k)
-        self.logger.debug(result)
+        try:
+            result = self.gateway.put_metadata(item.oid, item.level, k)
+            self.logger.debug(result)
+        except ConnectionError as e:
+            self.logger.warning(e)
+            result = None
         if result:
             item.meta[k] = result
     return item
