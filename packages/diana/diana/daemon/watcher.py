@@ -48,6 +48,8 @@ class DianaWatcher(Watcher):
         oid = event.event_data
         source = event.event_source
 
+        logging.debug("Trying to anonymize")
+
         item = source.get(oid, level=DicomLevel.INSTANCES)  # Get tags and meta
         item = source.anonymize(item, remove=remove)        # Returns dixel with file
 
@@ -91,7 +93,7 @@ class DianaWatcher(Watcher):
             # TODO: Should jitter datetime if it is important
             item.meta['AccessionNumber'] = md5(item.meta['AccessionNumber'].encode('UTF8')).hexdigest()
             item.meta['PatientID']       = md5(item.meta['PatientID'].encode('UTF8')).hexdigest()
-            item.meta['StudyInstanceUID']= DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)
+            item.meta['StudyInstanceUID'] = DicomUIDMint().uid(suffix_style=SuffixStyle.RANDOM)
 
         return dest.put(item, token=token, index=index, host=event.event_source.location)
 
@@ -306,33 +308,6 @@ class ObservableDicomFile(ObservableMixin, DicomFile):
 #     # watcher.fire( Event( DianaEventType.ALERT, "foo", event_source=orthanc_proxy ))
 
 
-def test_proxied_indexer_route():
-    """
-    Use with examples/mockPACS configuration
-
-    # proxy must know about PACS modality and how it is named by PACS
-    # pacs must know about proxy name/addr and have permissions
-    """
-
-    # These are just complex service definitions (set w --service -source -dest)
-    orthanc = ObservableOrthancProxy(
-                        host="trusty64",
-                        port=8999,
-                        password="passw0rd!",
-                        domains={"mock": "WATCHER"},
-                        query_domain="mock",
-                        query_level=DicomLevel.STUDIES,
-                        query_dict={'ModalitiesInStudy': "",
-                                    'StudyDescription': ""},
-                        query_discovery_period=300,  # Check last 5 mins
-                        polling_interval=120)  # Every 2 mins
-
-    splunk = Splunk(    host="trusty64",
-                        default_index="remotes",
-                        default_token="remotes_tok",
-                        hec_tokens={"remotes_tok": "1b67778c-0b1d-4df9-8142-5c726e74b053"})
-
-    return set_proxied_index_route(orthanc, splunk)
 
 
 def set_upload_files_route(source, dest) -> dict:
@@ -371,6 +346,7 @@ def set_anon_and_forward_route(source, dest) -> dict:
 
     return routes
 
+
 def set_index_tags_route(source, dest) -> dict:
     logging.debug("Setting up index tags route")
 
@@ -405,6 +381,39 @@ def set_proxied_index_route(source, dest) -> dict:
 
     return routes
 
+
+###############
+# TESTS
+###############
+
+
+def test_proxied_indexer_route():
+    """
+    Use with examples/mockPACS configuration
+
+    # proxy must know about PACS modality and how it is named by PACS
+    # pacs must know about proxy name/addr and have permissions
+    """
+
+    # These are just complex service definitions (set w --service -source -dest)
+    orthanc = ObservableOrthancProxy(
+                        host="trusty64",
+                        port=8999,
+                        password="passw0rd!",
+                        domains={"mock": "WATCHER"},
+                        query_domain="mock",
+                        query_level=DicomLevel.STUDIES,
+                        query_dict={'ModalitiesInStudy': "",
+                                    'StudyDescription': ""},
+                        query_discovery_period=300,  # Check last 5 mins
+                        polling_interval=120)  # Every 2 mins
+
+    splunk = Splunk(    host="trusty64",
+                        default_index="remotes",
+                        default_token="remotes_tok",
+                        hec_tokens={"remotes_tok": "1b67778c-0b1d-4df9-8142-5c726e74b053"})
+
+    return set_proxied_index_route(orthanc, splunk)
 
 if __name__ == "__main__":
 
