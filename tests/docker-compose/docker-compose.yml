@@ -1,21 +1,23 @@
-# For Travis testing
-
-version: '3'
+version: '2'
 
 services:
 
-  dicom_source:
+  dicom:
     image: jodogne/orthanc
     ports:
       - "4242:4242"
       - "8042:8042"
+    volumes:
+      - "./orthanc.json:/etc/orthanc/orthanc.json"
     environment:
       TZ: America/New_York
 
-  dicom_dest:
+  dicom1:
     image: jodogne/orthanc
     ports:
       - "4243:4242"
       - "8043:8042"
+    volumes:
+      - "./orthanc.json:/etc/orthanc/orthanc.json"
     environment:
       TZ: America/New_York

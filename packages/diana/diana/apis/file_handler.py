@@ -1,9 +1,9 @@
 import os, time
 from typing import Union, Sequence
 import attr
-from .dixel import Dixel
-from ..utils import Pattern, gateway
-from ..utils.dicom import DicomLevel
+from diana.apis import Dixel
+from diana.utils import Pattern, gateway
+from diana.utils.dicom import DicomLevel
 
 
 @attr.s
@@ -117,15 +117,26 @@ class DicomFile(Pattern):
 
         dcm, fp = self.gateway.read(fn, path=path, pixels=(view=="pixels"))
 
+        # Core data required for shamming
         _meta = {'PatientID': dcm[0x0010, 0x0020].value,
+                 'PatientName': str( dcm[0x0010,0x0010].value ),
+                 'PatientBirthDate': dcm[0x0010,0x0030].value,
+                 'PatientSex': dcm[0x0010,0x0040].value,
+
                  'AccessionNumber': dcm[0x0008, 0x0050].value,
                  'StudyInstanceUID': dcm[0x0020, 0x000d].value,
                  'SeriesInstanceUID': dcm[0x0020, 0x000e].value,
                  'SOPInstanceUID': dcm[0x0008, 0x0018].value,
+
+                 'SeriesDescription': dcm[0x0008,0x103E].value,
+                 'StudyDescription': dcm[0x0008,0x1030].value,
+                 'InstanceNumber': dcm[0x0020,0x0013].value,
+
                  'TransferSyntaxUID': dcm.file_meta.TransferSyntaxUID,
                  'TransferSyntax': str(dcm.file_meta.TransferSyntaxUID),
                  'MediaStorage': str(dcm.file_meta.MediaStorageSOPClassUID),
                  'PhotometricInterpretation': dcm[0x0028, 0x0004].value,  #MONOCHROME, RGB etc.
+
                  'FileName': fn,
                  'FilePath': path,
                  'FullPath': fp }

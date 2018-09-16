@@ -81,6 +81,11 @@ def dicom_patient_initials( names: str ) -> str:
     "subject ab102ab102" -> "ID ab102ab102"
     """
 
+    if not names:
+        return
+
+    names = "{}".format(names)
+
     # Does it have a number
     match = re.findall(r"\w*\d+\w*", names)
     if match:
@@ -115,6 +120,7 @@ def test_patient_initials():
         "subject 1": "ID 1",
         "subject 102": "ID 102",
         "subject ab102ab102": "ID ab102ab102",
+        "run off, aortic": "ARO"
     }
 
     for k, v in names.items():

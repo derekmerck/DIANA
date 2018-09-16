@@ -1,12 +1,14 @@
 # Encodes datetime and hashes
 
 import json, re, logging, os
-from datetime import datetime, date
 from jsmin import jsmin
 
 
 def stringify(obj):
-    if isinstance(obj, datetime) or isinstance(obj, date):
+    if isinstance(obj, str):
+        return obj
+
+    if hasattr(obj, "isoformat"):
         return obj.isoformat()
 
     if hasattr(obj, 'hexdigest'):

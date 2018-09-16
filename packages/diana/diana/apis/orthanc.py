@@ -55,6 +55,7 @@ class Orthanc(Pattern):
     new_config = attr.ib( factory=dict )
 
     fernet = attr.ib( default=None )
+    inventory = attr.ib( init=False, factory=dict )
 
     def __attrs_post_init__(self):
         # Update config file if using a default image

@@ -1,11 +1,11 @@
-import json
+import json, logging
 from datetime import datetime, timedelta
 from hashlib import md5
 from cryptography.fernet import Fernet
 from requests import ConnectionError
-from . import Orthanc, Dixel
+from diana.apis import Orthanc, Dixel
 from diana.utils.dicom import dicom_patient_initials
-from diana.utils import SmartJSONEncoder
+from diana.utils import SmartJSONEncoder, stringify
 
 """
 Could also use Orthanc sekrit keys:
@@ -52,7 +52,7 @@ def set_metadata(self: Dixel,
                  submission_date: datetime = None,
                  fkey = None):
 
-    self.logger.debug("Setting metadata")
+    logging.debug("Setting dixel metadata")
 
     def get_end(item: str) -> str:
         if not item:
@@ -65,15 +65,15 @@ def set_metadata(self: Dixel,
     self.meta['SubmittingSite'] =      submitting_site or "Unknown"
     self.meta['SubmissionDate'] =      submission_date or datetime.now()
     self.meta['SubmissionMechanism'] = submission_mechanism or "Unknown"
-    self.meta['TrueStudyDate'] =       self.meta['StudyDateTime'] or "Unknown"
-    self.meta['PartialPatientName'] =  dicom_patient_initials(self.meta['PatientName']) or "Unknown"
-    self.meta['PartialPatientID'] =    get_end( self.meta['PatientID'] ) or "Unknown"
-    self.meta['PartialAccessionNumber'] = get_end(self.meta['AccessionNumber']) or "Unknown"
+    self.meta['TrueStudyDate'] =       self.meta.get('StudyDateTime') or "Unknown"
+    self.meta['PartialPatientName'] =  dicom_patient_initials(self.meta.get('PatientName')) or "Unknown"
+    self.meta['PartialPatientID'] =    get_end( self.meta.get('PatientID') ) or "Unknown"
+    self.meta['PartialAccessionNumber'] = get_end(self.meta.get('AccessionNumber')) or "Unknown"
 
     if fkey:
         encode_data_sig(self, fkey)
 
-    self.logger.debug(self.meta)
+    logging.debug(self.meta)
 
     # Todo: This should also propogate metadata up to series/study level
 
@@ -103,7 +103,7 @@ def decode_data_sig(self: Dixel, fkey):
     token = self.meta['DataSignature']
     content = f.decrypt(token)
 
-    print(content)
+    logging.info(content)
     res = json.loads(content)
     return res
 
@@ -114,7 +114,7 @@ def put_metadata(self: Orthanc, item: Dixel):
 
     for k in SUPPORTED_METADATA:
         if item.meta.get( k ):
-            self.gateway.put_metadata(item.oid(), item.level, k, item.meta.get( k ))
+            self.gateway.put_metadata(item.oid(), item.level, k, stringify( item.meta.get( k ) ))
 
 
 # Read values from Orthanc and update dixel
@@ -145,26 +145,3 @@ Dixel.decode_data_sig = decode_data_sig
 Orthanc.put_metadata = put_metadata
 Orthanc.get_metadata = get_metadata
 
-
-def test_encoding():
-
-    meta = {
-        'PatientID': "123456",
-        'PatientName': "DOE^JOHN^B",
-        'PatientBirthDate': (datetime.now() - timedelta(days=20*365)).isoformat(),
-        'AccessionNumber': "ABCDEFG",
-        'StudyDescription': "Medical imaging study",
-        'StudyDateTime': datetime.now().isoformat(),
-        'Institution': "Medical center"
-    }
-
-    item = Dixel(meta=meta)
-
-    fkey = Fernet.generate_key()
-    item.encode_data_sig(fkey)
-
-    assert( item.meta.get('DataSignature') != meta )
-
-    round_trip = item.decode_data_sig(fkey)
-
-    assert( round_trip.items() <= meta.items() )

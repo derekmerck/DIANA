@@ -22,7 +22,7 @@ all:
 
 
   vars:
-    cert_type: selfsigned
+    cert_type: None
     indexer_password: passw0rd!
     broker_password:  passw0rd!
     orthanc_password: passw0rd!
