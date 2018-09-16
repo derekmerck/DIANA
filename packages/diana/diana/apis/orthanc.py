@@ -24,9 +24,9 @@ def simple_sham_map(meta):
             'PatientID': meta['ShamID'],
             'PatientBirthDate': dicom_strfdate( meta['ShamDoB'] ) if isinstance(meta["ShamDoB"], datetime.date) else meta["ShamDoB"],
             'AccessionNumber': meta['ShamAccession'].hexdigest() if hasattr( meta["ShamAccession"], "hexdigest") else meta["ShamAccession"],
-            'StudyStudyUID': meta['ShamStudyUID'],
-            'SeriesSeriesUID': meta['ShamSeriesUID'] or meta.get('SeriesInstanceUID'),
-            'SeriesInstanceUID': meta['ShamInstanceUID'] or meta.get('SeriesInstanceUID'),
+            'StudyInstanceUID': meta.get('ShamStudyUID'),
+            'SeriesInstanceUID': meta.get('ShamSeriesUID'),
+            'SOPInstanceUID': meta.get('ShamInstanceUID'),
         },
         'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription', 'StudyDate'],
         'Force': True
