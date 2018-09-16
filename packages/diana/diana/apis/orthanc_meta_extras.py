@@ -106,6 +106,7 @@ def decode_data_sig(self: Dixel, fkey):
 
 # Write values from dixel into Orthanc metadata
 def put_metadata(self: Orthanc, item: Dixel):
+    self.logger.debug("Putting meta data keys")
 
     for k in SUPPORTED_METADATA:
         if item.meta.get( k ):
@@ -115,15 +116,13 @@ def put_metadata(self: Orthanc, item: Dixel):
 # Read values from Orthanc and update dixel
 def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
     self.logger.debug("Checking for metadata keys")
-    print("Checking for metadata keys")
 
     for k in SUPPORTED_METADATA:
         self.logger.debug(k)
         try:
             result = self.gateway.get_metadata(item.oid, item.level, k)
-            self.logger.debug(result)
         except ConnectionError as e:
-            self.logger.warning(e)
+            # Nothing there, just skip it
             result = None
         except Exception as e:
             self.logger.error(e)

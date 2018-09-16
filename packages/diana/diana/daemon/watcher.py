@@ -51,6 +51,7 @@ class DianaWatcher(Watcher):
         logging.debug("Trying to anonymize")
 
         item = source.get(oid, level=DicomLevel.INSTANCES)  # Get tags and meta
+        item.set_metadata()                                 # Initialize pre-anon metadata
         item = source.anonymize(item, remove=remove)        # Returns dixel with file
 
         logging.debug("Anonymizing and moving {}".format(item))
