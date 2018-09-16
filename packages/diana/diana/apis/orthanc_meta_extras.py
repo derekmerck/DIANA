@@ -114,7 +114,7 @@ def put_metadata(self: Orthanc, item: Dixel):
 
     for k in SUPPORTED_METADATA:
         if item.meta.get( k ):
-            self.gateway.put_metadata(item.oid, item.level, k, item.meta.get( k ))
+            self.gateway.put_metadata(item.oid(), item.level, k, item.meta.get( k ))
 
 
 # Read values from Orthanc and update dixel
@@ -124,7 +124,7 @@ def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
     for k in SUPPORTED_METADATA:
         self.logger.debug(k)
         try:
-            result = self.gateway.get_metadata(item.oid, item.level, k)
+            result = self.gateway.get_metadata(item.oid(), item.level, k)
         except ConnectionError as e:
             # Nothing there, just skip it
             result = None
