@@ -20,13 +20,13 @@ def apply_tag_map(map, meta):
 def simple_sham_map(meta):
     map = {
         'Replace': {
-            'PatientName': meta['ShamName'],
-            'PatientID': meta['ShamID'],
+            'PatientName':      meta['ShamName'],
+            'PatientID':        meta['ShamID'],
             'PatientBirthDate': dicom_strfdate( meta['ShamDoB'] ) if isinstance(meta["ShamDoB"], datetime.date) else meta["ShamDoB"],
-            'AccessionNumber': meta['ShamAccession'].hexdigest() if hasattr( meta["ShamAccession"], "hexdigest") else meta["ShamAccession"],
+            'AccessionNumber':  meta['ShamAccession'].hexdigest() if hasattr( meta["ShamAccession"], "hexdigest") else meta["ShamAccession"],
             'StudyInstanceUID': meta.get('ShamStudyUID'),
             'SeriesInstanceUID': meta.get('ShamSeriesUID'),
-            'SOPInstanceUID': meta.get('ShamInstanceUID'),
+            'SOPInstanceUID':   meta.get('ShamInstanceUID'),
         },
         'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription', 'StudyDate'],
         'Force': True
