@@ -10,7 +10,7 @@ from functools import partial
 import attr
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
-from diana.apis import Orthanc, DicomFile, Splunk, Dixel
+from diana.apis import Orthanc, orthanc_meta_extras, DicomFile, Splunk, Dixel
 from diana.utils import Watcher, ObservableMixin, DatetimeInterval2 as DatetimeInterval
 from diana.utils.dicom import dicom_strftime2, DicomFormatError
 from diana.utils.dicom import DicomUIDMint, SuffixStyle, DicomLevel
@@ -48,7 +48,7 @@ class DianaWatcher(Watcher):
         oid = event.event_data
         source = event.event_source
 
-        item = source.get(oid, level=DicomLevel.INSTANCES)  # Get tags
+        item = source.get(oid, level=DicomLevel.INSTANCES)  # Get tags and meta
         item = source.anonymize(item, remove=remove)        # Returns dixel with file
 
         logging.debug("Anonymizing and moving {}".format(item))

@@ -148,6 +148,15 @@ class Orthanc(Requester):
         headers = {'content-type': 'application/text'}
         self.post(resource, data=data, headers=headers)
 
+    def get_metadata(self, oid: str, level: DicomLevel, key: str ):
+        resource = "{}/{}/metadata/{}".format(level, oid, key)
+        return self.get(resource)
+
+    def put_metadata(self, oid: str, level: DicomLevel, key: str, value: str):
+        resource = "{}/{}/metadata/{}".format(level, oid, key)
+        data = value
+        return self.put(resource, data=data)
+
     def statistics(self):
         return self.get("statistics")
 

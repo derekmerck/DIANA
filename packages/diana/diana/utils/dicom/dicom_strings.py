@@ -1,5 +1,6 @@
-import logging
+import logging, re
 from datetime import datetime
+
 
 def dicom_strpdtime( dts: str ) -> datetime:
 
@@ -65,3 +66,62 @@ def dicom_strfname( names: tuple) -> str:
     doe john s -> dicome name (DOE^JOHN^S)
     """
     return "^".join(names)
+
+
+def dicom_patient_initials( names: str ) -> str:
+    """
+    "DOE^JOHN^B"  -> "JBD"
+    "Doe, John B" -> "JBD"
+    "john b doe"  -> "JBD"
+    "John Doe"    -> "JD"
+    "doe, john"   -> "JD"
+    "doe"         -> "D"
+    "subject 1"   -> "ID 1"
+    "subject 102" -> "ID 102"
+    "subject ab102ab102" -> "ID ab102ab102"
+    """
+
+    # Does it have a number
+    match = re.findall(r"\w*\d+\w*", names)
+    if match:
+        # It's a numeric ID
+        return "ID {}".format(match[0])
+
+    # DICOM is in "last, first initial" format
+    names = names.replace("^", ", ")
+
+    l = []
+    for word in names.split():
+        part = word[0].upper()
+        l += part
+
+    if names.find(",") >= 0:
+        l = l[1:] + l[:1]
+    return "".join(l)
+
+
+###################
+# TESTS
+###################
+
+def test_patient_initials():
+    names = {
+        "DOE^JOHN^B": "JBD",
+        "Doe, John B": "JBD",
+        "john b doe": "JBD",
+        "John Doe": "JD",
+        "doe, john": "JD",
+        "doe": "D",
+        "subject 1": "ID 1",
+        "subject 102": "ID 102",
+        "subject ab102ab102": "ID ab102ab102",
+    }
+
+    for k, v in names.items():
+        assert (dicom_patient_initials(k) == v)
+
+
+if __name__ == "__main__":
+
+    logging.basicConfig(level=logging.DEBUG)
+    test_patient_initials()

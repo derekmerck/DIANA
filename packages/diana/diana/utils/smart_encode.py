@@ -1,6 +1,6 @@
 # Encodes datetime and hashes
 
-import json, re, logging
+import json, re, logging, os
 from datetime import datetime, date
 from jsmin import jsmin
 
@@ -127,8 +127,10 @@ def update_json(content, data):
 
 def test_update_json_file():
 
-    fp0 = "tests/resources/configs/orthanc-src.json"
-    fp1 = "tests/resources/configs/orthanc-updated.json"
+    dir = "tests/resources/configs"
+
+    fp0 = os.path.join( dir, "orthanc-src.json" )
+    fp1 = os.path.join( dir, "orthanc-updated.json" )
 
     data = {
         'Name': "Baz",

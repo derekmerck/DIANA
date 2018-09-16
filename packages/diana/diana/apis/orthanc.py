@@ -2,19 +2,20 @@
 
 
 """
-Orthanc sekrit keys:
+Orthanc meta data:
 
-config:
+"UserMetadata" : {
+  "OriginSite"          : 8900,
+  "TrueStudyDate"       : 8901,
+  "PartialPatientName"  : 8902,
+  "PartialPatientID"    : 8903,
+  "ReceiptDateTime"     : 8904,
+  "DataSignature"       : 8905,
+  "KeySignature"        : 8906,
+  "SignatureVersion"    : 8907
+}
 
-"Dictionary" : {
-    # LO - long string (64 chars)
- 	# ST - short text (1024 chars)
 
-    "abcd,1003" : [ "ST", "DataSignature",    1, 1, "RIH3D Private Data" ],
-    "abcd,1005" : [ "LO", "KeySignature",     1, 1, "RIH3D Private Data"],
-    "abcd,1007" : [ "LO", "SignatureVersion", 1, 1, "RIH3D Private Data"]
-
-},
 
 stash:
 
@@ -71,6 +72,7 @@ def simple_sham_map(meta):
 
     return map
 
+
 @attr.s(hash=False)
 class Orthanc(Pattern):
     host = attr.ib( default="localhost" )
@@ -89,6 +91,8 @@ class Orthanc(Pattern):
 
     config_fp = attr.ib( default="/etc/orthanc/orthanc.json" )
     new_config = attr.ib( factory=dict )
+
+    fernet = attr.ib( default=None )
 
     def __attrs_post_init__(self):
         # Update config file if using a default image
@@ -131,6 +135,8 @@ class Orthanc(Pattern):
             # We can clean tags and assemble a dixel
             result = dicom_clean_tags(result)
             item = Dixel(meta=result, level=level)
+            if hasattr(self, 'get_metadata'):
+                item = self.get_metadata(item, fkey=self.fernet)
             return item
         elif view == "file" or \
              view == "archive":
@@ -138,7 +144,7 @@ class Orthanc(Pattern):
             item = Dixel(meta=meta, file=result, level=level)
             return item
         else:
-            # Return the meta info or binary data
+            # Return the top level info or binary data
             return result
 
     def put(self, item: Dixel):
@@ -150,12 +156,14 @@ class Orthanc(Pattern):
         if not item.file:
             self.logger.warning("Can only 'put' file data.")
             raise KeyError
-        result = self.gateway.put_item(item.file)
 
-        if not result:  # Success!
-            return item
-        else:
+        result = self.gateway.put_item(item.file)
+        # Problem
+        if result:
             return result
+
+        if hasattr(self, 'put_metadata'):
+            item = self.put_metadata(item, fkey=self.fernet)
 
     # Handlers
 
@@ -187,7 +195,10 @@ class Orthanc(Pattern):
         # self.logger.debug(result)
         if result:
             if item.level == DicomLevel.INSTANCES:
-                return Dixel( item.sham_oid(), file=result, level=DicomLevel.INSTANCES )
+                d = Dixel( item.sham_oid(), file=result, level=DicomLevel.INSTANCES )
+                if hasattr(d, "copy_metadata"):
+                    d.copy_metadata(item)
+                return d
             else:
                 return self.get( result['ID'], level=item.level )
 

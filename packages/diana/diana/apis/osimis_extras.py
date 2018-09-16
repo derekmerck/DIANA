@@ -14,10 +14,10 @@ seemed easier for a one-off application.
 
 """
 
-import logging, json, pprint
+import json
 from typing import Union
 from . import Orthanc, Dixel
-from ..utils.dicom import DicomLevel
+from diana.utils.dicom import DicomLevel
 
 
 def get_annotation(source: Orthanc, study: Dixel) -> Union[dict, None]:

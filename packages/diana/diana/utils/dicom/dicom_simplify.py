@@ -9,7 +9,6 @@ Prepare a DICOM tag set for ingestion into splunk:
 """
 
 import logging, json, os
-from pprint import pprint, pformat
 from ..smart_encode import SmartJSONEncoder
 from .dicom_strings import dicom_strpdtime
 
@@ -131,7 +130,7 @@ def simplify_content_sequence(tags):
             value = item['UID']
             # logger.debug('Found uid value')
         elif type_ == 'DATETIME':
-            value = dicom_strptime(item['DateTime'])
+            value = dicom_strpdtime(item['DateTime'])
             # logger.debug('Found date/time value')
         elif type_ == 'CODE':
             try:
@@ -166,7 +165,7 @@ def simplify_structured_tags(tags):
         key = tags['ConceptNameCodeSequence'][0]['CodeMeaning']
         value = simplify_content_sequence(tags)
 
-        t = dicom_strptime(tags['ContentDate'] + tags['ContentTime'])
+        t = dicom_strpdtime(tags['ContentDate'] + tags['ContentTime'])
         value['ContentDateTime'] = t
 
         del(tags['ConceptNameCodeSequence'])
@@ -199,7 +198,7 @@ def dicom_clean_tags(tags):
 
 def test_simplify():
 
-    dir = "test/resources"
+    dir = "tests/resources/dose"
     items = ["anon_dose"]
 
     for item in items:

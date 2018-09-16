@@ -140,14 +140,6 @@ def test_uid():
     s = umint.uid("patient", "study", "series", "instance")
     assert( s=="1.2.826.0.1.3680043.10.43.62.13853529.81072496.95419199.52800319" )
 
-    umint = DicomUIDMint()
-    s = umint.uid(123, True, Exception, DicomUIDMint)
-    assert( s=="1.2.826.0.1.3680043.10.43.62.537183137519.769778132498.1158.9415" )
-
-    umint = DicomUIDMint("Diana")
-    s = umint.uid(123, True, Exception, DicomUIDMint, suffix_style=SuffixStyle.OID32)
-    assert( s=="1.2.826.0.1.3680043.10.43.1.77849330.34713634.41174466.78080272" )
-
     umint = DicomUIDMint(suffix_style=SuffixStyle.RANDOM)
     s = umint.uid()
     t = umint.uid()
