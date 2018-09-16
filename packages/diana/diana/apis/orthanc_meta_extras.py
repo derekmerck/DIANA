@@ -116,7 +116,9 @@ def put_metadata(self: Orthanc, item: Dixel):
 def get_metadata(self: Orthanc, item: Dixel) -> Dixel:
 
     for k in SUPPORTED_METADATA:
+        self.logger.debug(k)
         result = self.gateway.put_metadata(item.oid, item.level, k)
+        self.logger.debug(result)
         if result:
             item.meta[k] = result
     return item

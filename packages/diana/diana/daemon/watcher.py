@@ -10,7 +10,7 @@ from functools import partial
 import attr
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler, FileSystemEvent
-from diana.apis import Orthanc, DicomFile, Splunk, Dixel
+from diana.apis import Orthanc, orthanc_meta_extras, DicomFile, Splunk, Dixel
 from diana.utils import Watcher, ObservableMixin, DatetimeInterval2 as DatetimeInterval
 from diana.utils.dicom import dicom_strftime2, DicomFormatError
 from diana.utils.dicom import DicomUIDMint, SuffixStyle, DicomLevel
