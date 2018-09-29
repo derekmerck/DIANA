@@ -17,11 +17,12 @@ postamble: |
 
   ---
 
-  This website is built using open source and free tools that are configured with the [DIANA][] stack (see Github link for extensive acknowledgements).  This website is currently hosted on a [Digital Ocean][] droplet.
+  This website is built using open source and free tools that are configured with the [DIANA][] stack (see Github link for extensive acknowledgements).  This website is currently hosted on a [Packet.com][] server.
 
   [GUIDMint]: https://github.com/derekmerck/DIANA/tree/master/utilities/GUIDMint
   [DIANA]: http://www.github.com/derekmerck/DIANA
   [Digital Ocean]: https://m.do.co/c/7c8f409b8c3c "Link includes referral code"
+  [Packet.com]: https://packet.com
 
 apps:
   # ie, include guid-mint app and map host/guid/pseudo_id, etc.
@@ -45,6 +46,13 @@ credentials:
 ############################
 
 trials:
+
+  - full_name: "AAN 2018 Skills Workshop: Management of Acute Stroke"
+    study_id:  aan2018
+    pi:        "[Cutting](https://vivo.brown.edu/display/scutting)"
+    desc: >
+      These cases are designed to provide participants with an opportunity to practice skills and improve competence in the management of acute stroke.  All names and dates have been altered to maintain patient confidentiality.  Images from this workshop will be available through this portal for up to 6 weeks from the end of the workshop.
+    port_offset: 210
 
   - full_name: Christianson Syndrome
     study_id:  christianson

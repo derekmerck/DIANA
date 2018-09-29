@@ -37,7 +37,7 @@ def parse_args(args=None):
 
     r = subs.add_parser("index")
     r.add_argument("-w", "--walk_type",      default="unstructured", choices=["unstructured", "orthanc"])
-    r.add_argument("-c", "--clear_cache",    default="false")
+    r.add_argument("-c", "--clear_cache",    action="set_true")
     r.add_argument("-p", "--relpath",        default=None)
     r.add_argument("-R", "--rex",            default=r"*.dcm")
 
@@ -75,9 +75,11 @@ if __name__ == "__main__":
         x = FileIndexer(location=opts.location, redis_conf=redis_conf)
 
         if opts.clear_cache:
+            logging.debug("Clearing redis cache")
             x.cache.clear()
 
         if opts.walk_type == "orthanc":
+            logging.debug("Indexing to redis cache")
             x.run_orthanc(relpath=opts.relpath)
         else:
             x.run(relpath=opts.relpath, rex=opts.rex)

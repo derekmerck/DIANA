@@ -17,7 +17,7 @@ class Splunk(Pattern):
     host = attr.ib( default="localhost" )
     port = attr.ib( default="8000" )
     user = attr.ib( default="splunk" )
-    protocol = attr.ib( default="https" )
+    protocol = attr.ib( default="http" )
     password = attr.ib( default="admin" )
     hec_protocol = attr.ib( default="http" )
     hec_port = attr.ib( default="8088" )

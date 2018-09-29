@@ -196,8 +196,6 @@
         qorth_base_name: "{{ trial.study_id }}"
         qorth_destination:
           orthanc_docker_image: jodogne/orthanc-plugins
-          # orthanc_docker_image: derekmerck/orthanc
-          # orthanc_docker_image_tag: "or132-{{ arch_tag }}"  # TODO: problem with manifesting latest
           orthanc_pg_backend: True
           orthanc_use_data_container: False
           orthanc_ports:
@@ -206,11 +204,15 @@
 
         qorth_queue:
           orthanc_docker_image: jodogne/orthanc
-          # orthanc_docker_image: derekmerck/orthanc
-          # orthanc_docker_image_tag: "or132-{{ arch_tag }}"  # TODO: problem with manifesting latest
           orthanc_ports:
             dicom: "{{ trial_base_port|int + trial.port_offset|int + 0 }}"
             api:   "{{ trial_base_port|int + trial.port_offset|int + 1 }}"
+
+        qorth_viewer:
+          orthanc_docker_image: osimis/orthanc
+          orthanc_ports:
+            dicom: "{{ trial_base_port|int + trial.port_offset|int + 4 }}"
+            api:   "{{ trial_base_port|int + trial.port_offset|int + 5 }}"
 
       with_list: "{{ trials }}"
       loop_control:
