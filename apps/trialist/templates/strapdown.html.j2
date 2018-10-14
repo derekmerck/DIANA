@@ -24,9 +24,6 @@
 
 {{ content }}
 
-{% if bokeh_div is defined %}
-{{ bokeh_div|safe }}
-{% endif %}
 </xmp>
 
 <script src="{{  url_for('static', filename="strapdown/v/0.2/strapdown.js") }}"></script>

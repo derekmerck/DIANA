@@ -3,6 +3,6 @@ flask
 Flask-HTTPAuth
 flask-restplus
 gunicorn
-markdown
+markdown>=3.0
 jinja2
 python-dateutil

@@ -128,9 +128,15 @@ class BoneAgeReport(RadiologyReport):
 @attr.s
 class LungScreeningReport(RadiologyReport):
 
+    def is_annual(self):
+
+        pattern = re.compile( r'no.*prior.*comparison')
+        match = pattern.findall(self.text)
+        return len(match) == 0
+
     def current_smoker(self):
 
-        pattern = re.compile( r'(?<! not) (?:a )?(current)(?:ly)? (?!> no[nt])(smok)' )
+        pattern = re.compile( r'(?<! not) (?:a )?([Cc]urrent)(?:ly)? (?!> no[nt])(smok)' )
         match = pattern.findall(self.text)
         return len(match) > 0
 

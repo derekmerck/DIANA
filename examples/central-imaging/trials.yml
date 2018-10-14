@@ -7,6 +7,8 @@
 
 title:   Central Imaging
 domain:  central-imaging.com
+trial_base_port: 42000
+upload_base_dir: "/Users/derek/tmp/uploads"
 
 preamble: |
   Organizes deidentified imaging and enrollment data for clinical research.
@@ -29,17 +31,6 @@ apps:
   guid-mint:
     root: /guid
 
-trial_base_port: 42000
-
-upload_base_dir: "/data/uploads"
-
-# Default credentials for uploading
-credentials:
-  salt: "central-imaging"
-  auth:
-  - 38aa7708a67d4445f2cf5b43b4d53bc3  # ci
-  - 744db2dcceeaa07f9c10a350be1bfafe  # hb
-  - 63d26d25975513450adcd3e1d4b57bd8  # p3
 
 ############################
 # Trial info array
@@ -49,14 +40,16 @@ trials:
 
   - full_name: "AAN 2018 Skills Workshop: Management of Acute Stroke"
     study_id:  aan2018
-    pi:        "[Cutting](https://vivo.brown.edu/display/scutting)"
+    pis:
+      - "[Cutting](https://vivo.brown.edu/display/scutting)"
     desc: >
       These cases are designed to provide participants with an opportunity to practice skills and improve competence in the management of acute stroke.  All names and dates have been altered to maintain patient confidentiality.  Images from this workshop will be available through this portal for up to 6 weeks from the end of the workshop.
     port_offset: 210
 
   - full_name: Christianson Syndrome
     study_id:  christianson
-    pi:        "[Morrow](https://vivo.brown.edu/display/emmorrow)"
+    pis:
+      - "[Morrow](https://vivo.brown.edu/display/emmorrow)"
     desc: >
       Ut sagittis, leo eu fermentum ornare, urna risus facilisis leo, non rutrum neque leo aliquam lectus. Aliquam vel dolor ut tellus luctus blandit. Ut sed sodales magna, eget porta lectus. Duis egestas, tellus sed aliquam placerat, nibh nibh ornare dolor, quis vestibulum nisl dui sed magna. Vivamus dignissim congue consectetur. Nulla commodo metus tortor, non aliquam quam dignissim ac. Praesent metus justo, lobortis consectetur consequat ac, laoreet in massa.
     active: True

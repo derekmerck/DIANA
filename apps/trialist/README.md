@@ -1,4 +1,4 @@
-DIANA Trialists Front-End Web App
+DIANA Trialist Web App
 =================================
 
 Derek Merck <derek_merck@brown.edu>  
@@ -18,12 +18,9 @@ Flask server providing a simple, flexible front-end html framework for listing a
 - [Python][] 3.6+
 - [Flask][]
 - [Flask-HTTPAuth][]
-- flask_restplus
 - markdown
 - [pyyaml][]
 - [jinja2][]
-- numpy
-- bokeh
 
 [Python]: http://www.python.org
 [Flask]: http://flask.pocoo.org
@@ -35,20 +32,7 @@ Flask server providing a simple, flexible front-end html framework for listing a
 ## Usage
 
 ```bash
-$ cd DianaFE
-$ export FLASK_APP="DianaFE.py"
-$ export dfe_config="../examples/central_imaging/trials.yml"
+$ export FLASK_APP=trialist.py
+$ export TRIALIST_CONFIG=../examples/central_imaging/trials.yml
 $ python -m flask run
-```
-
-See <../examples/central_imaging/trials.yml> for a configuration reference.
-
-
-## GUIDMint Integration
-
-The Trialist app can host helper apps, including `get-a-guid` from GUIDMint.  This can be used as a cardinal study ID server.
-
-```bash
-$ curl 'http://localhost:5000/guid/pseudonym/pseudo_id?name=MERCK^DEREK&gender=M&age=10'
-{"dob": "2007-09-16", "gender": "M", "guid": "YGN3N52VZZRYD3SU", "name": "YOUMANS^GUY^N"}
 ```

@@ -1,0 +1,32 @@
+---
+# CIRR config
+# Derek Merck
+# Fall 2018
+
+
+################################
+# Setup backend
+################################
+
+# Assume postgres exists!
+
+
+################################
+# Setup trails based on trials.yml
+################################
+
+- name: Setup archive
+  hosts: archive
+  tags: archive
+
+  roles:
+    - name: Setup Orthanc
+      role: orthanc-docker
+      orthanc_docker_image: derekmerck/orthanc-plugins
+      orthanc_container_name: "orthanc_tmp"
+
+      orthanc_pg_backend:   true
+
+      orthanc_use_data_container: False
+      orthanc_data_dir: "/cirr2/orthanc/db"
+

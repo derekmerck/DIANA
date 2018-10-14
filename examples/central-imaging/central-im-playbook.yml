@@ -37,6 +37,7 @@
 
     - name: Setup Splunk
       role: splunk-docker
+      splunk_docker_image_tag: "7.1.2"
       splunk_use_data_container: False
       splunk_secured: True
       splunk_hec_enabled: True
@@ -86,6 +87,7 @@
 
   vars:
     trial_config:     "~/dev/DIANA/examples/central-imaging/trials.yml"
+    user_config:      "~/dev/DIANA/_secrets/ci_users.yml"
 
   pre_tasks:
 
@@ -123,28 +125,23 @@
 
     - name: front end
       role: diana-docker
-      diana_docker_tag: "{{ arch_tag }}"  # TODO: problem with manifesting latest
+      # diana_docker_tag: "{{ arch_tag }}"  # TODO: problem with manifesting latest
       diana_container_name: diana-trialist
       diana_workdir: /opt/diana/apps/trialist
       diana_extra_env:
         DIANA_TRIALIST_CONFIG: /opt/diana/examples/central-imaging/trials.yml
+        DIANA_TRIALIST_ENABLE_AUTH: False
       diana_command: >
         bash -c 'git pull
         && pip install -r ../../requirements.txt
         && pip install -e ../../packages/guidmint ../../packages/diana
         && pip install -r requirements.txt
-        && python3 trialist.py'
-#        gunicorn -w 4 -b 0.0.0.0:5000 trialist:app'
+        && gunicorn -w 4 -b 0.0.0.0:5000 trialist:app'
+
+    ## && python3 trialist.py'
     # TODO: Trialist: use gunicorn instead
       diana_ports:
         - "5000:5000"
-    # TODO: Trialist: Add user credentials to protect upload
-
-#    - name: snappass
-#      role: snappass-docker
-#      snappass_port: 5001
-#      snappass_redis_container_name:  redis
-#      snappass_redis_db: 3
 
     - name: ftpd
       role: pureftpd-docker
@@ -152,7 +149,6 @@
       pftp_data_dir:         "/data/ftp"
       pftp_host_name:        "{{ public_host_name }}.{{ common_name }}"
       pftp_service_password: "{{ service_password }}"
-      # TODO: FTP: Check that this works
 
 
 ################################
@@ -219,7 +215,7 @@
         loop_var: trial
 
 # TODO: Confirm Watcher works
-# TODO: Add osimis viewer for each trial
+# TODO: Add reader credentials to viewers
 
 
 ################################
