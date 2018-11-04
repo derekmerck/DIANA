@@ -193,7 +193,7 @@ class ObservableOrthancProxy(ObservableMixin, Orthanc):
         q['StudyTime'] = "{}-{}".format(t0, t1)
         q.update( self.query_dict )
 
-        response = self.find(q, level=DicomLevel.STUDIES, domain=self.query_domain)
+        response = self.find(q, level=self.query_level, domain=self.query_domain)
 
         event_queue = []
 

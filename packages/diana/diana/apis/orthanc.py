@@ -44,7 +44,7 @@ class Orthanc(Pattern):
     password = attr.ib( default="orthanc" )
     gateway = attr.ib( init=False )
 
-    domains = attr.ib( factory=dict )  # Mapping of domain name -> retreive destination names
+    domains = attr.ib( factory=dict )  # Mapping of domain name -> retrieve destination names
 
     @gateway.default
     def connect(self):
