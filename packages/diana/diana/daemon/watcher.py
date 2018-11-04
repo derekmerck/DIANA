@@ -161,7 +161,7 @@ from collections import deque
 class ObservableOrthancProxy(ObservableMixin, Orthanc):
     query_dict = attr.ib( factory=dict )
     query_domain = attr.ib( default=None )
-    query_level = attr.ib( default=DicomLevel.STUDIES )
+    query_level = attr.ib( default=DicomLevel.STUDIES, convert=DicomLevel )
     discovery_queue_len = attr.ib( default=200 )
     query_discovery_period = attr.ib( default=300, convert=int )
 
