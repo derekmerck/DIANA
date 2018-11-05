@@ -198,13 +198,19 @@ class ObservableOrthancProxy(ObservableMixin, Orthanc):
         event_queue = []
 
         for item in response:
-            if item.meta['AccessionNumber'] in self.discovery_queue:
+
+            if self.query_level==DicomLevel.STUDIES:
+                match_key = item.meta['StudyInstanceUID']
+            elif self.query_level==DicomLevel.SERIES:
+                match_key = item.meta['SeriesInstanceUID']
+
+            if match_key in self.discovery_queue:
                 # logging.debug("Skipping old item")
                 continue
             else:
                 # logging.debug("Adding new item")
                 # logging.debug(item)
-                self.discovery_queue.append(item.meta['AccessionNumber'])
+                self.discovery_queue.append(match_key)
                 event_queue.append( (DianaEventType.NEW_MATCH, item) )
 
         if event_queue:
