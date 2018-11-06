@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 import os, json, yaml, logging, re
 from glob import glob
+from pprint import pformat
 
 def add_service_opts(parser: ArgumentParser):
     parser.add_argument("-s", "--services_file",
@@ -13,24 +14,23 @@ def add_service_opts(parser: ArgumentParser):
                     help="Dump configuration as yaml and json")
 
 def get_services(opts):
+    path_matcher = re.compile(r'\$\{([^}^{]+)\}')
+
+    # variable expansion -- see https://stackoverflow.com/a/52412796
+    def path_constructor(loader, node):
+        ''' Extract the matched value, expand env variable, and replace the match '''
+        value = node.value
+        match = path_matcher.match(value)
+        env_var = match.group()[2:-1]
+        return os.environ.get(env_var) + value[match.end():]
+
+    yaml.add_implicit_resolver('!path', path_matcher)
+    yaml.add_constructor('!path', path_constructor)
+
     services = {}
     if opts.get('services_file'):
         with open(opts.get('services_file')) as f:
-            path_matcher = re.compile(r'\$\{([^}^{]+)\}')
-
-            # variable expansion -- see https://stackoverflow.com/a/52412796
-            def path_constructor(loader, node):
-                ''' Extract the matched value, expand env variable, and replace the match '''
-                value = node.value
-                match = path_matcher.match(value)
-                env_var = match.group()[2:-1]
-                return os.environ.get(env_var) + value[match.end():]
-
-            yaml.add_implicit_resolver('!path', path_matcher)
-            yaml.add_constructor('!path', path_constructor)
-
             services.update(yaml.safe_load(f))
-
     if opts.get('services_env'):
         services.update(yaml.safe_load(os.environ.get(opts.get('services_env'))))
     if opts.get('services_dir'):
@@ -40,6 +40,8 @@ def get_services(opts):
             logging.debug(fp)
             with open(fp) as f:
                 services.update(yaml.safe_load(f))
+
+    logging.debug(pformat(services))
 
     return services
 
