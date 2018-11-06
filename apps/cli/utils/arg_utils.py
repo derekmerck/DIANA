@@ -21,8 +21,10 @@ def get_services(opts):
     if opts.get('services_file'):
         with open(opts.get('services_file')) as f:
             logging.debug("f.read()")
-            logging.debug(f.read())
-            ff = os.path.expandvars(f.read())
+            fr = f.read()
+            fr = fr.strip("/n\"")
+            logging.debug(fr)
+            ff = os.path.expandvars(fr)
             logging.debug("ff")
             logging.debug(ff)
             logging.debug("parsing")
