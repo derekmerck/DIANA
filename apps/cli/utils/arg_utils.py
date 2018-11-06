@@ -20,9 +20,12 @@ def get_services(opts):
     services = {}
     if opts.get('services_file'):
         with open(opts.get('services_file')) as f:
-            print(f.read())
+            logging.debug("f.read()")
+            logging.debug(f.read())
             ff = os.path.expandvars(f.read())
-            print(ff)
+            logging.debug("ff")
+            logging.debug(ff)
+            logging.debug("parsing")
             services.update(yaml.safe_load(ff))
     if opts.get('services_env'):
         ff = os.path.expandvars(os.environ.get(opts.get('services_env')))
@@ -36,6 +39,8 @@ def get_services(opts):
                 ff = os.path.expandvars(f.read())
                 services.update(yaml.safe_load(ff))
 
+    logging.debug("SERVICES")
+    logging.debug("=================")
     logging.debug(pformat(services))
 
     return services
