@@ -11,26 +11,26 @@ from diana.daemon.watcher import set_proxied_index_route, set_upload_files_route
 from utils.arg_utils import *
 
 
-def get_route(name, src, dest):
+def get_route(handler, source, dest):
     # Named DIANA routes
 
-    source_kwargs = services.get(src)
+    source_kwargs = services.get(source)
     dest_kwargs = services.get(dest)
 
-    if name == "proxied_index":
+    if handler == "proxied_index":
         route = set_proxied_index_route(source_kwargs, dest_kwargs)
 
-    elif name == "upload_file":
+    elif handler == "upload_file":
         route = set_upload_files_route(source_kwargs, dest_kwargs)
 
-    elif name == "anon_and_forward":
+    elif handler == "anon_and_forward":
         route = set_anon_and_forward_route(source_kwargs, dest_kwargs)
 
-    elif name == "index_tags":
+    elif handler == "index_tags":
         route = set_index_tags_route(source_kwargs, dest_kwargs)
 
     else:
-        raise ValueError('No loader for route "{}"'.format(name))
+        raise ValueError('No loader for route type "{}"'.format(handler))
 
     return route
 
@@ -39,22 +39,21 @@ def parse_args():
 
     def add_routing_opts(p):
         p.add_argument("-r", "--route", nargs=3,
-                       help="Single route configuration as 3-tuple 'route source dest'")
-
+                       help="Single route configuration as 3-tuple 'handler source dest'")
         p.add_argument("-c", "--routes_file",
-                       help="Multi-route configuration file in yaml format [{name: route, src: source, dest: dest],...]")
+                       help="Multi-route configuration file in yaml format [{handler: handler, source: source, dest: dest},...]")
         p.add_argument("-C", "--routes_env",
-                       help="Multi-route configuration environment var in yaml format [{name: route, src: source, dest: dest],...]")
+                       help="Multi-route configuration environment var in yaml format [{handler: handler, source: source, dest: dest],...]")
         p.add_argument("--routes_dir",
-                       help="Directory with multiple multi-route config files in yaml format [{name: route, src: source, dest: dest],...]")
+                       help="Directory with multiple route config files in yaml format [{handler: handler, source: source, dest: dest},...]")
         return p
 
     def get_routes(opts):
         routes = []
         if opts.get('route'):
             # Single route by name
-            name, src, dest = opts.get("route")
-            routes.append({'name': name, 'src': src, 'dest': dest})
+            handler, source, dest = opts.get("route")
+            routes.append({'handler': handler, 'source': source, 'dest': dest})
 
         if opts.get('routes_file'):
             # multiple routes by name
@@ -112,7 +111,7 @@ if __name__ == "__main__":
     if not routes:
         raise ValueError("No routes defined, nothing to do.")
 
-    # Convert route definitions into object-anchored routes
+    # Expand route definitions into object-specific routes
     expanded_routes = {}
     for route_def in routes:
         expanded_route = get_route(**route_def)
