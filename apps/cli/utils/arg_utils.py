@@ -22,7 +22,7 @@ def get_services(opts):
         with open(opts.get('services_file')) as f:
             logging.debug("f.read()")
             fr = f.read()
-            fr = fr.strip("/n\"")
+            fr = fr.replace("\"", "'")
             logging.debug(fr)
             ff = os.path.expandvars(fr)
             logging.debug("ff")
