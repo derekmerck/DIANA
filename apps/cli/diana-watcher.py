@@ -7,7 +7,8 @@ Can also reconfigure a local orthanc instance with a shared config file to add l
 
 from diana.daemon import DianaWatcher
 from diana.daemon.watcher import set_proxied_index_route, set_upload_files_route,\
-                                 set_anon_and_forward_route, set_index_tags_route
+                                 set_anon_and_forward_route, set_index_tags_route, \
+                                 set_index_instance_tags_route
 from utils.arg_utils import *
 
 
@@ -28,6 +29,9 @@ def get_route(handler, source, dest):
 
     elif handler == "index_tags":
         route = set_index_tags_route(source_kwargs, dest_kwargs)
+
+    elif handler == "index_instance_tags":
+        route = set_index_instance_tags_route(source_kwargs, dest_kwargs)
 
     else:
         raise ValueError('No loader for route type "{}"'.format(handler))

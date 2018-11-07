@@ -86,7 +86,3 @@ class DoseReportHarvester(Harvester):
             d = self.source.get(series.oid(), level=DicomLevel.SERIES, view="instance_tags")
             self.dest.put(d, index=self.dest_domain, host=self.source.location, hec=self.dest_domain)
             self.source.remove(d)
-
-
-
-

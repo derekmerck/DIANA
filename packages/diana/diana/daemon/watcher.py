@@ -21,7 +21,7 @@ class DianaEventType(Enum):
     INSTANCE_ADDED = "instance_added"  # dcm file or orthanc instance
     SERIES_ADDED = "series_added"      # orthanc series
     STUDY_ADDED = "study_added"        # zip file or orthanc study
-    NEW_MATCH =  "new_match"           # Dose report or other queried item match
+    NEW_MATCH = "new_match"            # Dose report or other queried item match
     ALERT = "alert"                    # mention item in warning log
 
 
@@ -56,6 +56,7 @@ class DianaWatcher(Watcher):
 
         return dest.put(item)
 
+    # TODO: could figure out indexing level automatically
     @classmethod
     def index_series(cls, event, dest,
                      token=None,
@@ -63,6 +64,19 @@ class DianaWatcher(Watcher):
         oid = event.event_data
         source = event.event_source
         item = source.get(oid, level=DicomLevel.SERIES, view="tags")
+
+        logging.debug("Indexing {}".format(item))
+        logging.debug("Dest: {}".format(dest))
+
+        return dest.put(item, token=token, index=index, host=event.event_source.location)
+
+    @classmethod
+    def index_instance(cls, event, dest,
+                     token=None,
+                     index=None):
+        oid = event.event_data
+        source = event.event_source
+        item = source.get(oid, level=DicomLevel.INSTANCES, view="tags")
 
         logging.debug("Indexing {}".format(item))
         logging.debug("Dest: {}".format(dest))
@@ -363,6 +377,23 @@ def set_index_tags_route(source, dest) -> dict:
 
     routes = {
         (source, DianaEventType.SERIES_ADDED): partial(DianaWatcher.index_series,
+                                                    dest=dest )
+    }
+
+    return routes
+
+
+def set_index_instance_tags_route(source, dest) -> dict:
+    logging.debug("Setting up index instance tags route")
+
+    # Cast to objects
+    if type(source) == dict:
+        source = ObservableOrthanc(**source)
+    if type(dest) == dict:
+        dest = Splunk(**dest)
+
+    routes = {
+        (source, DianaEventType.INSTANCE_ADDED): partial(DianaWatcher.index_instance,
                                                     dest=dest )
     }
 
