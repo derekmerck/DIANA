@@ -135,6 +135,8 @@ class Splunk(Requester):
                             ('index', index ),
                             ('event', event_json )])
 
+        self.logger.debug(pformat(data))
+
         def _hec_url() -> str:
             if self.path:
                 return "{}://{}:{}/{}/services/collector/event". \
