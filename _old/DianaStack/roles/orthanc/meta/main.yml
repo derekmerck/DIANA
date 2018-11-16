@@ -1,4 +1,0 @@
----
-dependencies:
-  - {role: common, tags: 'common'}
-  - {role: postgres, tags: 'postgres'}

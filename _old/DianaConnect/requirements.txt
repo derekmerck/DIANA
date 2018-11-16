@@ -1,3 +1,0 @@
-Requests
-pyYAML
-beautifulsoup4

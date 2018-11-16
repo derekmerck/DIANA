@@ -1,6 +1,0 @@
----
-- name: restart_orthanc
-  docker_container:
-    name: orthanc
-    state: stopped
-  ignore_errors: yes  # Might not exist yet
