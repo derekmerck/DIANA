@@ -178,7 +178,21 @@ Future Work
 - Post-processing including ROI cropping and 3D CLAHE
 
 
+Verifying Files
+---------------
+
+md5 hashes for the `apps` and `packages` directories are published on the [DIANA Hashes Gist](https://gist.github.com/derekmerck/4b0bfbca0a415655d97f36489629e1cc) as `diana_hashes.json`.
+
+A simple hash verification utility will compare local file hashes to the public hashes:
+
+```bash
+pip install git+https://github.com/derekmerck/check-hashes
+python3 check-hashes.py verify 4b0bfbca0a415655d97f36489629e1cc diana_hashes apps/cli
+```
+
 License
 ---------------
 
 [MIT](http://opensource.org/licenses/mit-license.html)
+
+
