@@ -25,7 +25,7 @@ services:
       INITSYSTEM: "on"
     volumes:
       - "/etc/orthanc:/etc/orthanc"
-    command: ["python3", "apps/cli/proxy-watcher.py", "--orthanc-config-dir", "/etc/orthanc"]
+    command: ["python3", "apps/cli.old/proxy-watcher.py", "--orthanc-config-dir", "/etc/orthanc"]
 
 
 

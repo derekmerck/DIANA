@@ -16,7 +16,7 @@ No python3 on a system that needs reindexed?  Docker to the rescue...
 
 $ docker run -v /orthanc/db:/orthanc/db -it derekmerck/diana:amd64 /bin/bash
 # scp server:/secrets.yml .
-# python3 apps/cli/index-it.py -l /orthanc/db -r redis -s /secrets.yml index -w orthanc
+# python3 apps/cli.old/index-it.py -l /orthanc/db -r redis -s /secrets.yml index -w orthanc
 ...
 
 """

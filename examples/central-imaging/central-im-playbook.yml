@@ -248,6 +248,6 @@
         bash -c 'git pull
         && pip install -r requirements.txt
         && pip install -e packages/guidmint packages/diana
-        && python3 apps/cli/diana-watcher.py --services_dir /resources/services --routes_dir /resources/routes'
+        && python3 apps/cli.old/diana-watcher.py --services_dir /resources/services --routes_dir /resources/routes'
 
 

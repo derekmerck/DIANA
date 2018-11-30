@@ -89,7 +89,8 @@ class GuidMint(object):
         r = random.randint(-self.max_date_offset, self.max_date_offset)
         rd = timedelta(days=r)
 
-        return (dob+rd).date()
+        return dob+rd
+        # return (dob+rd).date()
 
 if __name__ == "__main__":
 

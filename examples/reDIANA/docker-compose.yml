@@ -29,4 +29,4 @@ services:
     volumes:
       - "/etc/orthanc:/etc/orthanc"
 
-    command: ["git pull", "&&", "python3", "apps/cli/DIANA-watcher.py", "--env", "DIANA_WATCHER_CONFIG"]
+    command: ["git pull", "&&", "python3", "apps/cli.old/DIANA-watcher.py", "--env", "DIANA_WATCHER_CONFIG"]

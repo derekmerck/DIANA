@@ -25,12 +25,16 @@ def simple_sham_map(meta):
             'PatientBirthDate': dicom_strfdate( meta['ShamDoB'] ) if isinstance(meta["ShamDoB"], datetime.date) else meta["ShamDoB"],
             'AccessionNumber':  meta['ShamAccession'].hexdigest() if hasattr( meta["ShamAccession"], "hexdigest") else meta["ShamAccession"],
             'StudyInstanceUID': meta.get('ShamStudyUID'),
-            'SeriesInstanceUID': meta.get('ShamSeriesUID'),
-            'SOPInstanceUID':   meta.get('ShamInstanceUID'),
         },
-        'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription', 'StudyDate'],
+        'Keep': ['PatientSex', 'StudyDescription', 'SeriesDescription', 'StudyDate', 'StudyTime'],
         'Force': True
     }
+
+    # Depends on level of anonymization
+    if meta.get('ShamSeriesUID'):
+        map['Replace']['SeriesInstanceUID'] = meta.get('ShamSeriesUID')
+        if meta.get('ShamInstanceUID'):
+            map['Replace']['SOPInstanceUID'] = meta.get('ShamInstanceUID')
 
     return map
 
@@ -149,6 +153,9 @@ class Orthanc(Pattern):
             item.set_shams()
 
         replacement_dict = replacement_map(item.meta)
+
+        self.logger.debug(replacement_dict)
+
         result = self.gateway.anonymize_item(item.oid(), item.level, replacement_dict=replacement_dict)
         # self.logger.debug(result)
         if remove:

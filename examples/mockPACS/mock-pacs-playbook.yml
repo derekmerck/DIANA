@@ -30,7 +30,7 @@
         bash -c 'git pull
         && pip install -r requirements.txt
         && pip install -e packages/guidmint packages/diana
-        && python3 apps/cli/diana-mock.py -S DIANA_SERVICES -d mock -r 30'
+        && python3 apps/cli.old/diana-mock.py -S DIANA_SERVICES -d mock -r 30'
       diana_extra_env:
         DIANA_SERVICES: "{{ {'mock': {'host': dockerhost_ip, 'port': 2408, 'user': 'mock', 'password': 'mock' } } | tojson | safe }}"
 
@@ -94,4 +94,4 @@
       bash -c 'git pull &&
       pip install -r requirements.txt &&
       pip install -e packages/diana &&
-      python3 apps/cli/diana-watcher.py -s /config/services.yml -r proxied_index orthanc_proxy splunk'
+      python3 apps/cli.old/diana-watcher.py -s /config/services.yml -r proxied_index orthanc_proxy splunk'

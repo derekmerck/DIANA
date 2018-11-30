@@ -61,15 +61,19 @@ class DicomFile(Pattern):
     def connect(self):
         return gateway.DicomFile(location=self.location)
 
-    def check(self, item: Dixel, path: str=None, fn_from: str="FileName", explode: Sequence=None) -> bool:
+    def check(self, item: Union[Dixel, str], path: str=None, fn_from: str="FileName", explode: Sequence=None) -> bool:
 
-        fn = item.meta.get(fn_from)
-        if item.level == DicomLevel.INSTANCES and \
-                os.path.splitext(fn)[-1:] != ".dcm":
-            fn = fn + '.dcm'   # Single file
-        if item.level < DicomLevel.INSTANCES and \
-                os.path.splitext(fn)[-1:] != ".zip":
-            fn = fn + '.zip'   # Archive format
+        if isinstance(item, str):
+            fn = item
+
+        else:
+            fn = item.meta.get(fn_from)
+            if item.level == DicomLevel.INSTANCES and \
+                    os.path.splitext(fn)[-1:] != ".dcm":
+                fn = fn + '.dcm'   # Single file
+            if item.level < DicomLevel.INSTANCES and \
+                    os.path.splitext(fn)[-1:] != ".zip":
+                fn = fn + '.zip'   # Archive format
 
         if not path:
             path = self.location
